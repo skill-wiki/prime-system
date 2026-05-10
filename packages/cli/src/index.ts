@@ -19,6 +19,7 @@
  *   prime install <name>          Install a Prime (legacy / remote)
  *   prime install                 Install all Primes declared in SKILL.md
  *   prime publish                 Publish to prime.dev
+ *   prime publish-marketplace     Open a PR to add this corpus to skill-wiki marketplace
  *   prime search <query>          Search the registry
  *   prime info <name>             View Prime details
  *   prime ls                      List installed Primes (.primes/ dir)
@@ -35,6 +36,7 @@ import { installCommand as installCommandV2 } from './commands/install-v2';
 import { installCommand } from './commands/install';
 import { searchCommand } from './commands/search';
 import { publishCommand } from './commands/publish';
+import { publishMarketplaceCommand } from './commands/publish-marketplace';
 import { lsCommand } from './commands/ls';
 import { graphCommand } from './commands/graph';
 import { decomposeCommand } from './commands/decompose';
@@ -71,6 +73,7 @@ Registry (local):
 Package Management:
   install [name]          Install Prime(s) from prime.dev
   publish                 Publish to prime.dev
+  publish-marketplace     Submit corpus to skill-wiki marketplace via GitHub PR
   search <query>          Search the registry
   info <name>             View Prime details
   ls                      List installed Primes (.primes/)
@@ -143,6 +146,10 @@ async function main() {
         break;
       case 'publish':
         await publishCommand(commandArgs);
+        break;
+      case 'publish-marketplace':
+      case 'marketplace-publish':
+        await publishMarketplaceCommand(commandArgs);
         break;
       case 'search':
         await searchCommand(commandArgs);

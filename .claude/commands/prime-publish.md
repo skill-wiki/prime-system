@@ -1,34 +1,31 @@
 ---
-description: Compile a corpus and prep a draft PR against skill-wiki.github.io
-argument-hint: <source dir>
+description: Publish the current Prime corpus to the skill-wiki marketplace via an automated GitHub PR
+argument-hint: [--description <text>] [--tags <a,b,c>]
 allowed-tools: Bash, Read
 ---
 
-The user wants to compile a Prime corpus and prepare to publish it to the public registry at `skill-wiki.github.io`. Source directory:
+The user wants to publish the Prime corpus in the cwd to the public Skill Wiki marketplace at `skill-wiki/skill-wiki.github.io`. Extra args, if any:
 
 > $ARGUMENTS
 
 Do this:
 
-1. Run the compiler:
+1. Verify the cwd has a `pack.yaml` and a compiled output directory (the `compiled:` subdir named in `pack.yaml`, or `compiled/` by default). If either is missing, stop and tell the user to run `prime compile` first.
+2. Confirm `gh` is installed (`gh --version`) and authenticated (`gh auth status`). If not, instruct the user to run `gh auth login` and stop.
+3. Run a dry-run first so the user sees the YAML that will be submitted:
 
    ```
-   bun /Users/houxianchao/Desktop/prime/release/prime-system/packages/cli/src/index.ts compile --dir $ARGUMENTS --out compiled/
+   bun /Users/houxianchao/Desktop/prime/release/prime-system/packages/cli/src/index.ts publish-marketplace --dry-run $ARGUMENTS
    ```
 
-   If the build fails, stop and report the error. Do not proceed to publish a broken corpus.
-2. Confirm `compiled/_index.xml` was written. If missing, the build is incomplete — abort.
-3. Read the corpus manifest (e.g. `prime.toml` or top-level metadata in the source tree) to extract: `name`, `version`, `description`, `kinds`, `atom-count`. If those aren't recorded, derive `atom-count` and `kinds` from `_index.xml`.
-4. Print the YAML block the user needs to paste into `data/skills.yaml` on skill-wiki.github.io. Format:
+   Show that output verbatim and ask the user to confirm before proceeding.
+4. On confirmation, run the real flow:
 
-   ```yaml
-   - name: <name>
-     version: <version>
-     description: <one line>
-     kinds: [<kind list>]
-     atoms: <count>
-     repo: <repo-url-if-known>
+   ```
+   bun /Users/houxianchao/Desktop/prime/release/prime-system/packages/cli/src/index.ts publish-marketplace $ARGUMENTS
    ```
 
-5. Print the GitHub edit URL: `https://github.com/skill-wiki/skill-wiki.github.io/edit/main/data/skills.yaml`
-6. Tell the user to paste the YAML, commit on a branch, and open a PR. Do not push or open the PR yourself unless they ask.
+   This forks `skill-wiki/skill-wiki.github.io`, branches `add-<slug>`, appends the entry to `data/skills.yaml`, pushes to the user's fork, and opens a PR. Print the PR URL it returns.
+5. Fallback if the CLI subcommand is unavailable: walk the user through the manual flow — `gh repo fork skill-wiki/skill-wiki.github.io`, edit `data/skills.yaml`, commit on a new branch, `gh pr create --repo skill-wiki/skill-wiki.github.io`. Use the schema in `data/skills.yaml` (slug, repo, compiledSubdir, description, homepage, maintainers, tags).
+
+Do not push or open a PR without an explicit user confirmation after the dry-run.

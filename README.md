@@ -167,6 +167,12 @@ Use them at the project level out of the box, or copy globally with `cp -r .clau
 
 ---
 
+## Contributing
+
+Read [.github/CONTRIBUTING.md](./.github/CONTRIBUTING.md) before opening a pull request and follow the [PR template](./.github/PULL_REQUEST_TEMPLATE.md). For questions and ideas, use [Discussions](https://github.com/skill-wiki/skill-wiki.github.io/discussions); for defects or proposals, file an [issue](https://github.com/skill-wiki/prime-system/issues).
+
+---
+
 ## License
 
 [Apache License 2.0](./LICENSE). Patent grant included; redistribution must keep [NOTICE](./NOTICE) intact.
