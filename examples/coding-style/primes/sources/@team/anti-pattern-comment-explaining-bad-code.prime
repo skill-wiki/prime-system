@@ -1,0 +1,50 @@
+anti-pattern CommentExplainingBadCode {
+  id: "@team/anti-pattern-comment-explaining-bad-code"
+  version: "1.0.0"
+
+  label: "Comments that explain what bad code does instead of rewriting it"
+  domain: coding-style
+
+  description: "Adding a comment to explain why a piece of confusing code works, rather than rewriting the code to be self-explanatory. The comment is a symptom; the underlying code is the disease."
+
+  why-bad: """
+    Comments explaining bad code:
+    1. Lie over time — the code changes but the comment stays.
+    2. Add maintenance burden — two things to keep in sync instead of one.
+    3. Signal surrender — 'I know this is bad but I wrote a comment about it.'
+    4. Hide the real fix — the effort spent writing the comment could refactor the code.
+
+    Example of the anti-pattern:
+    // add 1 because the API is 1-indexed but our array is 0-indexed
+    const idx = getPageNumber() + 1 - 1;
+  """
+
+  instead-do: """
+    Rewrite so the code is self-documenting:
+
+    const ONE_INDEXED_OFFSET = 1;
+    const pageIndex = getPageNumber() - ONE_INDEXED_OFFSET;   // named constant explains itself
+
+    Or:
+    function toZeroIndexed(oneIndexedPage: number): number {
+      return oneIndexedPage - 1;
+    }
+    const pageIndex = toZeroIndexed(getPageNumber());
+  """
+
+  notes: [
+    "Good comments: WHY a decision was made (business reason, RFC reference, intentional trade-off). Bad comments: WHAT the code does.",
+    "Acceptable: `// eslint-disable-next-line ...` with a trailing explanation of WHY this specific line needs the suppression.",
+    "Documentation comments (JSDoc on public API) are not this anti-pattern — they document interface, not implementation.",
+  ]
+
+  related: [
+    @team/principle-readability-over-cleverness,
+    @team/rule-no-magic-numbers,
+    @team/anti-pattern-god-class,
+  ]
+
+  see-also: [
+    @team/principle-readability-over-cleverness,
+  ]
+}

@@ -1,0 +1,33 @@
+fact EmulsionTemperatureWindow {
+  id: "@recipes/fact-emulsion-temperature-window"
+  version: "1.0.0"
+
+  statement: "A butter-based emulsion sauce (pan sauce, hollandaise, beurre blanc) is stable between roughly 60–70°C. Below 55°C the emulsion breaks as fat solidifies; above 80°C the proteins in the butter's water phase curdle and the emulsion splits irreversibly."
+
+  confidence: strong
+  source: [
+    "McGee, Harold. 'On Food and Cooking' (2004), Chapter 12: Sauces.",
+    "Pépin, Jacques. 'La Technique' (1976).",
+    "Modernist Cuisine — Emulsions.",
+  ]
+
+  domain: cooking
+
+  tags: [cooking, sauces, emulsion, butter, temperature]
+
+  applies-to: [
+    "Hollandaise and béarnaise — held in a bain-marie at 60–65°C; never over direct heat.",
+    "Pan sauces — butter is whisked in off-heat (< 80°C) to mount the sauce.",
+    "Beurre blanc — held in a warm (not hot) place; direct boiling destroys it.",
+  ]
+
+  related: [
+    @recipes/method-pan-sauce,
+    @recipes/pattern-veloute-base,
+    @recipes/term-tempering,
+  ]
+
+  supplies-to: [
+    @recipes/method-pan-sauce,
+  ]
+}

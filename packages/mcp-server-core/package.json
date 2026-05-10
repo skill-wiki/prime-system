@@ -1,0 +1,24 @@
+{
+  "name": "@prime-lang/mcp-server-core",
+  "version": "0.1.0",
+  "description": "Generic MCP server for any compiled Prime corpus. Exposes one tool — prime_query — that browses atoms, traverses the edge graph, and returns projection-level paths for the agent to Read.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "bin": {
+    "prime-mcp-core": "./src/index.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@prime-lang/runtime": "workspace:*",
+    "@prime-lang/types": "workspace:*",
+    "zod": "^4.0.0"
+  },
+  "scripts": {
+    "build": "bun build src/index.ts --outdir dist --target node",
+    "test": "bun test",
+    "lint": "tsc --noEmit"
+  }
+}

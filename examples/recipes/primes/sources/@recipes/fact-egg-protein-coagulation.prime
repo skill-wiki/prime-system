@@ -1,0 +1,29 @@
+fact EggProteinCoagulation {
+  id: "@recipes/fact-egg-protein-coagulation"
+  version: "1.0.0"
+
+  statement: "Egg white proteins begin denaturing at 60°C and are fully set by 80°C. Egg yolk proteins begin setting at 65°C and are fully cooked at 70°C. Gentle heat (63–65°C sustained for several minutes) produces a custardy, jammy yolk; high heat produces a chalky, crumbly yolk."
+
+  confidence: strong
+  source: [
+    "McGee, Harold. 'On Food and Cooking' (2004), Chapter 2: Eggs.",
+    "Modernist Cuisine, Volume 4 — Eggs.",
+    "This, Hervé. 'Molecular Gastronomy' (2006).",
+  ]
+
+  domain: cooking
+
+  tags: [cooking, eggs, protein, temperature, sous-vide]
+
+  applies-to: [
+    "Soft-boiled and onsen eggs — 63–65°C for 45–60 min in sous-vide or temperature-controlled water.",
+    "Custards and crème brûlée — held below 85°C to prevent curdling.",
+    "Scrambled eggs — low heat (< 70°C) for creamy texture; high heat (> 80°C) for firm curds.",
+  ]
+
+  related: [
+    @recipes/term-tempering,
+    @recipes/fact-emulsion-temperature-window,
+    @recipes/rule-rest-meat-after-cooking,
+  ]
+}

@@ -1,0 +1,27 @@
+term Deglazing {
+  id: "@recipes/term-deglazing"
+  version: "1.0.0"
+
+  meaning: "Adding liquid (wine, stock, water, vinegar) to a hot pan after searing to dissolve the caramelized browned bits (fond) stuck to the pan bottom. Those bits are concentrated flavor — deglazing releases them into the liquid, forming the base of a pan sauce."
+
+  domain: cooking
+
+  aliases: ["deglaze", "lifting the fond"]
+
+  notes: [
+    "The liquid must hit a hot, not a cold, pan — steam and sizzle are what lift the fond.",
+    "Alcohol deglazes: add wine or spirits off the heat or with a lid nearby to avoid flare-up.",
+    "A well-developed fond (dark brown, not black) is the difference between a good and great pan sauce.",
+    "Never deglaze a pan where the fond is burnt (black) — the bitter flavor cannot be recovered.",
+  ]
+
+  related: [
+    @recipes/method-pan-sauce,
+    @recipes/fact-maillard-reaction-temperature,
+    @recipes/anti-pattern-cold-pan-searing,
+  ]
+
+  requires: [
+    @recipes/fact-maillard-reaction-temperature,
+  ]
+}

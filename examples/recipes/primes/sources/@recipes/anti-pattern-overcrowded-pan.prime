@@ -1,0 +1,29 @@
+anti-pattern OvercrowdedPan {
+  id: "@recipes/anti-pattern-overcrowded-pan"
+  version: "1.0.0"
+
+  label: "Overcrowding the Pan"
+  domain: cooking
+
+  description: "Adding too much food to a pan at once — so that pieces touch and steam accumulates — causing the food to steam instead of sear. The Maillard reaction requires a dry, hot surface; a crowded pan generates moisture that keeps the surface temperature below 100°C."
+
+  why-bad: "Steam is produced when evaporating moisture from wet food surfaces cannot escape fast enough. This drops the pan temperature and prevents the surface from reaching the 140°C+ required for Maillard browning. The result: grey, soft, and watery food instead of the desired browned, caramelized exterior. Flavor and texture both suffer."
+
+  instead-do: "Cook in batches sized so that pieces are in a single layer with at least 1 cm between them. A 28 cm skillet fits about 200 g of mushrooms or 2 medium chicken thighs. Rest cooked batches in a warm oven (80°C) while the next batch cooks. The total cook time is longer but the result is dramatically better."
+
+  notes: [
+    "This applies equally to sautéed vegetables, seared meat, and stir-fries.",
+    "Patting food dry before adding to the pan reduces the moisture load — extends the window before crowding becomes a problem.",
+    "Cast iron and carbon steel retain heat better than thin stainless under load, reducing the severity of temperature drop when food is added.",
+  ]
+
+  related: [
+    @recipes/fact-maillard-reaction-temperature,
+    @recipes/anti-pattern-cold-pan-searing,
+    @recipes/pattern-stir-fry-mise,
+  ]
+
+  see-also: [
+    @recipes/anti-pattern-cold-pan-searing,
+  ]
+}

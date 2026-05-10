@@ -1,0 +1,21 @@
+{
+  "name": "@prime-lang/cli",
+  "version": "0.1.0",
+  "description": "Prime CLI — compile, check, install, publish, search",
+  "type": "module",
+  "bin": {
+    "prime": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "bun build src/index.ts --outdir dist --target bun",
+    "test": "bun test",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@prime-lang/types": "workspace:*",
+    "@prime-lang/parser": "workspace:*",
+    "@prime-lang/compiler": "workspace:*",
+    "@prime-lang/runtime": "workspace:*"
+  },
+  "license": "Apache-2.0"
+}

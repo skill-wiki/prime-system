@@ -1,0 +1,78 @@
+name: Bug report
+description: Report a defect in the parser, compiler, runtime, CLI, registry, or MCP server.
+title: "[bug] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file this. The more reproducible the report, the faster the fix.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: A clear and concise description of the defect.
+      placeholder: e.g. `prime compile` exits 0 but emits no chunks for atoms with multi-line strings.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Minimal commands or a small `.prime` file that triggers the issue.
+      render: shell
+      placeholder: |
+        $ prime compile foo.prime --out /tmp/out
+        $ ls /tmp/out/@example/foo/chunks/
+        # expected: summary.md core.md full.md
+        # got: (empty)
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Skill Wiki version / commit
+      placeholder: 0.1.0 or commit hash
+    validations:
+      required: true
+
+  - type: dropdown
+    id: package
+    attributes:
+      label: Which package?
+      options:
+        - parser
+        - compiler
+        - runtime
+        - cli
+        - registry
+        - mcp-server-core
+        - validator-core
+        - skill (prime-decompose)
+        - other / unsure
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: e.g. macOS 15.1, Bun 1.3.12, Node 22.7
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else?
+      description: Logs, related issues, hypotheses about the cause.

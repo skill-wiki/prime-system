@@ -1,0 +1,53 @@
+tradeoff StrictTypesVsIterationSpeed {
+  id: "@team/tradeoff-strict-types-vs-iteration-speed"
+  version: "1.0.0"
+
+  label: "Strict TypeScript types vs. iteration speed in early-stage code"
+  domain: coding-style
+
+  description: "Full TypeScript strict mode (`strict: true`, `noUncheckedIndexedAccess`) catches a wide class of bugs at compile time — but also imposes upfront friction when exploring an unknown design space. The team must decide when to enforce strict typing and when to deliberately defer it."
+
+  axes: ["type-safety", "iteration-speed", "refactoring-cost", "onboarding-friction"]
+
+  decision: |
+    if code == public-api OR code == shared-package:
+      → strict types, always. Public contracts must be explicit.
+         rationale: downstream callers depend on your types; `any` leaks into their code.
+
+    elif code == early-prototype OR spike:
+      → `// @ts-nocheck` or `any` acceptable for the duration of the spike.
+         MUST be cleaned before merging to main.
+         rationale: type friction costs more than it catches during exploration.
+
+    elif code == feature-in-progress:
+      → strict types encouraged; TODO comments allowed for complex generics.
+         `unknown` over `any` — `unknown` forces assertion; `any` silences everything.
+         rationale: balanced — correctness at boundaries, flexibility in implementation.
+
+  cost-of-strict: [
+    "Initial generics and type parameter overhead slows the first draft.",
+    "Type errors surface design problems early — this is painful but correct.",
+    "Complex conditional types and mapped types can become maintenance burden.",
+  ]
+
+  cost-of-loose: [
+    "`any` at module boundaries propagates silently — callers inherit the unsafety.",
+    "Refactoring without types produces silent regressions.",
+    "Onboarding: new engineers cannot understand module contracts without types.",
+  ]
+
+  notes: [
+    "Team rule: `any` in a public export is a lint error (`@typescript-eslint/no-explicit-any: error` on exported symbols).",
+    "Migration path for existing loose code: add `any` suppressions with `// TODO(strict): remove` comments; track in tech-debt backlog.",
+  ]
+
+  related: [
+    @team/rule-explicit-return-types,
+    @team/principle-readability-over-cleverness,
+    @team/pattern-result-type-over-throw,
+  ]
+
+  see-also: [
+    @team/pattern-result-type-over-throw,
+  ]
+}

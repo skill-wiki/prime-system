@@ -1,0 +1,25 @@
+term MiseEnPlace {
+  id: "@recipes/term-mise-en-place"
+  version: "1.0.0"
+
+  meaning: "French for 'everything in its place.' The culinary practice of measuring, chopping, portioning, and organizing all ingredients before cooking begins. A cook with mise en place executes the recipe; one without is simultaneously cooking and prepping, inviting error."
+
+  domain: cooking
+
+  aliases: ["mise", "prep work", "MEP"]
+
+  notes: [
+    "Professional kitchens live by mise en place — a station that is not set up is a station that will fail during service.",
+    "For home cooking, 10 minutes of mise before a stir-fry prevents burning because stir-frying moves too fast for mid-cook prep.",
+    "The mental model extends to non-cooking contexts: programming (set up fixtures before tests), writing (outline before drafting).",
+  ]
+
+  related: [
+    @recipes/pattern-stir-fry-mise,
+    @recipes/method-pan-sauce,
+  ]
+
+  see-also: [
+    @recipes/pattern-stir-fry-mise,
+  ]
+}

@@ -1,0 +1,33 @@
+rule NoDefaultExport {
+  id: "@team/rule-no-default-export"
+  version: "1.0.0"
+
+  label: "No default exports"
+  domain: coding-style
+
+  description: "All module exports must be named exports. Default exports are prohibited. Named exports give the import site a stable, searchable name; default exports allow importers to invent arbitrary names, making global renames, IDE references, and grep unreliable."
+
+  checks: [
+    "No file may contain `export default` at the top level.",
+    "Re-exports must use named form: `export { Foo } from './foo'` — not `export { default } from './foo'`.",
+    "Barrel files (index.ts) must re-export by name.",
+  ]
+
+  tags: [typescript, modules, exports, refactoring]
+
+  notes: [
+    "ESLint rule: `import/no-default-export` (eslint-plugin-import).",
+    "Exception: Next.js page files require default export — add `// eslint-disable-next-line` with a comment, not a blanket rule disable.",
+    "React components and hooks are named: `export function Button()` not `export default function()`.",
+  ]
+
+  related: [
+    @team/pattern-named-arguments,
+    @team/rule-explicit-return-types,
+    @team/principle-readability-over-cleverness,
+  ]
+
+  see-also: [
+    @team/principle-readability-over-cleverness,
+  ]
+}

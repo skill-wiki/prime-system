@@ -1,0 +1,24 @@
+term Celsius {
+  id: "@example/term-celsius"
+  version: "1.0.0"
+
+  meaning: "A temperature scale where 0°C is the freezing point of pure water and 100°C is its boiling point at 1 atm of pressure. Invented by Anders Celsius (1742). The SI system uses Kelvin as the base unit; °C = K − 273.15."
+
+  domain: physics
+
+  aliases: ["centigrade", "°C", "degrees Celsius"]
+
+  notes: [
+    "Kelvin and Celsius have the same interval size (1 K = 1°C difference), so temperature differences are identical in both scales.",
+    "Cooking recipes written in Fahrenheit: °F = (°C × 9/5) + 32.",
+    "The degree symbol (°) is required in formal usage — 100C is ambiguous, 100°C is not.",
+  ]
+
+  related: [
+    @example/fact-water-boils-at-100c,
+  ]
+
+  enhances: [
+    @example/method-make-tea,
+  ]
+}

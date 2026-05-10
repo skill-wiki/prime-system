@@ -1,0 +1,43 @@
+pattern NamedArguments {
+  id: "@team/pattern-named-arguments"
+  version: "1.0.0"
+
+  label: "Named-argument objects over positional parameters"
+  domain: coding-style
+
+  description: "Functions with two or more parameters of the same or similar types, or where parameter order is non-obvious, should use a named-argument object instead of positional parameters. Named arguments are self-documenting and immune to argument transposition bugs."
+
+  problem: """
+    // Positional — easy to swap args silently:
+    createUser('Alice', 'admin', true, false);
+    //          name    role    active verified — or was it verified first?
+  """
+
+  solution: """
+    // Named — order does not matter; missing keys are a compile error:
+    createUser({
+      name:     'Alice',
+      role:     'admin',
+      active:   true,
+      verified: false,
+    });
+
+    function createUser({ name, role, active, verified }: CreateUserArgs): User { ... }
+  """
+
+  notes: [
+    "Exceptions: single-argument functions, mathematical functions where order is conventional (e.g. `lerp(a, b, t)`).",
+    "Use `Readonly<CreateUserArgs>` to prevent mutation of the args object inside the function.",
+    "Destructure at the top of the function body — do not pass the whole object around.",
+  ]
+
+  related: [
+    @team/pattern-builder-over-options-bag,
+    @team/rule-no-default-export,
+    @team/principle-readability-over-cleverness,
+  ]
+
+  enhances: [
+    @team/principle-readability-over-cleverness,
+  ]
+}

@@ -1,0 +1,34 @@
+rule RestMeatAfterCooking {
+  id: "@recipes/rule-rest-meat-after-cooking"
+  version: "1.0.0"
+
+  label: "Rest meat after cooking before slicing"
+  domain: cooking
+
+  description: "Cooked meat must rest off-heat before slicing. During cooking, muscle fibers contract and push moisture toward the center. Resting allows the fibers to relax and the moisture to redistribute throughout the cut. Slicing too early causes moisture to run out onto the cutting board."
+
+  checks: [
+    "Steak (< 2.5 cm): rest 5 min.",
+    "Thick steaks and chops (2.5–4 cm): rest 8–10 min.",
+    "Whole roast (> 1 kg): rest 15–20 min tented with foil.",
+    "Poultry: rest at least 10 min; whole bird up to 30 min.",
+    "Do not rest fish — delicate muscle proteins do not benefit and texture suffers.",
+  ]
+
+  tags: [cooking, meat, technique, moisture, resting]
+
+  notes: [
+    "Internal temperature rises 2–5°C during resting (carryover cooking) — pull from heat slightly below target.",
+    "Tenting loosely with foil retains heat without steaming the crust; tight wrap = soggy bark.",
+  ]
+
+  related: [
+    @recipes/fact-maillard-reaction-temperature,
+    @recipes/term-tempering,
+    @recipes/method-pan-sauce,
+  ]
+
+  supplies-to: [
+    @recipes/method-pan-sauce,
+  ]
+}

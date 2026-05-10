@@ -1,0 +1,56 @@
+name: Feature request
+description: Propose a change to the protocol, the spec, or the tooling.
+title: "[feature] "
+labels: ["enhancement", "needs-discussion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing this. For protocol-level changes (new atom kind, new edge verb, new MCP tool), please reference the relevant section of `spec/PRIME-SPEC-v1.md`.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What can't you do today, or what is harder than it should be?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What change would solve it? Sketch the user-facing API or DSL change.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What else did you think about? Why is this proposal preferred?
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - Spec change (atom kinds, edge verbs, projection levels)
+        - New CLI command or option
+        - New MCP tool
+        - Tooling / DX improvement
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: breaking
+    attributes:
+      label: Is this a breaking change?
+      options:
+        - "No — additive only"
+        - "Possibly — depends on implementation"
+        - "Yes — would require a major version bump"
+    validations:
+      required: true

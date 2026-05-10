@@ -1,0 +1,184 @@
+# examples/recipes/domain.yaml
+#
+# Domain configuration for the recipes cooking corpus.
+# Drop this file in your corpus directory and Prime will load it automatically
+# at startup — no code changes required.
+#
+# Schema reference: spec/DOMAIN-EXTENSION-SPEC.md
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: cooking
+version: "1.0.0"
+description: >
+  Domain plugin for cooking and culinary-technique knowledge corpora.
+  Covers classical and modern techniques, ingredient science, recipe patterns,
+  and common kitchen anti-patterns.
+
+# ─── Tag Vocabulary ───────────────────────────────────────────────────────────
+#
+# Words that appear in a user's brief and signal this domain.
+# Derived from the observed tags across the 15-atom @recipes corpus.
+#
+tags:
+  - cooking
+  - recipe
+  - cuisine
+  - cook
+  - bake
+  - sauté
+  - braise
+  - roast
+  - grill
+  - simmer
+  - poach
+  - season
+  - ingredient
+  - technique
+  - flavor
+  - heat
+  - temperature
+  - fond
+  - emulsion
+  - maillard
+  - mise-en-place
+  - sauce
+  - pasta
+  - protein
+  - meat
+  - fish
+  - butter
+  - fat
+  - stir-fry
+  - wok
+  - pan
+  - oven
+  - kitchen
+  - culinary
+  - meal-prep
+  - browning
+  - caramelization
+  - deglazing
+  - reduction
+  - stock
+
+# ─── Retrieval Axes ───────────────────────────────────────────────────────────
+#
+# Domain-specific dimensions of a brief.  When these words appear in the
+# user's query, atoms that match these dimensions score higher in retrieval.
+#
+axes:
+  - name: cuisine
+    description: >
+      Regional or stylistic culinary tradition (Italian, Japanese, French, …).
+      Atoms tagged with a cuisine style are surfaced preferentially when the
+      brief references the same style.
+    matches:
+      - italian
+      - french
+      - japanese
+      - chinese
+      - mexican
+      - thai
+      - indian
+      - korean
+      - mediterranean
+      - american
+      - spanish
+      - greek
+      - middle-eastern
+
+  - name: technique
+    description: >
+      Specific cooking method referenced in the brief (braise, sous-vide, …).
+      Technique-specific atoms rank higher when the brief names a technique.
+    matches:
+      - braise
+      - sauté
+      - sous-vide
+      - grill
+      - roast
+      - steam
+      - poach
+      - fry
+      - deep-fry
+      - bake
+      - smoke
+      - deglaze
+      - reduce
+      - mount
+      - tempering
+      - blanch
+      - cure
+      - marinate
+
+  - name: skill-level
+    description: >
+      Intended skill tier of the cook.  Beginner briefs surface simpler
+      technique atoms; advanced briefs surface precision and professional atoms.
+    matches:
+      - beginner
+      - easy
+      - simple
+      - starter
+      - intermediate
+      - advanced
+      - expert
+      - professional
+      - home-cook
+      - restaurant
+
+# ─── Composition Contract ─────────────────────────────────────────────────────
+#
+# Domain-specific fields that can appear in a retrieval call's contract block.
+# Every domain implicitly also has must_include and must_avoid (not listed here).
+#
+contract:
+  required_techniques:
+    type: string-array
+    description: >
+      Cooking techniques that must be cited by at least one atom in the
+      retrieved set (e.g. ["sauté", "deglaze"]).
+
+  dietary_constraints:
+    type: enum-array
+    values:
+      - vegetarian
+      - vegan
+      - gluten-free
+      - dairy-free
+      - nut-free
+      - halal
+      - kosher
+      - low-sodium
+    description: >
+      Dietary restrictions the retrieved atoms must be compatible with.
+      The composition engine will flag atoms that contradict a stated constraint.
+
+  skill_ceiling:
+    type: enum
+    values:
+      - beginner
+      - intermediate
+      - advanced
+    description: >
+      Maximum skill level permitted in the retrieved set.  Atoms above this
+      tier are demoted in ranking.
+
+# ─── Output Validators ────────────────────────────────────────────────────────
+#
+# Post-retrieval checks that enforce domain-specific quality rules.
+# Validators produce diagnostics; they do not suppress atoms.
+#
+validators:
+  - name: cite-source
+    description: >
+      Every fact atom must have an attributed source (the source: field must
+      be non-empty).  Culinary science claims must be traceable.
+    checker: builtin:every-fact-has-source
+
+  - name: technique-pairs-with-temp
+    description: >
+      Atoms tagged "braise", "sauté", "roast", or "grill" should mention a
+      temperature value or a relative heat level (low / medium / high / °C / °F).
+      This ensures heat-sensitive technique atoms provide actionable guidance.
+    checker: regex:/(\blow\b|\bmedium\b|\bhigh\b|\d+\s*°[FC]|\d+\s*degrees)/i

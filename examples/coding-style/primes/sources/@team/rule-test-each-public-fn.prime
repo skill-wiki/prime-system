@@ -1,0 +1,34 @@
+rule TestEachPublicFn {
+  id: "@team/rule-test-each-public-fn"
+  version: "1.0.0"
+
+  label: "Every exported function must have at least one test"
+  domain: coding-style
+
+  description: "Any function or method exported from a module must have at least one corresponding test case. This is not 100% branch coverage — it is a baseline reachability requirement: every public contract must be exercised by at least one test."
+
+  checks: [
+    "CI fails if a new exported function has zero test coverage (tracked by the coverage map).",
+    "The test must call the function — not just import it.",
+    "At minimum: one happy-path test. Edge cases (null input, boundary values) are expected but not enforced by this rule.",
+    "React components: at least one render test (`screen.getByRole` or similar).",
+  ]
+
+  tags: [testing, coverage, quality, typescript]
+
+  notes: [
+    "This rule is enforced by a custom Jest coverage thresholds config (`coverageThreshold.global.functions: 100` — with exclusions for types-only files).",
+    "A test that mocks the function under test does not satisfy this rule.",
+    "Private functions are excluded; they are tested through the public surface that calls them.",
+  ]
+
+  related: [
+    @team/rule-explicit-return-types,
+    @team/pattern-result-type-over-throw,
+    @team/anti-pattern-comment-explaining-bad-code,
+  ]
+
+  enhances: [
+    @team/principle-readability-over-cleverness,
+  ]
+}

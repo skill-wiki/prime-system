@@ -1,0 +1,44 @@
+method MakeTea {
+  id: "@example/method-make-tea"
+  version: "1.0.0"
+
+  description: """
+    A reliable method for brewing a single cup of tea, accounting for altitude and tea type.
+    Adjust the target temperature downward when brewing above 1500 m — boiling occurs below
+    96°C at altitude, which affects extraction for black and herbal teas most noticeably.
+  """
+
+  domain: cooking
+
+  steps: [
+    "Determine target temperature: 100°C at sea level; 93°C when altitude-m > 1500",
+    "Heat water-ml of fresh cold water to the target temperature",
+    "Warm the teapot or mug with a splash of hot water, then discard that water",
+    "Add 2 g of loose leaf tea (or 1 tea bag) per 200 ml of water",
+    "Pour heated water over leaves; cover the vessel",
+    "Steep: black 3–5 min, green 2–3 min at 80°C, white 4–5 min, herbal 5–7 min",
+    "Remove leaves or bag; do not over-steep (bitterness increases rapidly after the window)",
+    "Serve immediately; add milk or lemon to taste",
+  ]
+
+  success-criteria: [
+    "Liquor is clear, not cloudy (no tannin dump from over-steeping).",
+    "Temperature at serving: 65–80°C — hot enough to taste, safe to drink.",
+    "Flavor matches tea type: black = full-bodied, green = grassy/light, herbal = aromatic.",
+  ]
+
+  requires: [
+    @example/fact-water-boils-at-100c,
+    @example/rule-altitude-affects-boiling,
+  ]
+
+  enhances: [
+    @example/term-celsius,
+  ]
+
+  related: [
+    @example/term-celsius,
+    @example/fact-water-boils-at-100c,
+    @example/rule-altitude-affects-boiling,
+  ]
+}

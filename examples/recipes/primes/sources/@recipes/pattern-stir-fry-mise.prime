@@ -1,0 +1,48 @@
+pattern StirFryMise {
+  id: "@recipes/pattern-stir-fry-mise"
+  version: "1.0.0"
+
+  label: "Stir-Fry with Full Mise en Place"
+  domain: cooking
+
+  description: "A stir-fry executes entirely in under 5 minutes over very high heat. Every component must be prepped, portioned, and arranged in cook-order before the wok heats. This pattern encodes the mandatory mise en place structure and cook sequence for a reliable stir-fry."
+
+  problem: "Stir-frying moves too fast to prep mid-cook. Pausing to chop garlic causes the protein to steam instead of sear; pausing to measure sauce causes vegetables to burn. A disorganized cook produces soggy, grey, unevenly cooked results."
+
+  solution: """
+    BEFORE touching the wok — mise en place:
+      [A] Protein: sliced thin (< 5 mm), marinated (soy + cornstarch + oil), patted dry
+      [B] Aromatics: garlic, ginger, scallions — minced, in separate bowls
+      [C] Vegetables: uniform cut, grouped by cook time (dense → delicate)
+      [D] Sauce: pre-mixed in one bowl (soy, oyster sauce, sesame oil, sugar, cornstarch slurry)
+      [E] Neutral oil: in a spouted container
+      [F] Garnish: sesame seeds, fresh scallion tops — ready
+
+    COOK sequence:
+      1. Heat wok until smoking (> 230°C / 450°F for carbon steel).
+      2. Add oil; sear [A] protein in a single layer — do not stir for 45 sec.
+         Remove protein before fully cooked; rest on plate.
+      3. Add oil; fry [B] aromatics 20 sec until fragrant.
+      4. Add [C] dense vegetables first; stir-fry 1–2 min.
+         Add delicate vegetables; toss 30–60 sec.
+      5. Return protein. Add [D] sauce; toss until evenly coated and sauce thickens.
+      6. Plate immediately; add [F] garnish.
+  """
+
+  notes: [
+    "A home burner cannot match a restaurant wok burner (BTU output is 10x lower). Compensate: cook smaller batches, wok pre-heated longer, and accept a slight trade-off on char.",
+    "Patting protein dry before searing is mandatory — surface moisture prevents the Maillard reaction.",
+    "Velvet the protein (cornstarch + baking soda marinade) for the silky texture found in restaurant stir-fries.",
+  ]
+
+  requires: [
+    @recipes/term-mise-en-place,
+    @recipes/anti-pattern-overcrowded-pan,
+  ]
+
+  related: [
+    @recipes/term-mise-en-place,
+    @recipes/fact-maillard-reaction-temperature,
+    @recipes/anti-pattern-overcrowded-pan,
+  ]
+}

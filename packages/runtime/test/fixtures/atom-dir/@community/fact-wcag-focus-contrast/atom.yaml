@@ -1,0 +1,22 @@
+id: "@community/fact-wcag-focus-contrast"
+kind: fact
+version: "1.0.0"
+description: "WCAG 2.4.11: Focus ring contrast must be >= 3:1 against adjacent colors."
+tags: [wcag, contrast, focus, a11y, fact]
+content_hash: "sha256:ghi789"
+tokens:
+  summary: 12
+  core: 42
+  full: 98
+projection:
+  summary: "chunks/summary.md"
+  core: "chunks/core.md"
+  full: "chunks/full.md"
+relations: []
+quality:
+  structural: 1.0
+  community: 0.9
+  execution: 0.95
+  expert: 1.0
+  freshness: 1.0
+  overall: 4.9

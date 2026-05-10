@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<prime_index version="1.0" total="3" total_tokens="212">
+  <cluster name="accessibility" density="0.85">
+    <atom id="@community/method-modal-focus" kind="method" tokens="142" q="4.7">
+      Manages keyboard focus for modal dialogs: traps focus inside, restores on close.
+    </atom>
+    <atom id="@community/rule-focus-ring-required" kind="rule" tokens="68" q="4.9">
+      Every keyboard-focusable element must show a visible focus ring.
+    </atom>
+    <atom id="@community/fact-wcag-focus-contrast" kind="fact" tokens="42" q="4.9">
+      Focus ring contrast must be >= 3:1 against adjacent colors (WCAG 2.4.11).
+    </atom>
+  </cluster>
+</prime_index>

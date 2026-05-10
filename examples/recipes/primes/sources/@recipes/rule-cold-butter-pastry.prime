@@ -1,0 +1,29 @@
+rule ColdButterPastry {
+  id: "@recipes/rule-cold-butter-pastry"
+  version: "1.0.0"
+
+  label: "Keep butter cold when making pastry dough"
+  domain: cooking
+
+  description: "For flaky pastry (pie crust, croissant, puff pastry, biscuits), butter must remain below its melting point (~32°C / 90°F) throughout mixing. Cold butter creates discrete pockets of fat in the dough; these pockets steam during baking, puffing layers apart. Warm or melted butter blends into the flour, producing a mealy or bready texture instead of a flaky one."
+
+  checks: [
+    "Butter should be cold-from-fridge (4°C) and cut into cubes immediately before use.",
+    "If hands or dough feel warm during mixing, refrigerate for 15 min before continuing.",
+    "Ice water (not cold water — ice water) prevents gluten development and keeps fat cold.",
+    "Work quickly: minimize handling time; each squeeze of the hand transfers ~35°C of heat.",
+  ]
+
+  tags: [baking, pastry, butter, temperature, technique]
+
+  notes: [
+    "Laminated doughs (croissant, puff pastry) require the butter block to be pliable but not soft (12–15°C) — cold enough to stay in layers, warm enough not to shatter.",
+    "Freezing flour and mixing bowl adds extra margin in warm kitchens.",
+  ]
+
+  related: [
+    @recipes/fact-bread-flour-protein-percentage,
+    @recipes/rule-rest-meat-after-cooking,
+    @recipes/fact-emulsion-temperature-window,
+  ]
+}

@@ -1,0 +1,31 @@
+fact WaterBoilsAt100C {
+  id: "@example/fact-water-boils-at-100c"
+  version: "1.0.0"
+
+  statement: "Pure water boils at 100°C (212°F) at sea-level pressure (1 atm / 101.325 kPa)."
+
+  confidence: strong
+  source: [
+    "NIST Chemistry WebBook — water thermophysical properties",
+    "IUPAC Compendium of Chemical Terminology (Gold Book) — boiling point",
+  ]
+
+  domain: physics
+
+  tags: [physics, cooking, thermodynamics, water]
+
+  applies-to: [
+    "Sea-level kitchens (altitude < ~200m) — 100°C is a reliable target.",
+    "Precision cooking (sous vide reference calibration, candy thermometry).",
+    "Tea and coffee brewing — temperature windows assume sea-level baseline.",
+  ]
+
+  related: [
+    @example/term-celsius,
+    @example/rule-altitude-affects-boiling,
+  ]
+
+  supplies-to: [
+    @example/method-make-tea,
+  ]
+}

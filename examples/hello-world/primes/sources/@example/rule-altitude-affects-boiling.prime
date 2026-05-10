@@ -1,0 +1,32 @@
+rule AltitudeAffectsBoiling {
+  id: "@example/rule-altitude-affects-boiling"
+  version: "1.0.0"
+
+  label: "Altitude Lowers the Boiling Point of Water"
+  domain: physics
+
+  description: "Atmospheric pressure decreases with altitude. Lower pressure means water molecules need less energy to escape the liquid phase — so water boils at a lower temperature. At 1500m the boiling point is approximately 95°C; at 3000m it drops to around 90°C."
+
+  checks: [
+    "When altitude > 1500m, expect boiling at < 96°C; allow more steeping time.",
+    "When altitude > 3000m, boiling point is ≈ 90°C; delicate teas will be under-extracted at a normal steep time.",
+    "Never assume 100°C when brewing above 1500m unless using a pressurized vessel.",
+  ]
+
+  tags: [physics, cooking, altitude, thermodynamics]
+
+  notes: [
+    "Approximation: boiling point drops ≈ 0.5°C per 150m of elevation gain.",
+    "Pressure cookers restore sea-level boiling point (or higher) at any altitude.",
+    "Cold-brew is unaffected by altitude since it uses time + low temperature rather than heat.",
+  ]
+
+  related: [
+    @example/fact-water-boils-at-100c,
+    @example/term-celsius,
+  ]
+
+  supplies-to: [
+    @example/method-make-tea,
+  ]
+}

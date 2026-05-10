@@ -1,0 +1,52 @@
+pattern ResultTypeOverThrow {
+  id: "@team/pattern-result-type-over-throw"
+  version: "1.0.0"
+
+  label: "Result<T, E> over throw for expected errors"
+  domain: coding-style
+
+  description: "Functions that have expected failure modes (network errors, validation failures, not-found) should return a `Result<T, E>` discriminated union rather than throwing exceptions. Exceptions are for unexpected, unrecoverable failures only."
+
+  problem: "Thrown exceptions are invisible in the function signature — a caller reading `fetchUser(id)` has no indication it might throw. The compiler cannot enforce that all call sites handle the error. Error handling is ad-hoc and easy to forget."
+
+  solution: """
+    type Result<T, E = Error> =
+      | { ok: true;  value: T }
+      | { ok: false; error: E };
+
+    // Function signature makes failure explicit:
+    async function fetchUser(id: string): Promise<Result<User, 'not-found' | 'network-error'>> {
+      try {
+        const user = await db.users.findById(id);
+        if (!user) return { ok: false, error: 'not-found' };
+        return { ok: true, value: user };
+      } catch {
+        return { ok: false, error: 'network-error' };
+      }
+    }
+
+    // Caller is forced to handle both branches:
+    const result = await fetchUser(id);
+    if (!result.ok) {
+      if (result.error === 'not-found') return notFoundResponse();
+      return internalError();
+    }
+    return result.value;
+  """
+
+  notes: [
+    "Libraries: `neverthrow`, `ts-results`, or a simple two-file hand-rolled Result type.",
+    "Still throw for programmer errors (null dereference, assertion failures) — those should crash loudly.",
+    "Do not use Result for every function — only where failure is a real, recoverable branch.",
+  ]
+
+  related: [
+    @team/rule-explicit-return-types,
+    @team/tradeoff-strict-types-vs-iteration-speed,
+    @team/anti-pattern-god-class,
+  ]
+
+  enhances: [
+    @team/rule-explicit-return-types,
+  ]
+}

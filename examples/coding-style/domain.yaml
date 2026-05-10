@@ -1,0 +1,185 @@
+# examples/coding-style/domain.yaml
+#
+# Domain configuration for the team coding-style corpus.
+# Drop this file in your corpus directory and Prime will load it automatically
+# at startup — no code changes required.
+#
+# Schema reference: spec/DOMAIN-EXTENSION-SPEC.md
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: coding-style
+version: "1.0.0"
+description: >
+  Domain plugin for team coding-style and software-engineering knowledge corpora.
+  Covers TypeScript/JavaScript patterns, naming conventions, type discipline,
+  error handling, testing principles, and common code anti-patterns.
+
+# ─── Tag Vocabulary ───────────────────────────────────────────────────────────
+#
+# Words that appear in a user's brief and signal this domain.
+# Derived from observed tags across the @team corpus.
+#
+tags:
+  - coding-style
+  - typescript
+  - javascript
+  - readability
+  - maintainability
+  - naming
+  - types
+  - api-design
+  - patterns
+  - anti-patterns
+  - refactoring
+  - testing
+  - error-handling
+  - team
+  - principles
+  - linting
+  - eslint
+  - formatting
+  - documentation
+  - code-review
+  - abstraction
+  - modularity
+  - architecture
+  - design-pattern
+  - clean-code
+  - style-guide
+  - conventions
+  - explicit
+  - function
+  - class
+  - interface
+  - generics
+  - async
+  - promise
+  - result-type
+
+# ─── Retrieval Axes ───────────────────────────────────────────────────────────
+#
+# Domain-specific dimensions of a brief.  When these words appear in the
+# user's query, atoms that match these dimensions score higher in retrieval.
+#
+axes:
+  - name: language
+    description: >
+      Programming language or ecosystem the brief is about.  Atoms targeting a
+      specific language are surfaced preferentially when the brief names that
+      language.
+    matches:
+      - typescript
+      - javascript
+      - python
+      - go
+      - golang
+      - rust
+      - java
+      - kotlin
+      - swift
+      - csharp
+      - c-sharp
+      - ruby
+
+  - name: scope
+    description: >
+      Where in the codebase the guidance applies.  "public-api" atoms cover
+      module boundaries; "test" atoms cover testing conventions; etc.
+    matches:
+      - public-api
+      - exported
+      - interface
+      - boundary
+      - internal
+      - private
+      - shared-package
+      - library
+      - prototype
+      - spike
+      - test
+      - unit-test
+      - integration-test
+
+  - name: concern
+    description: >
+      The software-quality concern addressed (types, naming, error-handling, …).
+      Briefs that mention a concern surface atoms that address it.
+    matches:
+      - typing
+      - types
+      - naming
+      - readability
+      - error-handling
+      - exceptions
+      - testing
+      - documentation
+      - performance
+      - security
+      - refactoring
+      - complexity
+      - coupling
+      - cohesion
+      - dependencies
+
+# ─── Composition Contract ─────────────────────────────────────────────────────
+#
+# Domain-specific fields that can appear in a retrieval call's contract block.
+# Every domain implicitly also has must_include and must_avoid.
+#
+contract:
+  enforcement_level:
+    type: enum
+    values:
+      - error
+      - warning
+      - suggestion
+    description: >
+      Minimum enforcement tier for rule atoms in the retrieved set.
+      Briefs that request "strict rules only" should set this to "error".
+
+  target_language:
+    type: enum
+    values:
+      - typescript
+      - javascript
+      - python
+      - go
+      - rust
+      - java
+      - kotlin
+      - any
+    description: >
+      The programming language the guidance should apply to.  Atoms that
+      target an incompatible language are demoted in ranking.
+
+  exclude_principles:
+    type: boolean
+    description: >
+      When true, principle atoms (high-level philosophy) are excluded from
+      the retrieved set.  Useful when the caller wants only concrete rules
+      and patterns.
+
+# ─── Output Validators ────────────────────────────────────────────────────────
+#
+# Post-retrieval checks that enforce domain-specific quality rules.
+# Validators produce diagnostics; they do not suppress atoms.
+#
+validators:
+  - name: rule-has-checks
+    description: >
+      Every rule atom must have a non-empty checks field that provides concrete,
+      verifiable conditions.  A rule without checks is not actionable.
+    checker: builtin:rule-has-checks
+
+  - name: anti-pattern-has-counterpart
+    description: >
+      Every anti-pattern atom should have at least one related pattern atom
+      that provides the recommended alternative.  Anti-patterns without a
+      positive counterpart leave the reader without guidance.
+    checker: builtin:anti-pattern-has-counterpart
+
+  - name: pattern-has-solution
+    description: >
+      Every pattern atom must include a solution block (code or description
+      showing the preferred approach, not just the problem statement).
+    checker: regex:/(solution|example|how-to|preferred|recommended)/i

@@ -1,0 +1,36 @@
+anti-pattern ColdPanSearing {
+  id: "@recipes/anti-pattern-cold-pan-searing"
+  version: "1.0.0"
+
+  label: "Adding Food to a Cold or Under-Heated Pan"
+  domain: cooking
+
+  description: "Placing protein or vegetables in a pan that has not been preheated to the correct temperature before adding food. The food sticks, steams, and never develops a proper sear."
+
+  why-bad: "A cold or under-heated pan allows food to bond with the metal surface before the heat denatures surface proteins — causing sticking. As the pan slowly comes to temperature with food in it, moisture evaporates and the surface steams rather than searing. By the time the pan is hot enough for Maillard browning, the surface is grey and partially cooked through."
+
+  instead-do: """
+    1. Preheat the dry pan over medium-high heat for 2–3 min (stainless/cast iron) or
+       1 min (non-stick) before adding any fat or food.
+    2. Test readiness: a drop of water should bead and skate across the surface (Leidenfrost point),
+       or a wooden spoon held near the surface feels immediate radiant heat.
+    3. Add oil; wait until it shimmers (but before it smokes, for most oils).
+    4. Add food — it should sizzle loudly and not stick.
+  """
+
+  notes: [
+    "Non-stick pans: preheat gently; overheating damages the coating and releases harmful fumes.",
+    "Stainless steel sticks most when under-preheated — fully preheated stainless sears without sticking.",
+    "The 'cold-start method' for skin-on chicken or duck is a deliberate exception: skin-side-down in cold pan, slowly render fat for 15–20 min. This is intentional, not this anti-pattern.",
+  ]
+
+  related: [
+    @recipes/fact-maillard-reaction-temperature,
+    @recipes/anti-pattern-overcrowded-pan,
+    @recipes/term-deglazing,
+  ]
+
+  see-also: [
+    @recipes/anti-pattern-overcrowded-pan,
+  ]
+}

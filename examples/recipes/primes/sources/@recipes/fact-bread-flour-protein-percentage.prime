@@ -1,0 +1,28 @@
+fact BreadFlourProteinPercentage {
+  id: "@recipes/fact-bread-flour-protein-percentage"
+  version: "1.0.0"
+
+  statement: "Bread flour contains 12–14% protein by weight, compared to all-purpose flour at 10–12% and cake flour at 7–9%. Higher protein content forms stronger gluten networks when hydrated and kneaded, trapping CO₂ from yeast and producing a chewy, well-structured crumb."
+
+  confidence: strong
+  source: [
+    "King Arthur Flour — 'Understanding Flour Types' (kaf.com).",
+    "Reinhart, Peter. 'The Bread Baker's Apprentice' (2001).",
+    "Robertson, Chad. 'Tartine Bread' (2010).",
+  ]
+
+  domain: cooking
+
+  tags: [baking, flour, gluten, bread, protein]
+
+  applies-to: [
+    "Pizza dough — bread or high-gluten flour for chew; all-purpose for a more tender crust.",
+    "Sourdough — protein percentage affects crumb openness; too little protein = dense loaf.",
+    "Pastry — cake flour (low protein) minimizes gluten for tender, flaky results.",
+  ]
+
+  related: [
+    @recipes/rule-cold-butter-pastry,
+    @recipes/fact-emulsion-temperature-window,
+  ]
+}

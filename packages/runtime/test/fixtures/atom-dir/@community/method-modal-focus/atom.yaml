@@ -1,0 +1,24 @@
+id: "@community/method-modal-focus"
+kind: method
+version: "1.0.0"
+description: "Manages focus trap and restoration for accessible modal dialogs."
+tags: [a11y, modal, focus, keyboard, accessibility]
+content_hash: "sha256:abc123"
+tokens:
+  summary: 28
+  core: 142
+  full: 320
+projection:
+  summary: "chunks/summary.md"
+  core: "chunks/core.md"
+  full: "chunks/full.md"
+relations:
+  - { type: requires, target: "@community/fact-wcag-focus-contrast" }
+  - { type: validates, target: "@community/rule-focus-ring-required" }
+quality:
+  structural: 0.9
+  community: 0.8
+  execution: 0.85
+  expert: 0.9
+  freshness: 1.0
+  overall: 4.7

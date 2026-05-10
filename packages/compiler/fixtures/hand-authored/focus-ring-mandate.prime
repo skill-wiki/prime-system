@@ -1,0 +1,49 @@
+prime FocusRingMandate extends Rule {
+  name: "focus-ring-mandate"
+  version: "1.2.0"
+  description: "Every keyboard-operable element must render a visible focus ring during :focus-visible. The ring must have a minimum 3:1 contrast against every adjacent color."
+  tags: ["a11y", "keyboard", "focus", "wcag", "wcag-2-2"]
+  domain: "frontend-design"
+  module: "M06"
+  category: "Accessibility"
+  subtype: "mandate"
+  severity: "block"
+  priority: 1
+  activation: "behavioral"
+  status: "validated"
+  applies_when: "any element can receive keyboard focus (links, buttons, form fields, custom controls with tabindex)"
+  rationale: "Without a visible focus ring, keyboard users cannot tell which element is currently active. This is a WCAG 2.4.7 (Focus Visible, Level AA) requirement and WCAG 2.4.11 (Focus Not Obscured, Level AA) further requires the ring be fully visible."
+  requires: "focus-ring-contrast-calculation"
+  enhances: ["keyboard-skip-links", "tab-order-logical"]
+  contradicts: "outline-none-globally"
+  source: {
+    standard: "W3C WCAG 2.2"
+    section: "2.4.7 Focus Visible, 2.4.11 Focus Not Obscured"
+    url: "https://www.w3.org/TR/WCAG22/#focus-visible"
+  }
+  checks: [
+    {
+      description: "Every focusable element shows a visible focus outline on :focus-visible",
+      pass_condition: "axe-core rule 'focus-visible' returns 0 violations across all pages"
+    },
+    {
+      description: "Focus ring contrast ≥ 3:1 against adjacent colors",
+      pass_condition: "manual audit with a contrast checker; automated check via @axe-core/react"
+    }
+  ]
+  thresholds: [
+    {
+      metric: "focus-ring-contrast-ratio"
+      unit: "ratio"
+      block: 2.9
+      warn: 3.5
+      pass: 4.5
+    }
+  ]
+  exemptions: [
+    {
+      condition: "Element is explicitly non-interactive (tabindex=\"-1\" with no keyboard handlers)"
+      reason: "Non-focusable elements don't need a focus ring by definition"
+    }
+  ]
+}

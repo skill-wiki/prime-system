@@ -1,0 +1,34 @@
+rule ExplicitReturnTypes {
+  id: "@team/rule-explicit-return-types"
+  version: "1.0.0"
+
+  label: "Explicit return types on all public functions"
+  domain: coding-style
+
+  description: "Every function or method that is exported from a module, or is a public class method, must have an explicit return type annotation. Type inference is welcome inside function bodies, but the contract at the boundary must be stated explicitly."
+
+  checks: [
+    "Exported functions: `export function foo(): string { ... }` — not `export function foo() { ... }`.",
+    "Public class methods: `public bar(): Promise<User> { ... }` — not inferred.",
+    "Arrow functions assigned to exported consts: `export const fn = (): void => { ... }`.",
+    "Internal/private functions: inferred return type is acceptable.",
+  ]
+
+  tags: [typescript, types, api-design, readability]
+
+  notes: [
+    "TypeScript ESLint rule: `@typescript-eslint/explicit-module-boundary-types`.",
+    "The annotation is documentation — a reader of the module interface should not need to trace the implementation to know what a function returns.",
+    "Generics are allowed: `function identity<T>(x: T): T { return x; }` is compliant.",
+  ]
+
+  related: [
+    @team/rule-no-default-export,
+    @team/tradeoff-strict-types-vs-iteration-speed,
+    @team/principle-readability-over-cleverness,
+  ]
+
+  supplies-to: [
+    @team/tradeoff-strict-types-vs-iteration-speed,
+  ]
+}

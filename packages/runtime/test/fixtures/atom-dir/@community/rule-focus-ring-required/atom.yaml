@@ -1,0 +1,23 @@
+id: "@community/rule-focus-ring-required"
+kind: rule
+version: "1.0.0"
+description: "Every keyboard-focusable element must show a visible focus ring."
+tags: [a11y, focus, keyboard, wcag, rule]
+content_hash: "sha256:def456"
+tokens:
+  summary: 18
+  core: 68
+  full: 210
+projection:
+  summary: "chunks/summary.md"
+  core: "chunks/core.md"
+  full: "chunks/full.md"
+relations:
+  - { type: requires, target: "@community/fact-wcag-focus-contrast" }
+quality:
+  structural: 0.95
+  community: 0.9
+  execution: 0.9
+  expert: 0.95
+  freshness: 1.0
+  overall: 4.9

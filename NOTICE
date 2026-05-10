@@ -1,0 +1,97 @@
+Prime — A Knowledge Protocol for AI Agents
+Copyright 2026 Prime Knowledge Protocol contributors
+
+Licensed under the Apache License, Version 2.0 (the "License").
+You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+================================================================================
+THIRD-PARTY ATTRIBUTIONS
+================================================================================
+
+This product includes derivative works from the following projects. The original
+content has been re-encoded into the Prime DSL (.prime atom format) and
+re-organized as a graph; the substantive design knowledge is attributed below.
+
+
+--------------------------------------------------------------------------------
+1. Anthropic skills (`primes-v3/sources/@anthropic-impeccable/`, 26 atoms)
+--------------------------------------------------------------------------------
+
+Source repository:  https://github.com/anthropics/skills
+Original license:   MIT License (see https://github.com/anthropics/skills/blob/main/LICENSE)
+
+The 26 atoms under the `@anthropic-impeccable/` namespace are derived from the
+"Impeccable" frontend-design skill published by Anthropic in the
+`anthropics/skills` repository. The DSL form is original to this project; the
+underlying design rules, anti-patterns, principles, and templates are attributed
+to the upstream authors. The namespace prefix `@anthropic-impeccable/` is used
+to make the provenance trail visible in every retrieval — it does NOT imply
+official Anthropic endorsement of, or affiliation with, this project.
+
+The MIT license terms of the upstream work are preserved per Apache-2.0 §4(c),
+and a copy of the upstream MIT notice is reproduced verbatim:
+
+    MIT License
+
+    Copyright (c) 2025 Anthropic, PBC.
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included
+    in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+
+
+--------------------------------------------------------------------------------
+2. W3C / Nielsen Norman Group / WCAG references
+--------------------------------------------------------------------------------
+
+Atoms under `@w3c/` (3) and `@nielsen/` (2) cite — but do not redistribute —
+material authored by the World Wide Web Consortium and Nielsen Norman Group.
+Each affected atom carries an inline `attributed_to:` field with the source URL.
+These atoms restate well-established public guidance (WCAG success criteria,
+the Ten Usability Heuristics) at the granularity of a queryable knowledge
+fragment. Original copyright remains with the respective authors.
+
+
+--------------------------------------------------------------------------------
+3. Trademarks
+--------------------------------------------------------------------------------
+
+"Anthropic" and "Claude" are trademarks of Anthropic, PBC. Their appearance in
+namespace identifiers (`@anthropic-impeccable/`) and prose attributions in this
+project is for accurate provenance only and does not imply endorsement.
+
+"Stripe", "Linear", "Vercel", "Notion", "Spotify", "Airbnb", "Magazine", and
+other product/brand names appearing in `persona-*` atoms are referenced as
+public design references — the atoms describe observable, public design
+characteristics for educational purposes and do not redistribute proprietary
+assets, code, or trademarks.
+
+
+--------------------------------------------------------------------------------
+4. How to add an attribution
+--------------------------------------------------------------------------------
+
+If you contribute atoms derived from a third-party source, add an entry above
+following the format:
+
+  N. <Source name> (`<namespace>/`, N atoms)
+     Source repository:  <URL>
+     Original license:   <SPDX identifier or upstream LICENSE link>
+     <One paragraph: what's derived, how it differs, why provenance matters>
+
+This NOTICE is part of the redistribution requirement under Apache-2.0 §4(d) —
+do not delete entries when forking; only add new ones.

@@ -1,0 +1,35 @@
+principle ReadabilityOverCleverness {
+  id: "@team/principle-readability-over-cleverness"
+  version: "1.0.0"
+
+  domain: coding-style
+
+  description: "Code is read far more often than it is written. When a clever, compact solution and a readable, verbose solution produce the same outcome, prefer the readable one. Cleverness optimizes for the author; readability optimizes for the team."
+
+  statement: "Optimize code for the reader who will maintain it in six months, not for the author who writes it today. If a colleague cannot understand a function in 60 seconds without running it, the function is too clever."
+
+  tags: [readability, maintainability, team, principles]
+
+  applies-to: [
+    "Naming: longer, descriptive names over abbreviations. `getUserByEmailAddress` over `getUser` when the parameter is an email.",
+    "Logic: explicit conditionals over clever one-liners. `if (isAdmin) { ... }` over `isAdmin && doAdminThing()`.",
+    "Types: explicit type annotations over relying on inference at module boundaries.",
+    "Patterns: standard patterns (factory, builder, strategy) over novel abstractions invented for the occasion.",
+  ]
+
+  notes: [
+    "Cleverness is not wrong in all contexts — performance-critical inner loops are exempt.",
+    "The test: would a competent engineer unfamiliar with this module understand this line in isolation? If no, refactor.",
+    "The principle does not prohibit brevity — a well-named one-liner is readable. Cleverness is about hiding intent, not about length.",
+  ]
+
+  related: [
+    @team/anti-pattern-comment-explaining-bad-code,
+    @team/rule-no-magic-numbers,
+    @team/tradeoff-strict-types-vs-iteration-speed,
+  ]
+
+  see-also: [
+    @team/tradeoff-strict-types-vs-iteration-speed,
+  ]
+}

@@ -1,0 +1,28 @@
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Build outputs
+examples/*/primes/compiled/
+examples/*/primes/sources/*/compiled/
+test-output/
+.tmp/
+
+# Environment + secrets
+.env
+.env.local
+.env.*.local
+
+# Editor / OS
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# Registry runtime
+registry-store/
+data/
+
+# Test artifacts
+coverage/
+*.log

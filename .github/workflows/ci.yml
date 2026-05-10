@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Build and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bun run typecheck
+        continue-on-error: true
+
+      - name: Test parser
+        run: bun test
+        working-directory: packages/parser
+
+      - name: Test compiler
+        run: bun test
+        working-directory: packages/compiler
+
+      - name: Test runtime
+        run: bun test
+        working-directory: packages/runtime
+
+      - name: Compile example corpora
+        run: bun run compile-examples
+
+      - name: Registry round-trip smoke test
+        run: bun run test-roundtrip
+        continue-on-error: true
+
+  spec-freeze:
+    name: Spec invariants
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Spec file present
+        run: test -f spec/PRIME-SPEC-v1.md
+      - name: No absolute paths in shipped code
+        run: |
+          if grep -r "/Users/\|/home/[a-z]*/" packages/ scripts/ spec/ 2>/dev/null; then
+            echo "::error::Absolute paths found in shipped code"
+            exit 1
+          fi

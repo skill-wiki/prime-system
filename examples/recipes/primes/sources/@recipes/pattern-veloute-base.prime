@@ -1,0 +1,45 @@
+pattern VelouteBase {
+  id: "@recipes/pattern-veloute-base"
+  version: "1.0.0"
+
+  label: "Veloute — Stock-Based Sauce Foundation"
+  domain: cooking
+
+  description: "One of the five French mother sauces. A veloute is a roux (equal parts fat + flour cooked together) loosened with a white stock (chicken, fish, or veal). It provides a silky, lightly thickened neutral base that takes flavoring in any direction — cream sauces, mushroom sauces, pan sauces."
+
+  problem: "Thin pan drippings and reduced stocks are intensely flavored but watery. A cook needs a technique to achieve sauce consistency (coats a spoon, clings to food) without loading the sauce with heavy cream or reducing so far the salt becomes overwhelming."
+
+  solution: """
+    1. ROUX: melt 30 g butter in a saucepan over medium heat.
+             add 30 g flour; whisk and cook 2 min (blonde roux — just past the raw flour smell).
+
+    2. STOCK: in a separate pot, heat 500 ml white stock to a simmer.
+
+    3. COMBINE: add hot stock to the roux in three additions, whisking thoroughly
+               after each addition to prevent lumps. Bring to a gentle simmer.
+
+    4. SIMMER: cook 15–20 min, stirring occasionally, until the sauce coats a spoon
+              and has no raw starch taste.
+
+    5. SEASON: strain through a fine-mesh sieve; adjust salt and white pepper.
+
+    YIELD: approximately 400 ml finished veloute (base sauce, ready for secondary sauces).
+  """
+
+  notes: [
+    "The ratio 1:1 butter:flour by weight is fixed; stock quantity adjusts thickness.",
+    "White roux (pale, cooked 1 min) produces a lighter sauce; brown roux (toasted, 5 min) produces a nutty, darker sauce with less thickening power.",
+    "A veloute finished with cream becomes a supreme sauce. Finished with mushroom cooking liquid and cream it becomes sauce allemande.",
+    "Never add cold stock to a hot roux all at once — lumps form that cannot be whisked out.",
+  ]
+
+  related: [
+    @recipes/fact-emulsion-temperature-window,
+    @recipes/method-pan-sauce,
+    @recipes/anti-pattern-overcrowded-pan,
+  ]
+
+  supplies-to: [
+    @recipes/method-pan-sauce,
+  ]
+}

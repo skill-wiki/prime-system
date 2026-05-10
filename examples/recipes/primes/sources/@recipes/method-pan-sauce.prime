@@ -1,0 +1,48 @@
+method PanSauce {
+  id: "@recipes/method-pan-sauce"
+  version: "1.0.0"
+
+  description: """
+    A quick sauce made in the same pan used to sear protein, building on the fond left behind.
+    Combines deglazing, reduction, and butter mounting into a restaurant-quality sauce in
+    under 10 minutes. Works with steak, chicken, or pork chop; deglazing liquid can be wine,
+    stock, or brandy. Finish with approximately 30 g cold butter for a glossy emulsion.
+  """
+
+  domain: cooking
+
+  steps: [
+    "Verify fond is present and dark brown, not black — if black, discard and start fresh",
+    "Remove protein and rest on a rack (follow rule-rest-meat-after-cooking)",
+    "Add 2 minced shallots to pan drippings; sauté 1–2 min until softened",
+    "Add 1 minced garlic clove; cook 30 sec — do not brown",
+    "Add 100 ml deglazing liquid off heat if alcohol; return to heat and scrape up all fond",
+    "Reduce by half (approximately 2–3 min at medium-high)",
+    "Add 150 ml stock (chicken for poultry/pork, beef for red meat)",
+    "Reduce until sauce coats a spoon (approximately 5 min); taste and adjust salt",
+    "Remove pan from heat; wait 10 sec so pan drops to 70–75°C",
+    "Add 30 g cold butter in 2–3 cubes; swirl pan continuously until melted and glossy",
+    "Do not return to heat — emulsion breaks above 80°C",
+    "Slice rested protein; spoon sauce over; serve immediately",
+  ]
+
+  success-criteria: [
+    "Sauce coats the back of a spoon and does not run off.",
+    "Glossy appearance — not greasy or broken.",
+    "Balanced: savory from fond + stock, bright from deglazing liquid, rich from butter.",
+  ]
+
+  requires: [
+    @recipes/fact-maillard-reaction-temperature,
+    @recipes/fact-emulsion-temperature-window,
+    @recipes/rule-rest-meat-after-cooking,
+    @recipes/term-deglazing,
+  ]
+
+  related: [
+    @recipes/term-mise-en-place,
+    @recipes/pattern-veloute-base,
+    @recipes/anti-pattern-cold-pan-searing,
+    @recipes/anti-pattern-overcrowded-pan,
+  ]
+}

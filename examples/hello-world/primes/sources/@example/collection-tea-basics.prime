@@ -1,0 +1,38 @@
+collection TeaBasics {
+  id: "@example/collection-tea-basics"
+  version: "1.0.0"
+
+  name: "Tea Basics"
+  description: "A minimal corpus demonstrating the Skill Wiki / Prime DSL. Five atoms — one fact, one term, one rule, one method, and this collection — cover enough thermophysics to brew a correct cup of tea anywhere in the world."
+
+  domain: [cooking, physics]
+  target: learners
+
+  includes: [
+    @example/fact-water-boils-at-100c,
+    @example/term-celsius,
+    @example/rule-altitude-affects-boiling,
+    @example/method-make-tea,
+  ]
+
+  entry-point: """
+    Start with @example/fact-water-boils-at-100c — the empirical claim
+    that grounds everything else.
+
+    Follow the edge graph:
+      fact → rule (altitude lowers boiling point)
+      fact + rule → method (make tea, accounting for altitude)
+      term (celsius) → clarifies units for fact and method
+  """
+
+  notes: [
+    "This corpus is a hello-world smoke test, not a production knowledge base.",
+    "All atoms are scoped to @example — they do not conflict with @community atoms.",
+    "To write your own corpus, copy this structure, change the scope, and replace the domain.",
+  ]
+
+  related: [
+    @example/fact-water-boils-at-100c,
+    @example/method-make-tea,
+  ]
+}

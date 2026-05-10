@@ -1,0 +1,31 @@
+rule SaltPastaWater {
+  id: "@recipes/rule-salt-pasta-water"
+  version: "1.0.0"
+
+  label: "Salt pasta water generously before adding pasta"
+  domain: cooking
+
+  description: "Pasta water should be salted to approximately 1–2% by weight (1–2 g per 100 ml) before the pasta goes in. This is the only opportunity to season the pasta itself — the noodle absorbs water and salt during cooking. Under-salted water produces flat-tasting pasta that no amount of sauce can fully correct."
+
+  checks: [
+    "Pasta water should taste pleasantly salty — 'like the sea' is the common heuristic.",
+    "Add salt after the water boils and before the pasta — salt does not meaningfully affect boiling point at culinary quantities.",
+    "Reserve a cup of pasta water before draining; the starchy, salted liquid is an emulsifier for sauces.",
+  ]
+
+  tags: [cooking, pasta, salt, seasoning]
+
+  notes: [
+    "Salt raises boiling point by < 0.2°C at culinary concentrations — irrelevant to cook time.",
+    "Sodium content: 1% salt water → ≈ 390 mg Na per 100 ml; pasta absorbs roughly 20–30 ml per 100 g — significant but not excessive.",
+  ]
+
+  related: [
+    @recipes/term-mise-en-place,
+    @recipes/rule-rest-meat-after-cooking,
+  ]
+
+  see-also: [
+    @recipes/method-pan-sauce,
+  ]
+}

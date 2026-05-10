@@ -1,0 +1,53 @@
+collection TeamStyleGuide {
+  id: "@team/collection-team-style-guide"
+  version: "1.0.0"
+
+  name: "Team Style Guide"
+  description: "A minimal but complete set of code-style atoms for a TypeScript team. Encodes the rules, patterns, anti-patterns, principle, and one key trade-off that define how this team writes and reviews code."
+
+  domain: [coding-style, typescript]
+  target: claude-code
+
+  includes: [
+    // Rules — hard constraints enforced by lint/CI
+    @team/rule-no-default-export,
+    @team/rule-explicit-return-types,
+    @team/rule-no-magic-numbers,
+    @team/rule-test-each-public-fn,
+
+    // Patterns — reusable solutions
+    @team/pattern-result-type-over-throw,
+    @team/pattern-builder-over-options-bag,
+    @team/pattern-named-arguments,
+
+    // Anti-patterns — things to actively avoid
+    @team/anti-pattern-god-class,
+    @team/anti-pattern-comment-explaining-bad-code,
+
+    // Principle — the overarching heuristic
+    @team/principle-readability-over-cleverness,
+
+    // Trade-off — explicit tension, not ignored
+    @team/tradeoff-strict-types-vs-iteration-speed,
+  ]
+
+  entry-point: """
+    Start with @team/principle-readability-over-cleverness — it is the root
+    heuristic that all other atoms follow from.
+
+    The 4 rules are enforced by ESLint + CI; violations block merge.
+    The 3 patterns are the preferred solutions when their problem applies.
+    The 2 anti-patterns are actively detected in code review.
+    The tradeoff is surfaced explicitly so engineers don't have to rediscover it.
+  """
+
+  notes: [
+    "This corpus is an example — adapt atom IDs and scope to your organization's namespace.",
+    "Linting config that enforces these rules lives in `eslint.config.js` — atoms document intent, config enforces it.",
+  ]
+
+  related: [
+    @team/principle-readability-over-cleverness,
+    @team/tradeoff-strict-types-vs-iteration-speed,
+  ]
+}

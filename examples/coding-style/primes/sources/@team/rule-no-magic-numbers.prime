@@ -1,0 +1,33 @@
+rule NoMagicNumbers {
+  id: "@team/rule-no-magic-numbers"
+  version: "1.0.0"
+
+  label: "No magic numbers — name all non-trivial numeric literals"
+  domain: coding-style
+
+  description: "Numeric literals other than 0 and 1 used in logic or calculations must be named constants. 'Magic numbers' are numeric literals that appear with no explanation — the reader must guess what 86400 or 3.14159 mean in context."
+
+  checks: [
+    "Any numeric literal other than 0, 1, -1 used in logic must be extracted to a `const` with a descriptive name.",
+    "Array indices beyond 0 must be named if they carry semantic meaning (`FIRST_ITEM = 0`, `STATUS_CODE = 2`).",
+    "Allowed exceptions: test data counts, trivial math (halving: `x / 2`).",
+  ]
+
+  tags: [readability, constants, maintainability, typescript]
+
+  notes: [
+    "ESLint rule: `no-magic-numbers` (or `@typescript-eslint/no-magic-numbers`).",
+    "Name the constant where it is defined, not where it is used: `const MAX_RETRIES = 3;` at the top of the module.",
+    "Magic strings are equally prohibited — use string enums or const objects.",
+  ]
+
+  related: [
+    @team/principle-readability-over-cleverness,
+    @team/anti-pattern-god-class,
+    @team/rule-no-default-export,
+  ]
+
+  see-also: [
+    @team/principle-readability-over-cleverness,
+  ]
+}

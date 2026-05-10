@@ -1,0 +1,27 @@
+term Tempering {
+  id: "@recipes/term-tempering"
+  version: "1.0.0"
+
+  meaning: "Gradually raising the temperature of a cold or room-temperature ingredient by slowly adding hot liquid to it before combining with the main hot mixture. Used to prevent shock-curdling of eggs and dairy, and to bring meat to an even internal temperature before cooking."
+
+  domain: cooking
+
+  aliases: ["temper", "tempering eggs", "temperature equalization"]
+
+  notes: [
+    "Egg tempering: ladle a small amount of hot cream into beaten eggs while whisking, then whisk the warmed eggs into the pot — prevents scrambling.",
+    "Meat tempering: resting cold protein at room temperature for 20–30 min before cooking reduces the center-to-edge temperature gradient, producing more even doneness.",
+    "Chocolate tempering is a different process (crystallizing cocoa butter) — not covered here.",
+    "Tempering is a form of controlled heat transfer: the goal is always to minimize the rate of temperature change.",
+  ]
+
+  related: [
+    @recipes/fact-egg-protein-coagulation,
+    @recipes/fact-emulsion-temperature-window,
+    @recipes/rule-rest-meat-after-cooking,
+  ]
+
+  see-also: [
+    @recipes/fact-egg-protein-coagulation,
+  ]
+}

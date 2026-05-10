@@ -1,0 +1,33 @@
+fact MaillardReactionTemperature {
+  id: "@recipes/fact-maillard-reaction-temperature"
+  version: "1.0.0"
+
+  statement: "The Maillard reaction — the browning that produces roasted, seared, and baked flavors — begins around 140°C (285°F) and accelerates between 150–180°C (300–355°F). It requires both amino acids and reducing sugars and is distinct from caramelization, which involves only sugars."
+
+  confidence: strong
+  source: [
+    "Maillard, L.C. (1912). 'Action des acides aminés sur les sucres.' Comptes Rendus de l'Académie des Sciences.",
+    "McGee, Harold. 'On Food and Cooking' (2004), Chapter on heat and flavor.",
+    "Belitz, Grosch & Schieberle. 'Food Chemistry' (4th ed., 2009).",
+  ]
+
+  domain: cooking
+
+  tags: [cooking, chemistry, browning, flavor, heat]
+
+  applies-to: [
+    "Searing meat — surface must reach > 140°C, meaning the pan must be very hot and the surface must be dry.",
+    "Bread crust — oven temperature and steam control determine crust color.",
+    "Coffee roasting — Maillard reactions dominate in the 150–200°C window.",
+  ]
+
+  related: [
+    @recipes/anti-pattern-overcrowded-pan,
+    @recipes/anti-pattern-cold-pan-searing,
+    @recipes/rule-rest-meat-after-cooking,
+  ]
+
+  supplies-to: [
+    @recipes/method-pan-sauce,
+  ]
+}

@@ -1,0 +1,10 @@
+id: "@community/collection-accessible-modal"
+kind: collection
+version: "1.0.0"
+description: "Build an accessible modal dialog with proper focus management and a11y."
+includes:
+  - "@community/method-modal-focus"
+  - "@community/rule-focus-ring-required"
+  - "@community/fact-wcag-focus-contrast"
+orchestration: "@community/method-modal-focus"
+target: claude-code

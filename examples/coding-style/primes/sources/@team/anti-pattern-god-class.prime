@@ -1,0 +1,39 @@
+anti-pattern GodClass {
+  id: "@team/anti-pattern-god-class"
+  version: "1.0.0"
+
+  label: "God Class — a class that does everything"
+  domain: coding-style
+
+  description: "A class that accumulates responsibilities across multiple domains — handling data fetching, business logic, formatting, caching, and state management all in one place. The God Class is the most common violation of the Single Responsibility Principle."
+
+  why-bad: "A God Class is untestable (you cannot instantiate it without standing up its full dependency graph), unmaintainable (every new feature goes in because there is no other obvious place), and fragile (a change to caching logic can break formatting logic because they share private state). Code review becomes impossible because the diff touches everything."
+
+  instead-do: """
+    Split by responsibility. Example — a 1,200-line UserService becomes:
+
+    UserRepository      — DB queries only (fetchById, save, delete)
+    UserValidator       — validation rules (isEmailValid, isAgeAllowed)
+    UserEmailService    — email sending (sendWelcome, sendReset)
+    UserSessionService  — session creation and expiry
+    UserController      — HTTP layer, composes the above
+
+    Each class: < 200 lines. Each class testable in isolation.
+    Dependencies injected — no `new X()` inside methods.
+  """
+
+  notes: [
+    "Warning signs: a class with > 10 public methods, > 5 constructor dependencies, or > 300 lines.",
+    "The name is a smell too: 'Manager', 'Handler', 'Processor', 'Service' appended to a broad noun (UserService, DataManager) signals over-broad scope.",
+  ]
+
+  related: [
+    @team/principle-readability-over-cleverness,
+    @team/anti-pattern-comment-explaining-bad-code,
+    @team/rule-test-each-public-fn,
+  ]
+
+  see-also: [
+    @team/anti-pattern-comment-explaining-bad-code,
+  ]
+}
