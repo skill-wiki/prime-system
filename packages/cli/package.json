@@ -1,21 +1,45 @@
 {
   "name": "@prime-lang/cli",
   "version": "0.1.0",
-  "description": "Prime CLI — compile, check, install, publish, search",
+  "description": "Prime CLI — compile, check, install, publish, search Prime atoms and corpora.",
   "type": "module",
+  "main": "dist/index.js",
   "bin": {
-    "prime": "./src/index.ts"
+    "prime": "dist/index.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist --target bun",
+    "build": "bun build src/index.ts --outdir dist --target node && node -e \"const f='dist/index.js';const fs=require('fs');let s=fs.readFileSync(f,'utf8');if(s.startsWith('#!'))s=s.replace(/^#![^\\n]*\\n/,'#!/usr/bin/env node\\n');else s='#!/usr/bin/env node\\n'+s;fs.writeFileSync(f,s);fs.chmodSync(f,0o755);\"",
+    "prepublishOnly": "bun run build",
     "test": "bun test",
     "lint": "tsc --noEmit"
   },
-  "dependencies": {
-    "@prime-lang/types": "workspace:*",
-    "@prime-lang/parser": "workspace:*",
-    "@prime-lang/compiler": "workspace:*",
-    "@prime-lang/runtime": "workspace:*"
+  "keywords": [
+    "prime-lang",
+    "skill-wiki",
+    "mcp",
+    "ai-agents",
+    "cli"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skill-wiki/prime-system.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/skill-wiki/prime-system/tree/main/packages/cli#readme",
+  "bugs": {
+    "url": "https://github.com/skill-wiki/prime-system/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "license": "Apache-2.0"
 }

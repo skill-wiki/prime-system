@@ -4,21 +4,49 @@
   "description": "Generic MCP server for any compiled Prime corpus. Exposes one tool — prime_query — that browses atoms, traverses the edge graph, and returns projection-level paths for the agent to Read.",
   "license": "Apache-2.0",
   "type": "module",
+  "main": "dist/index.js",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./dist/index.js"
   },
   "bin": {
-    "prime-mcp-core": "./src/index.ts"
+    "prime-mcp-core": "dist/index.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "@prime-lang/runtime": "workspace:*",
-    "@prime-lang/types": "workspace:*",
     "zod": "^4.0.0"
   },
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist --target node",
+    "build": "bun build src/index.ts --outdir dist --target node --external '@modelcontextprotocol/*' --external zod && node -e \"const f='dist/index.js';const fs=require('fs');let s=fs.readFileSync(f,'utf8');if(s.startsWith('#!'))s=s.replace(/^#![^\\n]*\\n/,'#!/usr/bin/env node\\n');else s='#!/usr/bin/env node\\n'+s;fs.writeFileSync(f,s);fs.chmodSync(f,0o755);\"",
+    "prepublishOnly": "bun run build",
     "test": "bun test",
     "lint": "tsc --noEmit"
+  },
+  "keywords": [
+    "prime-lang",
+    "skill-wiki",
+    "mcp",
+    "model-context-protocol",
+    "stdio"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skill-wiki/prime-system.git",
+    "directory": "packages/mcp-server-core"
+  },
+  "homepage": "https://github.com/skill-wiki/prime-system/tree/main/packages/mcp-server-core#readme",
+  "bugs": {
+    "url": "https://github.com/skill-wiki/prime-system/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }
