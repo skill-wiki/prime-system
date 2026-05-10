@@ -1,6 +1,6 @@
 # Skill Wiki — Frequently Asked Questions
 
-[English](./faq.md) · [中文](./zh-CN/faq.md)
+[English](./faq.md) · [中文](../zh-CN/community/faq.md)
 
 ---
 
@@ -401,4 +401,4 @@ are Apache-2.0 along with the system code.
 
 ---
 
-*Skill Wiki v0.1.0 · Apache-2.0 · [Back to docs](../README.md#documentation)*
+*Skill Wiki v0.1.0 · Apache-2.0 · [Back to docs](../../README.md#documentation)*

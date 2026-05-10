@@ -13,7 +13,7 @@
 
 以下分级流程是项目演进为多维护者治理后的样貌，作为意图说明，而非 v0.1.0 日常运作的描述。
 
-参见 [MAINTAINERS.zh-CN.md](./docs/zh-CN/community/maintainers.md) 了解 v0.1.0 的明确现状，以及如何在 v0.2.0 开放维护者时提名自己。
+参见 [MAINTAINERS.zh-CN.md](./maintainers.md) 了解 v0.1.0 的明确现状，以及如何在 v0.2.0 开放维护者时提名自己。
 
 ---
 

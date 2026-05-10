@@ -3,11 +3,11 @@
 > Skill Wiki / Prime 一层一层讲清楚。7 个 package，从 parser 到 MCP server。
 > 这篇文档是核心导览：一个 brief 怎么变成最终输出，路上每个类型化原子待在哪儿。
 
-[← 返回 README](../README.zh-CN.md) · [设计哲学](./philosophy.md) · [入门](./getting-started.md) · [DSL 速查](./dsl-quickref.md)
+[← 返回 README](../../../README.zh-CN.md) · [设计哲学](./philosophy.md) · [入门](../getting-started.md) · [DSL 速查](../reference/dsl-quickref.md)
 
 ---
 
-![Skill Wiki 整体架构](../assets/architecture-system.png)
+![Skill Wiki 整体架构](../../assets/architecture-system.png)
 
 整张图：从 agent brief 到 model providers 共 8 层，右侧带 lifecycle、governance、license、domain extension 四类横切关注点。
 
@@ -54,7 +54,7 @@ interface SecurityIntentObject {
 
 前端设计 corpus 使用另一种形状（`task_type: "marketing-landing"`、
 `motion_priority`、`density` 等），记录在
-[`spec/FRONTEND-DESIGN-DOMAIN-v1.md §1`](../spec/FRONTEND-DESIGN-DOMAIN-v1.md)。
+[`spec/FRONTEND-DESIGN-DOMAIN-v1.md §1`](../../../spec/FRONTEND-DESIGN-DOMAIN-v1.md)。
 两者都是领域级决策，都不是协议本身。
 
 整条流水线**只有这一层**接触自然语言。后面的全部代码都只看结构化对象。
@@ -74,7 +74,7 @@ interface SecurityIntentObject {
 `cuisine`、`equipment`、`time`）。协议不知道任何轴名的含义。
 
 *（前端设计 6 条轴的详细说明见
-[`spec/FRONTEND-DESIGN-DOMAIN-v1.md §2`](../spec/FRONTEND-DESIGN-DOMAIN-v1.md)。）*
+[`spec/FRONTEND-DESIGN-DOMAIN-v1.md §2`](../../../spec/FRONTEND-DESIGN-DOMAIN-v1.md)。）*
 
 每条轴里的排序是 5 层级联，专门为了在 brief 噪声大的情况下让类型化知识
 仍然稳：
@@ -97,7 +97,7 @@ boost，多少来自 topic 映射，多少来自直接命中。可解释性是**
 检索选完 ~10–20 个候选之后，L3 把带 `composition:` 块的原子里声明的契约
 执行掉。**协议定义两条通用字段**：`must-include` 和 `must-avoid`；领域 corpus
 可通过 `domain.yaml` 的 `contract:` 块追加类型化的子字段（参见
-[`spec/FRONTEND-DESIGN-DOMAIN-v1.md §3`](../spec/FRONTEND-DESIGN-DOMAIN-v1.md)
+[`spec/FRONTEND-DESIGN-DOMAIN-v1.md §3`](../../../spec/FRONTEND-DESIGN-DOMAIN-v1.md)
 中前端领域对 `typography-required`、`motion-prescriptions` 等字段的扩展）。
 
 来自 `examples/recipes/` 的通用示例：
@@ -270,7 +270,7 @@ corpus 自身的特性；安全或菜谱 corpus 会因各自偏重 `validates-wi
 密集型领域）还是 `requires`（步骤密集型领域）而呈现不同的比例。
 
 每条 verb 的来源 / 目标 kind 配对见
-[DSL 速查](./dsl-quickref.md#14-种边动词)。
+[DSL 速查](../reference/dsl-quickref.md#14-种边动词)。
 
 ---
 
@@ -282,7 +282,7 @@ Skill Wiki 有两个截然分开的阶段。它们共享 types，但从不直接
 
 输入：`.prime` 源文件（给作者看）。
 
-![编译流水线 —— .prime 到运行时产物](../assets/compile-pipeline.png)
+![编译流水线 —— .prime 到运行时产物](../../assets/compile-pipeline.png)
 
 流水线：
 
@@ -307,7 +307,7 @@ severity 标 `low`，但 remediation 描述的是关键 a11y blocker。便宜跑
 
 输入：`compiled/` 目录。
 
-![运行时查询流程 —— agent、MCP server、原子索引、磁盘](../assets/runtime-query-flow.png)
+![运行时查询流程 —— agent、MCP server、原子索引、磁盘](../../assets/runtime-query-flow.png)
 
 Runtime 有一条铁律：**永远不读 chunk 内容**。它读 `_index.xml` 和每个
 原子的 `atom.yaml`（仅元数据）来构建内存图。Chunk markdown 留在磁盘上；
@@ -359,7 +359,7 @@ export interface DomainPlugin {
 
 我们打包随发的 frontend-design corpus（在 `prime-corpus-frontend`）本身
 就是一个 domain plugin。**换 corpus 就是换 plugin** —— 这是扩展单元。
-[corpus-authoring.md](./corpus-authoring.md) 有写 corpus 的
+[corpus-authoring.md](../guides/corpus-authoring.md) 有写 corpus 的
 完整指南。
 
 ---
@@ -425,7 +425,7 @@ prime_query({
 可能暴露一个 `policy_check` 工具，对文本输入跑合规校验。这些领域 wrapper
 **不在 system 仓库里**，跟着各自的 corpus 一起发。
 
-详见 [docs/zh-CN/mcp.md](./mcp.md)。
+详见 [docs/zh-CN/mcp.md](../guides/mcp.md)。
 
 ---
 
@@ -448,9 +448,9 @@ Agent 的上下文从来**不持有所有原子**。它持有索引 + 检索选�
 ## 接下去看
 
 - [设计哲学](./philosophy.md) —— 架构**为什么**长这样
-- [入门](./getting-started.md) —— 端到端启动一遍系统
-- [DSL 速查](./dsl-quickref.md) —— 28 种 kind、14 条 verb 的细节
-- [协议规范](../spec/PRIME-PROTOCOL-v1.md) —— v1 协议正式语法（仅英文）
+- [入门](../getting-started.md) —— 端到端启动一遍系统
+- [DSL 速查](../reference/dsl-quickref.md) —— 28 种 kind、14 条 verb 的细节
+- [协议规范](../../../spec/PRIME-PROTOCOL-v1.md) —— v1 协议正式语法（仅英文）
 
 ---
 

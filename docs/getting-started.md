@@ -4,7 +4,7 @@
 > Code in 10. This page walks you from `git clone` to a typed corpus your
 > agent can query.
 
-[← back to README](../README.md) · [Architecture](./architecture.md) · [Philosophy](./philosophy.md) · [DSL quick reference](./dsl-quickref.md)
+[← back to README](../README.md) · [Architecture](./concept/architecture.md) · [Philosophy](./concept/philosophy.md) · [DSL quick reference](./reference/dsl-quickref.md)
 
 ---
 
@@ -155,8 +155,8 @@ Once hello-world works, you have two paths:
 ### Path A — Write your own corpus (recommended starting point)
 
 A 5-atom corpus is roughly 30 minutes to write. See
-[corpus-authoring.md](./corpus-authoring.md) for the walkthrough and the
-[DSL quick reference](./dsl-quickref.md) for the syntax.
+[corpus-authoring.md](./guides/corpus-authoring.md) for the walkthrough and the
+[DSL quick reference](./reference/dsl-quickref.md) for the syntax.
 
 A typical first corpus (team coding standards):
 
@@ -211,7 +211,7 @@ for the wired-up integration.
 | `unresolved reference: @example/foo` | Atom ID typo or atom not in corpus | Check the `id:` line in the target atom; ensure file is in the source dir |
 | `[L3] cycle detected: A → B → A` | Two atoms `requires` each other | Pick one direction; replace the other with `enhances` |
 | `[L3] contradicts edge between active atoms` | Two atoms claim opposing things and both are active | Mark one `deprecated` or remove the contradicts edge if intentional |
-| Empty `chunks/full.md` for a persona | Chunker doesn't know about a custom field | Filed as known limitation — see [ROADMAP.md](../ROADMAP.md). Add field name to chunker include-list. |
+| Empty `chunks/full.md` for a persona | Chunker doesn't know about a custom field | Filed as known limitation — see [roadmap](./community/roadmap.md). Add field name to chunker include-list. |
 | `prime_query` returns nothing | Index not loaded / wrong --corpus path | Confirm `_index.xml` exists in the path |
 | MCP server starts but agent can't see the tool | MCP transport mismatch / server not registered in agent config | Check agent's MCP server logs for connection errors |
 | L2 semantic check is slow | Each atom triggers an LLM call | Set `PRIME_L2_BATCH=true` to batch (faster) or unset `DEEPSEEK_API_KEY` to skip entirely |
@@ -247,13 +247,13 @@ bun scripts/build-atom-dirs.ts --src primes/sources --out primes/compiled --verb
 
 | If you want to … | Go to |
 |---|---|
-| Understand the design | [architecture.md](./architecture.md) |
-| Understand the *why* | [philosophy.md](./philosophy.md) |
-| Write atoms | [dsl-quickref.md](./dsl-quickref.md) and [corpus-authoring.md](./corpus-authoring.md) |
-| Use the CLI | [cli.md](./cli.md) |
-| Configure the MCP server | [mcp.md](./mcp.md) |
-| Publish your corpus | [registry.md](./registry.md) |
-| Compare to RAG / Skills / etc. | [comparison.md](./comparison.md) |
+| Understand the design | [architecture.md](./concept/architecture.md) |
+| Understand the *why* | [philosophy.md](./concept/philosophy.md) |
+| Write atoms | [dsl-quickref.md](./reference/dsl-quickref.md) and [corpus-authoring.md](./guides/corpus-authoring.md) |
+| Use the CLI | [cli.md](./reference/cli.md) |
+| Configure the MCP server | [mcp.md](./guides/mcp.md) |
+| Publish your corpus | [registry.md](./reference/registry.md) |
+| Compare to RAG / Skills / etc. | [comparison.md](./concept/comparison.md) |
 | Read the protocol spec | [PRIME-PROTOCOL-v1.md](../spec/PRIME-PROTOCOL-v1.md) |
 
 ---

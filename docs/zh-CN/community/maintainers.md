@@ -2,7 +2,7 @@
 
 ## 当前状态 — v0.1.0
 
-**这是一个正式治理前的发布版本。** 项目由单一作者发布，尚无技术委员会（TC）。[GOVERNANCE.zh-CN.md](./docs/zh-CN/community/governance.md) 中描述的治理结构是*目标状态*——将在 **v0.2.0** 公开维护者征集时正式启动。
+**这是一个正式治理前的发布版本。** 项目由单一作者发布，尚无技术委员会（TC）。[GOVERNANCE.zh-CN.md](./governance.md) 中描述的治理结构是*目标状态*——将在 **v0.2.0** 公开维护者征集时正式启动。
 
 v0.1.0 阶段：
 
@@ -47,4 +47,4 @@ v0.2 开放公开维护者后，路径为：
 
 ---
 
-本文件通过 PR 更新。**从 v0.2 起**欢迎自我提名。v0.1.0 阶段的 Issue 和功能请求，请提交 Issue，作者将按照 [GOVERNANCE.zh-CN.md](./docs/zh-CN/community/governance.md) 中的时间线响应。
+本文件通过 PR 更新。**从 v0.2 起**欢迎自我提名。v0.1.0 阶段的 Issue 和功能请求，请提交 Issue，作者将按照 [GOVERNANCE.zh-CN.md](./governance.md) 中的时间线响应。

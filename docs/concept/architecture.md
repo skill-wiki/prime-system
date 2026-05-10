@@ -3,11 +3,11 @@
 > Skill Wiki / Prime, layer by layer. 7 packages, from parser to MCP server.
 > How a brief becomes an output, and where every typed atom lives along the way.
 
-[← back to README](../README.md) · [Philosophy](./philosophy.md) · [Getting started](./getting-started.md) · [DSL quick reference](./dsl-quickref.md)
+[← back to README](../../README.md) · [Philosophy](./philosophy.md) · [Getting started](../getting-started.md) · [DSL quick reference](../reference/dsl-quickref.md)
 
 ---
 
-![Skill Wiki system architecture](./assets/architecture-system.png)
+![Skill Wiki system architecture](../assets/architecture-system.png)
 
 The full picture: 8 layers from agent brief to model providers, with cross-cutting concerns (lifecycle, governance, license, domain extension) on the right.
 
@@ -56,7 +56,7 @@ interface SecurityIntentObject {
 
 The frontend-design corpus uses a different shape — `task_type:
 "marketing-landing"`, `motion_priority`, `density`, etc. — documented
-in [`spec/FRONTEND-DESIGN-DOMAIN-v1.md §1`](../spec/FRONTEND-DESIGN-DOMAIN-v1.md).
+in [`spec/FRONTEND-DESIGN-DOMAIN-v1.md §1`](../../spec/FRONTEND-DESIGN-DOMAIN-v1.md).
 Neither shape is the protocol; both are domain-level decisions.
 
 This is the only layer where natural-language nuance leaks into the pipeline.
@@ -81,7 +81,7 @@ The protocol does not know what any axis name means — it only knows: an
 axis is a named ranker that returns atom IDs.
 
 *(The six frontend-design axes are documented in full in
-[`spec/FRONTEND-DESIGN-DOMAIN-v1.md §2`](../spec/FRONTEND-DESIGN-DOMAIN-v1.md).)*
+[`spec/FRONTEND-DESIGN-DOMAIN-v1.md §2`](../../spec/FRONTEND-DESIGN-DOMAIN-v1.md).)*
 
 Ranking inside an axis is a 5-layer cascade tuned to keep typed knowledge
 robust under noisy briefs:
@@ -105,7 +105,7 @@ After retrieval picks ~10–20 candidate atoms, L3 enforces the contracts
 declared by selected atoms that carry a `composition:` block. The
 **protocol defines two universal contract fields**: `must-include` and
 `must-avoid`. Domain corpora may add typed sub-fields (see
-[`spec/FRONTEND-DESIGN-DOMAIN-v1.md §3`](../spec/FRONTEND-DESIGN-DOMAIN-v1.md)
+[`spec/FRONTEND-DESIGN-DOMAIN-v1.md §3`](../../spec/FRONTEND-DESIGN-DOMAIN-v1.md)
 for the frontend-domain extensions such as `typography-required` and
 `motion-prescriptions`).
 
@@ -288,7 +288,7 @@ a security or recipes corpus will show different ratios depending on how
 heavily it uses `validates-with` (source-heavy domains) vs `requires`
 (procedural-step-heavy domains).
 
-See [DSL quick reference](./dsl-quickref.md#the-14-edge-verbs) for the
+See [DSL quick reference](../reference/dsl-quickref.md#the-14-edge-verbs) for the
 full per-verb table with allowed source/target kind pairs.
 
 ---
@@ -302,7 +302,7 @@ each other directly.
 
 Inputs: `.prime` source files (author-facing).
 
-![Compile pipeline — .prime to runtime artifacts](./assets/compile-pipeline.png)
+![Compile pipeline — .prime to runtime artifacts](../assets/compile-pipeline.png)
 
 Pipeline:
 
@@ -329,7 +329,7 @@ run, sometimes load-bearing.
 
 Inputs: `compiled/` directory.
 
-![Runtime query flow — agent, MCP server, atom index, disk](./assets/runtime-query-flow.png)
+![Runtime query flow — agent, MCP server, atom index, disk](../assets/runtime-query-flow.png)
 
 The runtime has one rule: **never read chunk content**. It reads
 `_index.xml` and per-atom `atom.yaml` (metadata only) to build the
@@ -387,7 +387,7 @@ remain queryable but unbiased.
 
 The frontend-design corpus that ships in `prime-corpus-frontend` is
 itself a domain plugin. Replacing it with your own is the unit of
-extension. See [docs/corpus-authoring.md](./corpus-authoring.md) for the
+extension. See [docs/corpus-authoring.md](../guides/corpus-authoring.md) for the
 walkthrough.
 
 ---
@@ -456,7 +456,7 @@ expose a `policy_check` tool that runs compliance validators on a text
 input. Those domain wrappers don't ship in the system repo — they live
 with each domain corpus.
 
-See [docs/mcp.md](./mcp.md) for the protocol details.
+See [docs/mcp.md](../guides/mcp.md) for the protocol details.
 
 ---
 
@@ -480,10 +480,10 @@ loaded per turn versus ~400 KB for "load everything."
 ## Where to go next
 
 - [Philosophy](./philosophy.md) — *why* the architecture has these shapes
-- [Getting started](./getting-started.md) — boot the system end-to-end
-- [DSL quick reference](./dsl-quickref.md) — atom kinds and edge verbs in detail
-- [Protocol Spec](../spec/PRIME-PROTOCOL-v1.md) — v1 protocol grammar
-- [Frontend Domain Spec](../spec/FRONTEND-DESIGN-DOMAIN-v1.md) — frontend-design domain wrapper
+- [Getting started](../getting-started.md) — boot the system end-to-end
+- [DSL quick reference](../reference/dsl-quickref.md) — atom kinds and edge verbs in detail
+- [Protocol Spec](../../spec/PRIME-PROTOCOL-v1.md) — v1 protocol grammar
+- [Frontend Domain Spec](../../spec/FRONTEND-DESIGN-DOMAIN-v1.md) — frontend-design domain wrapper
 
 ---
 

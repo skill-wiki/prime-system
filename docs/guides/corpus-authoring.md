@@ -23,7 +23,7 @@ on a familiar domain: about a weekend for a 40-atom MVP corpus.
 
 ## Step 1 — pick your kinds
 
-The full table of 28 lives in [dsl-quickref.md](./dsl-quickref.md).
+The full table of 28 lives in [dsl-quickref.md](../reference/dsl-quickref.md).
 You will not use all of them. A first corpus typically uses 4–6.
 
 A useful starting heuristic:
@@ -302,7 +302,7 @@ Two situations call for a registry:
    server.
 2. **Multi-author** — your team needs a shared canon.
 
-For either, [docs/registry.md](./registry.md) covers self-hosting in
+For either, [docs/registry.md](../reference/registry.md) covers self-hosting in
 full. The minimum:
 
 ```bash

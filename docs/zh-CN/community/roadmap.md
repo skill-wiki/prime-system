@@ -1,7 +1,7 @@
 # 路线图
 
 > Skill Wiki / Prime 接下来要去哪。每条都标了状态和理由。
-> 已经做完的看 [CHANGELOG.md](./CHANGELOG.md)。
+> 已经做完的看 [CHANGELOG.zh-CN.md](../../../CHANGELOG.zh-CN.md)。
 
 这份路线图只覆盖 **system** 仓库。Corpus 仓库（比如
 `prime-corpus-frontend`）有自己的路线图；协议自己的节奏，不绑死任何一个

@@ -3,7 +3,7 @@
 > 30 秒跑 hello-world。5 分钟跑完整闭环。10 分钟接进 Claude Code。
 > 这一篇带你从 `git clone` 一路走到 agent 能查询的类型化 corpus。
 
-[← 返回 README](../README.zh-CN.md) · [架构](./architecture.md) · [设计哲学](./philosophy.md) · [DSL 速查](./dsl-quickref.md)
+[← 返回 README](../../README.zh-CN.md) · [架构](./concept/architecture.md) · [设计哲学](./concept/philosophy.md) · [DSL 速查](./reference/dsl-quickref.md)
 
 ---
 
@@ -164,8 +164,8 @@ PRIME_DIR=compiled bun ../prime-system/packages/mcp-server-core/src/index.ts
 ### B 路 —— 写你自己的
 
 5 个原子的团队 coding-style corpus 大约 30 分钟能写完。教程见
-[corpus-authoring.md](./corpus-authoring.md)，语法见
-[DSL 速查](./dsl-quickref.md)。
+[corpus-authoring.md](./guides/corpus-authoring.md)，语法见
+[DSL 速查](./reference/dsl-quickref.md)。
 
 典型的第一个 corpus：
 
@@ -194,7 +194,7 @@ my-corpus/
 | `unresolved reference: @example/foo` | Atom ID 写错 / 原子不在 corpus 里 | 看目标原子的 `id:` 字段；确认文件在 sources 目录 |
 | `[L3] cycle detected: A → B → A` | 两个原子互相 `requires` | 选一个方向；另一个改 `enhances` |
 | `[L3] contradicts edge between active atoms` | 两个原子语义对立但都是 active | 把其中一个标 `deprecated`；如果是有意的对立，把 contradicts 边删掉 |
-| Persona 的 `chunks/full.md` 是空的 | Chunker 不认识自定义字段 | 已知限制，详见 [ROADMAP.zh-CN.md](../ROADMAP.zh-CN.md)。把字段名加进 chunker include-list。 |
+| Persona 的 `chunks/full.md` 是空的 | Chunker 不认识自定义字段 | 已知限制，详见 [roadmap](./community/roadmap.md)。把字段名加进 chunker include-list。 |
 | `prime_query` 啥也不返回 | 索引没装 / `--corpus` 路径不对 | 确认那个路径下有 `_index.xml` |
 | MCP server 起来了但 agent 看不到工具 | MCP transport 不对 / agent config 没注册 | 看 agent 的 MCP server 日志找连接错误 |
 | L2 语义校验慢 | 每个原子一次 LLM call | 设 `PRIME_L2_BATCH=true` 走 batch（快得多）；不设 `DEEPSEEK_API_KEY` 直接跳过 |
@@ -230,14 +230,14 @@ bun scripts/build-atom-dirs.ts --src primes/sources --out primes/compiled --verb
 
 | 想…… | 看 |
 |---|---|
-| 理解设计 | [architecture.md](./architecture.md) |
-| 理解 *为什么* | [philosophy.md](./philosophy.md) |
-| 写原子 | [dsl-quickref.md](./dsl-quickref.md) + [corpus-authoring.md](./corpus-authoring.md) |
-| 用 CLI | [cli.zh-CN.md](./cli.md) |
-| 配 MCP server | [mcp.zh-CN.md](./mcp.md) |
-| 发布 corpus | [registry.zh-CN.md](./registry.md) |
-| 跟 RAG / Skill 对比 | [comparison.zh-CN.md](./comparison.md) |
-| 读协议 spec | [PRIME-PROTOCOL-v1.md](../spec/PRIME-PROTOCOL-v1.md)（仅英文） |
+| 理解设计 | [architecture.md](./concept/architecture.md) |
+| 理解 *为什么* | [philosophy.md](./concept/philosophy.md) |
+| 写原子 | [dsl-quickref.md](./reference/dsl-quickref.md) + [corpus-authoring.md](./guides/corpus-authoring.md) |
+| 用 CLI | [cli.zh-CN.md](./reference/cli.md) |
+| 配 MCP server | [mcp.zh-CN.md](./guides/mcp.md) |
+| 发布 corpus | [registry.zh-CN.md](./reference/registry.md) |
+| 跟 RAG / Skill 对比 | [comparison.zh-CN.md](./concept/comparison.md) |
+| 读协议 spec | [PRIME-PROTOCOL-v1.md](../../spec/PRIME-PROTOCOL-v1.md)（仅英文） |
 
 ---
 

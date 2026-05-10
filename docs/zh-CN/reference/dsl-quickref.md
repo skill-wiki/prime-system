@@ -4,7 +4,7 @@
 > 示例来自 `examples/recipes/`、`examples/coding-style/`、安全领域示例，
 > 以及一个明确标注的前端设计领域示例。
 
-[← 返回 README](../README.zh-CN.md) · [架构](./architecture.md) · [设计哲学](./philosophy.md) · [入门](./getting-started.md)
+[← 返回 README](../../../README.zh-CN.md) · [架构](../concept/architecture.md) · [设计哲学](../concept/philosophy.md) · [入门](../getting-started.md)
 
 ---
 
@@ -127,7 +127,7 @@ Parser 强制三条规则：
 
 ## 14 条边动词
 
-![原子数据模型 —— kind 与边](../assets/atom-data-model.png)
+![原子数据模型 —— kind 与边](../../assets/atom-data-model.png)
 
 边声明类型化的原子间关系。Parser 知道每条 verb 的语义；L3 校验器按它
 推理。
@@ -344,7 +344,7 @@ persona ThreatModeller {
 - `composition.must-include` / `must-avoid` —— 协议级通用约束，L3 强制执行
 - 前端 corpus 里的 `typography-required` / `color-required` / `motion-prescriptions`
   是**前端领域扩展字段**，不是协议的一部分 —— 参见
-  [`spec/FRONTEND-DESIGN-DOMAIN-v1.md §3`](../spec/FRONTEND-DESIGN-DOMAIN-v1.md)
+  [`spec/FRONTEND-DESIGN-DOMAIN-v1.md §3`](../../../spec/FRONTEND-DESIGN-DOMAIN-v1.md)
 
 ### 例 5 —— `method`
 
@@ -458,7 +458,7 @@ composition: {
 ```
 
 **前端领域扩展**（在 `prime-corpus-frontend-design` 里；不是协议 ——
-详见 [`spec/FRONTEND-DESIGN-DOMAIN-v1.md §3`](../spec/FRONTEND-DESIGN-DOMAIN-v1.md)）：
+详见 [`spec/FRONTEND-DESIGN-DOMAIN-v1.md §3`](../../../spec/FRONTEND-DESIGN-DOMAIN-v1.md)）：
 
 ```prime
 composition: {
@@ -532,7 +532,7 @@ composition: {
 6. **测试** —— 在 `packages/parser/test/` 加 parser 测试，在
    `packages/compiler/test/` 加 chunker 测试。
 
-7. **Governance** —— 按 [community/governance](./community/governance.md)
+7. **Governance** —— 按 [community/governance](../community/governance.md)
    开 Tier-2 RFC issue，说明为什么需要这个 kind、和现有哪个最接近、
    你加了哪些测试。
 
@@ -552,16 +552,16 @@ composition: {
 ### Roadmap：用 YAML 声明自定义 kind
 
 `domain.yaml` 里的 `custom-kinds:` 块会让 corpus 不改 parser 就能声明
-新 kind。计划在 [community/roadmap](./community/roadmap.md)。
+新 kind。计划在 [community/roadmap](../community/roadmap.md)。
 
 ---
 
 ## 接下去看
 
-- [架构](./architecture.md) —— 流水线怎么把这些原子变成 agent context
-- [设计哲学](./philosophy.md) —— 这个 DSL 为什么有这些原语
-- [写 corpus](./corpus-authoring.md) —— 端到端写一个自己的 corpus
-- [协议规范 §1](../spec/PRIME-PROTOCOL-v1.md) —— 形式语法（仅英文）
+- [架构](../concept/architecture.md) —— 流水线怎么把这些原子变成 agent context
+- [设计哲学](../concept/philosophy.md) —— 这个 DSL 为什么有这些原语
+- [写 corpus](../guides/corpus-authoring.md) —— 端到端写一个自己的 corpus
+- [协议规范 §1](../../../spec/PRIME-PROTOCOL-v1.md) —— 形式语法（仅英文）
 
 ---
 

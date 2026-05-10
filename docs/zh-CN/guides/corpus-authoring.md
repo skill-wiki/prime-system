@@ -21,7 +21,7 @@ MVP corpus，大约一个周末。
 
 ## Step 1 —— 挑 kind
 
-完整的 28 种在 [dsl-quickref.md](./dsl-quickref.md)。
+完整的 28 种在 [dsl-quickref.md](../reference/dsl-quickref.md)。
 你不会全用上。第一版 corpus 通常用 4–6 种。
 
 启动用的小启发：
@@ -284,7 +284,7 @@ PRIME_DIR=/abs/path/to/compiled bunx @prime-lang/mcp-server-core
 1. **多机** —— 笔记本上写，服务器上跑 agent。
 2. **多人** —— 团队需要共享 canon。
 
-不管哪种，[docs/zh-CN/registry.md](./registry.md) 完整讲了
+不管哪种，[docs/zh-CN/registry.md](../reference/registry.md) 完整讲了
 自托管。最小套路：
 
 ```bash

@@ -22,7 +22,7 @@ The config-driven approach solves this with a single design principle: **a domai
 
 ## The Five-Minute Domain
 
-![Domain extension flow — drop in a YAML, restart, done](./assets/domain-extension-flow.png)
+![Domain extension flow — drop in a YAML, restart, done](../assets/domain-extension-flow.png)
 
 The fastest way to add a domain is to copy an example and adapt it.
 

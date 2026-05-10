@@ -11,7 +11,7 @@
 [![Node](https://img.shields.io/badge/node-22%2B-brightgreen.svg)](#%E5%AE%89%E8%A3%85)
 [![CI](https://img.shields.io/badge/ci-parser%20%C2%B7%20compiler%20%C2%B7%20runtime-blue.svg)](./.github/workflows/ci.yml)
 
-[English](./README.md) · [中文](./README.zh-CN.md) · [规范](./spec/PRIME-PROTOCOL-v1.md) · [架构](./docs/zh-CN/architecture.md) · [哲学](./docs/zh-CN/philosophy.md) · [文档](./docs)
+[English](./README.md) · [中文](./README.zh-CN.md) · [规范](./spec/PRIME-PROTOCOL-v1.md) · [架构](./docs/zh-CN/concept/architecture.md) · [哲学](./docs/zh-CN/concept/philosophy.md) · [文档](./docs)
 
 ---
 
@@ -52,7 +52,7 @@ prime list
 PRIME_DIR=primes/compiled bun ../../packages/mcp-server-core/src/index.ts
 ```
 
-接入 Claude Code（见 [docs/zh-CN/mcp.md](./docs/zh-CN/mcp.md)）：
+接入 Claude Code（见 [docs/zh-CN/mcp.md](./docs/zh-CN/guides/mcp.md)）：
 
 ```json
 {
@@ -113,7 +113,7 @@ kind 分两类：一组**核心 kind** 任何 corpus 都会用上；另一组面
 
 28 种 kind + 14 种 verb 在 parser 里是固定的。要加新 kind 或 verb 需要改
 parser，并走 Tier-2 RFC 流程（见 [docs/zh-CN/community/governance.md](./docs/zh-CN/community/governance.md)）。
-具体路径写在 [docs/zh-CN/dsl-quickref.md](./docs/zh-CN/dsl-quickref.md#extending)：
+具体路径写在 [docs/zh-CN/dsl-quickref.md](./docs/zh-CN/reference/dsl-quickref.md#extending)：
 改 `packages/types/src/ast.ts`、在 `packages/parser/src/lexer.ts` 加 token、
 加 chunker 分支、写测试 fixture、提 PR。新 verb 走一样流程。
 
@@ -127,16 +127,16 @@ parser，并走 Tier-2 RFC 流程（见 [docs/zh-CN/community/governance.md](./d
 | | EN | 中文 |
 |---|---|---|
 | 入门 | [getting-started](./docs/getting-started.md) | [入门](./docs/zh-CN/getting-started.md) |
-| 架构 | [architecture](./docs/architecture.md) | [架构](./docs/zh-CN/architecture.md) |
-| 哲学 | [philosophy](./docs/philosophy.md) | [设计哲学](./docs/zh-CN/philosophy.md) |
-| DSL 速查 | [dsl-quickref](./docs/dsl-quickref.md) | [DSL 速查](./docs/zh-CN/dsl-quickref.md) |
-| CLI | [cli](./docs/cli.md) | [CLI](./docs/zh-CN/cli.md) |
-| MCP | [mcp](./docs/mcp.md) | [MCP](./docs/zh-CN/mcp.md) |
-| Registry | [registry](./docs/registry.md) | [Registry](./docs/zh-CN/registry.md) |
-| 写 corpus | [corpus-authoring](./docs/corpus-authoring.md) | [写 corpus](./docs/zh-CN/corpus-authoring.md) |
-| 对比 | [comparison](./docs/comparison.md) | [对比](./docs/zh-CN/comparison.md) |
-| FAQ | [faq](./docs/faq.md) | [FAQ](./docs/zh-CN/faq.md) |
-| 已知问题 | [known-issues](./docs/known-issues.md) | [已知问题](./docs/zh-CN/known-issues.md) |
+| 架构 | [architecture](./docs/concept/architecture.md) | [架构](./docs/zh-CN/concept/architecture.md) |
+| 哲学 | [philosophy](./docs/concept/philosophy.md) | [设计哲学](./docs/zh-CN/concept/philosophy.md) |
+| DSL 速查 | [dsl-quickref](./docs/reference/dsl-quickref.md) | [DSL 速查](./docs/zh-CN/reference/dsl-quickref.md) |
+| CLI | [cli](./docs/reference/cli.md) | [CLI](./docs/zh-CN/reference/cli.md) |
+| MCP | [mcp](./docs/guides/mcp.md) | [MCP](./docs/zh-CN/guides/mcp.md) |
+| Registry | [registry](./docs/reference/registry.md) | [Registry](./docs/zh-CN/reference/registry.md) |
+| 写 corpus | [corpus-authoring](./docs/guides/corpus-authoring.md) | [写 corpus](./docs/zh-CN/guides/corpus-authoring.md) |
+| 对比 | [comparison](./docs/concept/comparison.md) | [对比](./docs/zh-CN/concept/comparison.md) |
+| FAQ | [faq](./docs/community/faq.md) | [FAQ](./docs/zh-CN/community/faq.md) |
+| 已知问题 | [known-issues](./docs/community/known-issues.md) | [已知问题](./docs/zh-CN/community/known-issues.md) |
 | 协议规范 | [PRIME-PROTOCOL-v1.md](./spec/PRIME-PROTOCOL-v1.md) | — |
 
 ---

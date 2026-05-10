@@ -3,7 +3,7 @@
 > Why Skill Wiki has the shape it has. Five load-bearing decisions, each
 > with a specific failure mode it's trying to avoid.
 
-[← back to README](../README.md) · [Architecture](./architecture.md) · [Getting started](./getting-started.md) · [DSL quick reference](./dsl-quickref.md)
+[← back to README](../../README.md) · [Architecture](./architecture.md) · [Getting started](../getting-started.md) · [DSL quick reference](../reference/dsl-quickref.md)
 
 ---
 
@@ -68,7 +68,7 @@ version.
 
 ## Decision 2 — Lazy projection, not eager injection
 
-![Projection model — existence is not content](./assets/projection-model.png)
+![Projection model — existence is not content](../assets/projection-model.png)
 
 The architectural inversion at the center of Skill Wiki:
 
@@ -179,7 +179,7 @@ persona ThreatModeller {
 *(The `typography-required` / `color-required` sub-fields in the
 frontend corpus's contracts are domain-specific extensions — not part
 of the protocol. See
-[`spec/FRONTEND-DESIGN-DOMAIN-v1.md §3`](../spec/FRONTEND-DESIGN-DOMAIN-v1.md)
+[`spec/FRONTEND-DESIGN-DOMAIN-v1.md §3`](../../spec/FRONTEND-DESIGN-DOMAIN-v1.md)
 for those fields.)*
 
 Three things are now machine-checkable:

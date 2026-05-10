@@ -11,7 +11,7 @@
 [![Node](https://img.shields.io/badge/node-22%2B-brightgreen.svg)](#install)
 [![CI](https://img.shields.io/badge/ci-parser%20%C2%B7%20compiler%20%C2%B7%20runtime-blue.svg)](./.github/workflows/ci.yml)
 
-[English](./README.md) · [中文](./README.zh-CN.md) · [Protocol Spec](./spec/PRIME-PROTOCOL-v1.md) · [Architecture](./docs/architecture.md) · [Philosophy](./docs/philosophy.md) · [Docs](./docs)
+[English](./README.md) · [中文](./README.zh-CN.md) · [Protocol Spec](./spec/PRIME-PROTOCOL-v1.md) · [Architecture](./docs/concept/architecture.md) · [Philosophy](./docs/concept/philosophy.md) · [Docs](./docs)
 
 ---
 
@@ -52,7 +52,7 @@ prime list
 PRIME_DIR=primes/compiled bun ../../packages/mcp-server-core/src/index.ts
 ```
 
-Wire into Claude Code (see [docs/mcp.md](./docs/mcp.md)):
+Wire into Claude Code (see [docs/mcp.md](./docs/guides/mcp.md)):
 
 ```json
 {
@@ -115,7 +115,7 @@ typically uses the first three rows and skips this one entirely.
 
 The 28 + 14 set is fixed in the parser today. Adding a new kind or verb
 takes a parser-level patch and a Tier-2 RFC (see [docs/community/governance.md](./docs/community/governance.md)).
-The path is documented in [docs/dsl-quickref.md](./docs/dsl-quickref.md#extending) —
+The path is documented in [docs/dsl-quickref.md](./docs/reference/dsl-quickref.md#extending) —
 edit `packages/types/src/ast.ts`, add a token in `packages/parser/src/lexer.ts`,
 add a chunker case, write a fixture, ship the PR. The same path covers
 new edge verbs.
@@ -144,16 +144,16 @@ Use them at the project level out of the box, or copy globally with `cp -r .clau
 | | EN | 中文 |
 |---|---|---|
 | Getting started | [getting-started](./docs/getting-started.md) | [入门](./docs/zh-CN/getting-started.md) |
-| Architecture | [architecture](./docs/architecture.md) | [架构](./docs/zh-CN/architecture.md) |
-| Philosophy | [philosophy](./docs/philosophy.md) | [设计哲学](./docs/zh-CN/philosophy.md) |
-| DSL quick reference | [dsl-quickref](./docs/dsl-quickref.md) | [DSL 速查](./docs/zh-CN/dsl-quickref.md) |
-| CLI reference | [cli](./docs/cli.md) | [CLI](./docs/zh-CN/cli.md) |
-| MCP server | [mcp](./docs/mcp.md) | [MCP](./docs/zh-CN/mcp.md) |
-| Registry | [registry](./docs/registry.md) | [Registry](./docs/zh-CN/registry.md) |
-| Corpus authoring | [corpus-authoring](./docs/corpus-authoring.md) | [写 corpus](./docs/zh-CN/corpus-authoring.md) |
-| Comparison | [comparison](./docs/comparison.md) | [对比](./docs/zh-CN/comparison.md) |
-| FAQ | [faq](./docs/faq.md) | [FAQ](./docs/zh-CN/faq.md) |
-| Known issues | [known-issues](./docs/known-issues.md) | [已知问题](./docs/zh-CN/known-issues.md) |
+| Architecture | [architecture](./docs/concept/architecture.md) | [架构](./docs/zh-CN/concept/architecture.md) |
+| Philosophy | [philosophy](./docs/concept/philosophy.md) | [设计哲学](./docs/zh-CN/concept/philosophy.md) |
+| DSL quick reference | [dsl-quickref](./docs/reference/dsl-quickref.md) | [DSL 速查](./docs/zh-CN/reference/dsl-quickref.md) |
+| CLI reference | [cli](./docs/reference/cli.md) | [CLI](./docs/zh-CN/reference/cli.md) |
+| MCP server | [mcp](./docs/guides/mcp.md) | [MCP](./docs/zh-CN/guides/mcp.md) |
+| Registry | [registry](./docs/reference/registry.md) | [Registry](./docs/zh-CN/reference/registry.md) |
+| Corpus authoring | [corpus-authoring](./docs/guides/corpus-authoring.md) | [写 corpus](./docs/zh-CN/guides/corpus-authoring.md) |
+| Comparison | [comparison](./docs/concept/comparison.md) | [对比](./docs/zh-CN/concept/comparison.md) |
+| FAQ | [faq](./docs/community/faq.md) | [FAQ](./docs/zh-CN/community/faq.md) |
+| Known issues | [known-issues](./docs/community/known-issues.md) | [已知问题](./docs/zh-CN/community/known-issues.md) |
 | Protocol Spec | [PRIME-PROTOCOL-v1.md](./spec/PRIME-PROTOCOL-v1.md) | — |
 
 ---

@@ -5,7 +5,7 @@
 > `examples/coding-style/`, a security-domain illustration, and one
 > annotated frontend-domain example (clearly marked).
 
-[← back to README](../README.md) · [Architecture](./architecture.md) · [Philosophy](./philosophy.md) · [Getting started](./getting-started.md)
+[← back to README](../../README.md) · [Architecture](../concept/architecture.md) · [Philosophy](../concept/philosophy.md) · [Getting started](../getting-started.md)
 
 ---
 
@@ -133,7 +133,7 @@ by kind.
 
 ## The 14 edge verbs
 
-![Atom data model — kinds and edges](./assets/atom-data-model.png)
+![Atom data model — kinds and edges](../assets/atom-data-model.png)
 
 Edges declare typed relationships between atoms. The parser knows each
 verb's semantics; the L3 checker reasons over them.
@@ -357,7 +357,7 @@ What each field does:
 - `implies` — domain-specific structured contract; content is corpus-defined (not fixed by protocol)
 - `compatible` / `conflicts` — composition relationships
 - `composition.must-include` / `must-avoid` — universal protocol contract clauses enforced by L3
-- The `typography-required` / `color-required` / `motion-prescriptions` sub-fields seen in the **frontend corpus** are frontend-domain extensions, not part of the protocol — see [`spec/FRONTEND-DESIGN-DOMAIN-v1.md §3`](../spec/FRONTEND-DESIGN-DOMAIN-v1.md)
+- The `typography-required` / `color-required` / `motion-prescriptions` sub-fields seen in the **frontend corpus** are frontend-domain extensions, not part of the protocol — see [`spec/FRONTEND-DESIGN-DOMAIN-v1.md §3`](../../spec/FRONTEND-DESIGN-DOMAIN-v1.md)
 
 ### Example 5 — `method`
 
@@ -474,7 +474,7 @@ composition: {
 
 **Frontend-domain extensions** (in `prime-corpus-frontend-design`; not
 protocol — documented in
-[`spec/FRONTEND-DESIGN-DOMAIN-v1.md §3`](../spec/FRONTEND-DESIGN-DOMAIN-v1.md)):
+[`spec/FRONTEND-DESIGN-DOMAIN-v1.md §3`](../../spec/FRONTEND-DESIGN-DOMAIN-v1.md)):
 
 ```prime
 composition: {
@@ -549,7 +549,7 @@ Path through the codebase:
 6. **Tests** — parser test in `packages/parser/test/` and chunker test
    in `packages/compiler/test/`.
 
-7. **Governance** — open a Tier-2 RFC per [community/governance](./community/governance.md)
+7. **Governance** — open a Tier-2 RFC per [community/governance](../community/governance.md)
    describing why the kind is needed, what's already close, and the
    test coverage you added.
 
@@ -569,16 +569,16 @@ Smaller surface than a kind:
 ### Roadmap: YAML-declared custom kinds
 
 A `custom-kinds:` block in `domain.yaml` will let a corpus declare new
-kinds without patching the parser. Plan in [community/roadmap](./community/roadmap.md).
+kinds without patching the parser. Plan in [community/roadmap](../community/roadmap.md).
 
 ---
 
 ## Where to go next
 
-- [Architecture](./architecture.md) — how the pipeline turns these atoms into agent context
-- [Philosophy](./philosophy.md) — why this DSL has these primitives
-- [Corpus authoring](./corpus-authoring.md) — writing your own corpus end-to-end
-- [Protocol Spec §1](../spec/PRIME-PROTOCOL-v1.md) — the formal grammar
+- [Architecture](../concept/architecture.md) — how the pipeline turns these atoms into agent context
+- [Philosophy](../concept/philosophy.md) — why this DSL has these primitives
+- [Corpus authoring](../guides/corpus-authoring.md) — writing your own corpus end-to-end
+- [Protocol Spec §1](../../spec/PRIME-PROTOCOL-v1.md) — the formal grammar
 
 ---
 

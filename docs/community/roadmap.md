@@ -1,7 +1,7 @@
 # Roadmap
 
 > Where Skill Wiki / Prime is going. Annotated with status and rationale.
-> See [CHANGELOG.md](./CHANGELOG.md) for what's already shipped.
+> See [CHANGELOG.md](../../CHANGELOG.md) for what's already shipped.
 
 This roadmap covers only the **system** repo. Corpus repos (e.g.
 `prime-corpus-frontend`) maintain their own roadmaps; the protocol moves at

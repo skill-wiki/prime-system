@@ -3,7 +3,7 @@
 > Skill Wiki 为什么长这样。五条扛事的决策，每一条都有它在抵抗的具体
 > failure mode。
 
-[← 返回 README](../README.zh-CN.md) · [架构](./architecture.md) · [入门](./getting-started.md) · [DSL 速查](./dsl-quickref.md)
+[← 返回 README](../../../README.zh-CN.md) · [架构](./architecture.md) · [入门](../getting-started.md) · [DSL 速查](../reference/dsl-quickref.md)
 
 ---
 
@@ -59,7 +59,7 @@ frontmatter，分几个 section，给点 example。当相关时 load 进 system 
 
 ## 决策二 —— 投影懒加载，不是上下文注入
 
-![投影模型 —— 存在 ≠ 内容](../assets/projection-model.png)
+![投影模型 —— 存在 ≠ 内容](../../assets/projection-model.png)
 
 Skill Wiki 中心的架构反转：
 
@@ -162,7 +162,7 @@ persona ThreatModeller {
 *（前端 corpus 里 `composition` 下的 `typography-required` /
 `color-required` / `motion-prescriptions` 等字段是领域专属扩展，
 不是协议本身。参见
-[`spec/FRONTEND-DESIGN-DOMAIN-v1.md §3`](../spec/FRONTEND-DESIGN-DOMAIN-v1.md)。）*
+[`spec/FRONTEND-DESIGN-DOMAIN-v1.md §3`](../../../spec/FRONTEND-DESIGN-DOMAIN-v1.md)。）*
 
 三件事现在**机器可校验**：
 

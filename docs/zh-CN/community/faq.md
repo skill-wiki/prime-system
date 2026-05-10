@@ -1,6 +1,6 @@
 # Skill Wiki — 常见问题解答
 
-[English](./faq.md) · [中文](./faq.md)
+[English](../../community/faq.md) · [中文](./faq.md)
 
 ---
 
@@ -350,4 +350,4 @@ license。每个语料库仓库的 `NOTICE` 文件记录了第三方归属声明
 
 ---
 
-*Skill Wiki v0.1.0 · Apache-2.0 · [返回文档](../README.zh-CN.md#文档导航)*
+*Skill Wiki v0.1.0 · Apache-2.0 · [返回文档](../../../README.zh-CN.md#文档导航)*

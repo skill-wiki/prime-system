@@ -22,7 +22,7 @@ Prime Wiki **不内置任何硬编码领域**。运行时中没有 `FRONTEND_DES
 
 ## 五分钟快速上手
 
-![领域扩展流程 —— 放一份 YAML、重启、即用](../assets/domain-extension-flow.png)
+![领域扩展流程 —— 放一份 YAML、重启、即用](../../assets/domain-extension-flow.png)
 
 **第一步.** 复制示例配置：
 
