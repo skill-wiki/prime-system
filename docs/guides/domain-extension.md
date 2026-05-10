@@ -1,6 +1,6 @@
 # Domain Extension Guide
 
-This guide explains how to add a new knowledge domain to Prime Wiki without editing any TypeScript code. You only need to drop a `domain.yaml` file alongside your corpus.
+Adding a new knowledge domain to Prime Wiki requires no TypeScript edits — drop a `domain.yaml` file alongside your corpus.
 
 ---
 

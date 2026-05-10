@@ -7,7 +7,7 @@ corpus.
 
 If you want a richer, domain-aware MCP — multiple tools, intent
 classification, multi-axis retrieval — that lives in the corpus repo,
-not here. Pointer at the bottom of this page.
+not here. Pointer at the bottom.
 
 ---
 

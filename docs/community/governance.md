@@ -1,6 +1,6 @@
 # Governance
 
-This document describes how decisions are made in the Skill Wiki / Prime project. The model is intentionally light: we are pre-1.0 and most decisions can be made fast by whoever's doing the work. The structure below is the escalation path for the cases where it matters.
+Decision model is intentionally light: Skill Wiki / Prime is pre-1.0 and most decisions can be made fast by whoever's doing the work. The structure below is the escalation path for the cases where it matters.
 
 ## v0.1.0 — interim governance
 

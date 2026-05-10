@@ -24,9 +24,7 @@ have planned-not-built behavior are called out explicitly.
 | Authoring | `decompose` | heuristic Skill → Primes (see caveats) |
 | Test | `test` | structural check on `success_criteria` blocks |
 
-The remainder of the page goes group by group with **synopsis · example
-invocation · sample output · exit codes**. All output strings are exactly
-what the CLI prints today (verified against `packages/cli/src/commands/`).
+Each group is documented with **synopsis · example invocation · sample output · exit codes**. All output strings are exactly what the CLI prints today (verified against `packages/cli/src/commands/`).
 
 ---
 

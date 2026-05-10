@@ -2,13 +2,12 @@
 
 [English](./comparison.md) · [中文](../zh-CN/concept/comparison.md)
 
-This document compares Skill Wiki against five architectural patterns for feeding
-domain knowledge to LLM agents. The goal is honest positioning, not marketing.
-Where Skill Wiki loses, we say so.
+Comparison of Skill Wiki against five architectural patterns for feeding
+domain knowledge to LLM agents. Honest positioning: where Skill Wiki loses, we say so.
 
 ![Bulk skill loading vs Skill Wiki — context-window comparison](../assets/comparison-bulk-vs-skillwiki.png)
 
-The picture above is the core distinction: bulk-loading dumps entire skill files into the agent's context window; Skill Wiki keeps an index always present and loads only the selected projection on demand.
+Bulk-loading dumps entire skill files into the agent's context window; Skill Wiki keeps an index always present and loads only the selected projection on demand.
 
 ---
 

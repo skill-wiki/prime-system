@@ -2,12 +2,11 @@
 
 [English](../../concept/comparison.md) · [中文](./comparison.md)
 
-这份文档把 Skill Wiki 和五种向 LLM agent 提供领域知识的架构模式放在一起比较。
-目标是诚实的定位分析，不是营销材料。Skill Wiki 输的地方，我们直说。
+Skill Wiki 与五种向 LLM agent 提供领域知识的架构模式的对比分析。诚实定位：Skill Wiki 输的地方直说。
 
 ![全量装载 vs Skill Wiki —— 上下文窗口对比](../../assets/comparison-bulk-vs-skillwiki.png)
 
-上图是核心区别：全量加载把整个 skill 文件灌进 agent 的 context window；Skill Wiki 让索引常驻，按需加载选中的投影。
+全量加载把整个 skill 文件灌进 agent 的 context window；Skill Wiki 让索引常驻，按需加载选中的投影。
 
 ---
 

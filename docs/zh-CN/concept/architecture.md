@@ -1,7 +1,7 @@
 # 架构
 
 > Skill Wiki / Prime 一层一层讲清楚。7 个 package，从 parser 到 MCP server。
-> 这篇文档是核心导览：一个 brief 怎么变成最终输出，路上每个类型化原子待在哪儿。
+> 一个 brief 怎么变成最终输出，路上每个类型化原子待在哪儿。
 
 [← 返回 README](../../../README.zh-CN.md) · [设计哲学](./philosophy.md) · [入门](../getting-started.md) · [DSL 速查](../reference/dsl-quickref.md)
 

@@ -3,7 +3,6 @@
 [English](./README.md) · [中文](./zh-CN/README.md)
 
 Typed atoms, edge graph, lazy projection — a protocol layer for AI knowledge.
-This index lists every doc in the tree.
 
 ---
 

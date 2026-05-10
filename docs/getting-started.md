@@ -1,8 +1,7 @@
 # Getting Started
 
 > Hello-world in 30 seconds. Real loop in 5 minutes. Wired into Claude
-> Code in 10. This page walks you from `git clone` to a typed corpus your
-> agent can query.
+> Code in 10.
 
 [← back to README](../README.md) · [Architecture](./concept/architecture.md) · [Philosophy](./concept/philosophy.md) · [DSL quick reference](./reference/dsl-quickref.md)
 
@@ -258,16 +257,7 @@ bun scripts/build-atom-dirs.ts --src primes/sources --out primes/compiled --verb
 
 ---
 
-## A note on what you've seen
-
-The 30-second loop is the entire system, in miniature:
-
-1. **Authoring** — five `.prime` files, plain text, version-controlled
-2. **Compile** — parser + L1 + L3 + chunker + emitter
-3. **Runtime** — load the index, walk the graph
-4. **Query** — retrieve by ID, project at the right level
-
-Every Skill Wiki corpus, regardless of size, runs the same loop. The
+Every Skill Wiki corpus runs the same loop regardless of size. The
 899-atom frontend corpus differs from the 5-atom hello-world only in
 volume — same parser, same compiler, same runtime.
 

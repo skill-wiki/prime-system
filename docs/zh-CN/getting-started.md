@@ -1,7 +1,6 @@
 # 入门
 
 > 30 秒跑 hello-world。5 分钟跑完整闭环。10 分钟接进 Claude Code。
-> 这一篇带你从 `git clone` 一路走到 agent 能查询的类型化 corpus。
 
 [← 返回 README](../../README.zh-CN.md) · [架构](./concept/architecture.md) · [设计哲学](./concept/philosophy.md) · [DSL 速查](./reference/dsl-quickref.md)
 
@@ -241,17 +240,8 @@ bun scripts/build-atom-dirs.ts --src primes/sources --out primes/compiled --verb
 
 ---
 
-## 关于你看到的这一段
-
-30 秒那个 loop 就是**整个系统的缩影**：
-
-1. **写** —— 5 个 `.prime` 文件，纯文本，进 git
-2. **编译** —— parser + L1 + L3 + chunker + emitter
-3. **运行时** —— 装索引，走图
-4. **查询** —— 按 ID 取，按层级投影
-
 每个 Skill Wiki corpus，不管多大，跑的都是这一套。899 原子的前端
 corpus 跟 5 原子的 hello-world，**只差在体量** —— 同一个 parser、同一个
 compiler、同一个 runtime。
 
-这篇里描述的步骤如果跟实际不符，请提 bug。**文档先错，代码后错**。
+描述的步骤如果跟实际不符，请提 bug。**文档先错，代码后错**。

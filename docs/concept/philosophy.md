@@ -18,7 +18,7 @@ articles on prime numbers without first loading them. Pre-Skill-Wiki
 agent stacks routinely conflate the two: every Skill that *might* be
 relevant ships its full prose into the prompt every turn.
 
-That's the entire design pivot. Everything else in this document is the
+That's the entire design pivot. Everything that follows is the
 consequence of taking that line seriously.
 
 ---
@@ -320,8 +320,7 @@ for the contract.
 
 ## The shape of what comes next
 
-This document is about v1. The protocol is frozen at 1.0 for two years.
-Beyond that:
+The protocol is frozen at 1.0 for two years. Beyond that:
 
 - **Atom lifecycle.** Today a `deprecated` atom is a flag. Tomorrow the
   compiler emits a warning when one appears in a retrieval result, and
