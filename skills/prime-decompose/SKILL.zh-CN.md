@@ -39,7 +39,7 @@ description: 将 Markdown 协议文档（SKILL.md、设计系统规范、团队�
 | 对产物的通过/失败断言 | `check` |
 | 可测量的阈值 | `metric` |
 | 有输入/输出的多步骤过程 | `method` |
-| 连贯的设计流派 / 美学风格 | `persona` |
+| 对一组风格的具名集合（设计流派、写作风格、品牌系等） | `persona` |
 | 写作语调约定 | `voice` |
 | 高层级启发式规则（不可直接操作） | `principle` |
 | 两个有效立场之间的显性张力 | `tradeoff` |

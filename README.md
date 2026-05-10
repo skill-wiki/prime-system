@@ -125,6 +125,20 @@ A YAML-declared `custom-kind` form that bypasses the parser patch is on
 
 ---
 
+## Claude Code slash commands
+
+Five `/prime-*` commands ship in [`.claude/commands/`](./.claude/commands/) so Claude Code users can drive Prime workflows in one keystroke.
+
+- `/prime-resolve <brief>` — resolve a brief into concrete typed atoms via the `prime_resolve` MCP tool.
+- `/prime-compile <src>` — compile a source directory and report atoms, edges, and build errors.
+- `/prime-validate <artifact> <brief>` — validate a built artifact against a Prime brief contract.
+- `/prime-author <kind> <name>` — scaffold a new `.prime` source file with the right fields for the kind.
+- `/prime-publish <src>` — compile a corpus and prep a draft PR against `skill-wiki.github.io`.
+
+Use them at the project level out of the box, or copy globally with `cp -r .claude/commands/prime-*.md ~/.claude/commands/`. See [`.claude/commands/README.md`](./.claude/commands/README.md) for details.
+
+---
+
 ## Documentation
 
 | | EN | 中文 |

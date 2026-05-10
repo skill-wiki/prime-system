@@ -125,6 +125,166 @@ agent knowledge.
 
 ---
 
+## Skill self-evolution `[planned · 2026 → 2027]`
+
+Why: a corpus that only grows by hand-written PRs goes stale. Real usage is the
+best signal for what's missing — which atoms get queried with no hit, which
+intents return low-confidence results, which projections get rewritten by the
+agent before use. v0.1 throws all that signal away. v0.2+ keeps it, opt-in,
+and feeds it back into the corpus.
+
+### 🔵 Telemetry ingest API
+
+A small, opt-in HTTP endpoint the runtime can POST to on every `prime_query`:
+intent, kinds asked, ids returned, projection level, hit / miss, latency. No
+content, no PII. Off by default; enabled per-corpus via `domain.yaml`.
+
+### 🔵 Atom-proposal PR-bot
+
+A scheduled job that reads the telemetry stream, finds repeated zero-hit
+queries, and uses an LLM extractor (e.g., DSPy-style program) to propose new
+atoms. Output: a draft PR against the corpus repo with a stub `.prime` file
+the maintainers can edit and merge.
+
+### 🔵 Edge inference reflective pass
+
+After a corpus authors write atoms, run a TextGrad-style pass that proposes
+likely edges (`requires`, `contradicts`, `validates-with`) by reflecting on
+each pair. Maintainers approve / reject; nothing auto-merges.
+
+### ⚪ Atom-diff viewer in marketplace UI
+
+When a corpus version bumps, show the diff at the atom level: which atoms
+changed, which edges moved, which projections re-rendered. Helps consumers
+audit upgrades.
+
+### ⚪ Auto-tuning of projection priors
+
+The chunker's projection prior (which fields to keep at `summary` vs `core` vs
+`full`) is hand-coded per kind today. A DSPy-style program could tune those
+priors per corpus, optimising for downstream task accuracy.
+
+**Moonshot:** schema evolution. Today, atom kinds are fixed by spec. A
+corpus accumulating telemetry could *propose its own kinds* — à la
+[AutoSchemaKG](https://arxiv.org/abs/2402.14531) — and bubble them up as v2
+spec candidates.
+
+References:
+[DSPy](https://dspy.ai/) ·
+[TextGrad](https://textgrad.com/)
+
+---
+
+## Skill evaluation `[planned · 2026 Q4]`
+
+A protocol is only as useful as it is measurable. Today, the only evaluation
+is "does the agent cite the right atoms" — checked by hand on a 20-task
+benchmark. v0.2 makes this a first-class verb.
+
+### 🔵 `prime eval` CLI verb
+
+A corpus-scoped harness that wraps [Inspect AI](https://inspect.aisi.org.uk/)
+under the hood. Reads a `eval/` directory of task definitions, runs them
+against a configured agent, scores against expected atom citations and
+domain-specific scorers.
+
+### 🔵 MCP-Bench adapter
+
+An adapter that exposes a Skill Wiki corpus to
+[MCP-Bench](https://github.com/Accenture/mcp-bench) so corpora can be
+benchmarked head-to-head against other MCP servers on the same task suite.
+
+### 🔵 Domain-specific scorer plugins
+
+The harness ships with kind-aware scorers; corpora can register more.
+Examples for `prime-corpus-frontend`: axe-core pass-rate, Lighthouse score,
+visual-regression delta. For a security corpus: OWASP-rule-pass-rate.
+
+### ⚪ Three-arm A/B harness
+
+`prime eval --arms prime,skill,raw` runs the same task three times — once
+with the corpus mounted via Skill Wiki, once with bulk-loaded SKILL.md, once
+with no skill — and reports the deltas. Lets corpus authors prove the
+protocol pays its keep.
+
+### ⚪ Citation-precision metric
+
+Of the atoms `prime_query` returned, how many appeared in the agent's final
+output? A high-precision corpus is one whose retrieval is well-calibrated;
+a low-precision corpus is over-fetching or under-using.
+
+**Moonshot:** a public Skill leaderboard. Corpora register; the harness runs
+a fixed task suite weekly; results are published with version pinning. Same
+spirit as [HumanEval](https://github.com/openai/human-eval) for code.
+
+References:
+[MCP-Bench](https://arxiv.org/abs/2508.20453) ·
+[Inspect AI](https://inspect.aisi.org.uk/)
+
+---
+
+## Skill optimization `[planned · 2027]`
+
+The v0.1 retrieval path is naïve: load `_index.xml`, rank, fetch projections.
+That's fine at 1k atoms. At 10k it's wasteful; at 100k it stops fitting in
+context at all. v0.3+ tightens the loop.
+
+### 🔵 Per-intent edge-graph pruning
+
+At query time, walk the edge graph from the seed atoms outward up to
+`max_depth`, *but* prune branches whose verb mix doesn't match the intent
+(e.g., for a "implementation" intent, drop `tradeoff` and `provocation`
+edges). Smaller candidate set, same recall on the relevant kinds.
+
+### 🔵 Projection compressor (`--compress` flag)
+
+A LLMLingua-style compressor applied to `core` and `full` projections at
+serve time, selectable per query. Trades a small amount of fidelity for
+~2× tokens saved.
+
+### 🔵 Atom-result cache
+
+Content-addressed cache keyed by `(intent_hash, kinds, max_atoms)`. Same
+query inside a session = zero retrieval cost. Invalidates on corpus
+recompile.
+
+### ⚪ Multi-Skill composition budget
+
+When multiple corpora are mounted (per the v0.3 multi-corpus MCP), the
+runtime allocates a token budget across them based on per-corpus intent
+score, instead of fixed per-corpus quotas.
+
+### ⚪ Compile-time projection profiles
+
+Compile a corpus *N* times, once per intent class (e.g., "design",
+"implementation", "review"), producing per-class `core` projections that
+emphasise different fields. Runtime picks the profile based on intent.
+
+**Moonshot:** [KVzip](https://arxiv.org/abs/2505.23416)-style key-value
+memory per atom. Cache the decoder KV state for each `core` projection at
+compile time; on retrieval, splice it in instead of re-encoding. Removes
+the per-turn re-encoding cost entirely.
+
+References:
+[LLMLingua](https://github.com/microsoft/LLMLingua) ·
+[KVzip](https://arxiv.org/abs/2505.23416)
+
+---
+
+## Top 5 v0.2 ships
+
+If we ship nothing else in v0.2, these five carry the release:
+
+1. **`prime eval` CLI** — the harness that makes every other claim measurable.
+2. **Telemetry ingest + atom-proposal bot** — closes the corpus-staleness loop.
+3. **Atom-diff viewer** — required for users to trust corpus version bumps.
+4. **Per-intent edge-graph pruning** — the first retrieval optimisation that
+   pays for itself on day one.
+5. **Citation-precision metric** — the single number that tells a corpus author
+   whether their atoms are pulling their weight.
+
+---
+
 ## v1.0 spec → v2.0 spec `[considering · 2027]`
 
 The current spec freezes at 28 atom kinds, 14 edge verbs, 5 MCP tools (in

@@ -42,7 +42,7 @@ Default mappings as you read:
 | A pass/fail assertion against an artifact | `check` |
 | A measurable threshold | `metric` |
 | A multi-step procedure with inputs/outputs | `method` |
-| A coherent design school / aesthetic | `persona` |
+| A named bundle of style choices (design lineages, writing voices, brand systems) | `persona` |
 | A writing-tone contract | `voice` |
 | A high-level heuristic that is NOT directly actionable | `principle` |
 | An explicit tension between two valid positions | `tradeoff` |
