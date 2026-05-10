@@ -125,7 +125,7 @@ agent knowledge.
 
 ---
 
-## Skill self-evolution `[planned · 2026 → 2027]`
+## Prime self-evolution `[planned · 2026 → 2027]`
 
 Why: a corpus that only grows by hand-written PRs goes stale. Real usage is the
 best signal for what's missing — which atoms get queried with no hit, which
@@ -175,7 +175,7 @@ References:
 
 ---
 
-## Skill evaluation `[planned · 2026 Q4]`
+## Prime evaluation `[planned · 2026 Q4]`
 
 A protocol is only as useful as it is measurable. Today, the only evaluation
 is "does the agent cite the right atoms" — checked by hand on a 20-task
@@ -213,7 +213,7 @@ Of the atoms `prime_query` returned, how many appeared in the agent's final
 output? A high-precision corpus is one whose retrieval is well-calibrated;
 a low-precision corpus is over-fetching or under-using.
 
-**Moonshot:** a public Skill leaderboard. Corpora register; the harness runs
+**Moonshot:** a public Prime leaderboard. Corpora register; the harness runs
 a fixed task suite weekly; results are published with version pinning. Same
 spirit as [HumanEval](https://github.com/openai/human-eval) for code.
 
@@ -223,7 +223,7 @@ References:
 
 ---
 
-## Skill optimization `[planned · 2027]`
+## Prime optimization `[planned · 2027]`
 
 The v0.1 retrieval path is naïve: load `_index.xml`, rank, fetch projections.
 That's fine at 1k atoms. At 10k it's wasteful; at 100k it stops fitting in
@@ -248,7 +248,7 @@ Content-addressed cache keyed by `(intent_hash, kinds, max_atoms)`. Same
 query inside a session = zero retrieval cost. Invalidates on corpus
 recompile.
 
-### ⚪ Multi-Skill composition budget
+### ⚪ Multi-Prime composition budget
 
 When multiple corpora are mounted (per the v0.3 multi-corpus MCP), the
 runtime allocates a token budget across them based on per-corpus intent

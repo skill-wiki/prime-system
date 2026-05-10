@@ -123,7 +123,7 @@ by kind.
 
 | Kind | One-line use | Mandatory body field |
 |---|---|---|
-| `collection` | A publishable bundle of atoms (maps to a Skill) | `includes` |
+| `collection` | A publishable bundle of atoms (maps to a Prime) | `includes` |
 | `scope` | Defines a named namespace boundary | `name` + `members` |
 | `tradeoff` | Explicit tension between two valid positions | `position-a` + `position-b` |
 | `principle` | A high-level heuristic (not directly actionable) | `claim` |

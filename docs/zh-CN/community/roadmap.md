@@ -118,7 +118,7 @@ v0.1 的 registry 是裸 HTTP 服务：PUT 发布，GET 安装。没 semver 解�
 
 ---
 
-## Skill 自演化 `[计划 · 2026 → 2027]`
+## Prime 自演化 `[计划 · 2026 → 2027]`
 
 为什么：只靠人工 PR 添加原子的 corpus 会变陈旧。真实使用本身就是最好的
 信号 —— 哪些原子被查了但没命中、哪些意图返回的置信度低、哪些 projection
@@ -165,7 +165,7 @@ chunker 的 projection prior（哪些字段进 `summary`、哪些进 `core`、�
 
 ---
 
-## Skill 评测 `[计划 · 2026 Q4]`
+## Prime 评测 `[计划 · 2026 Q4]`
 
 协议有用，前提是可量化。今天唯一的评测是"agent 引用对了几个原子" ——
 人工跑 20 题基准。v0.2 把它升级成一等动词。
@@ -199,7 +199,7 @@ corpus、一遍批量 SKILL.md、一遍裸跑 —— 报告 delta。让 corpus �
 `prime_query` 返回的原子里，有多少出现在 agent 最终输出里？精度高的
 corpus = 检索校准得好；精度低的 corpus = 过取或漏用。
 
-**Moonshot：** 公共 Skill 排行榜。corpus 注册进来，harness 每周跑一套
+**Moonshot：** 公共 Prime 排行榜。corpus 注册进来，harness 每周跑一套
 固定任务，发布带版本锁定的结果。和代码界的
 [HumanEval](https://github.com/openai/human-eval) 一个意思。
 
@@ -209,7 +209,7 @@ corpus = 检索校准得好；精度低的 corpus = 过取或漏用。
 
 ---
 
-## Skill 优化 `[计划 · 2027]`
+## Prime 优化 `[计划 · 2027]`
 
 v0.1 检索路径很朴素：加载 `_index.xml`、排序、取 projection。1k 原子
 没问题，10k 就浪费，100k 装不下 context。v0.3+ 把这条路收紧。
@@ -230,7 +230,7 @@ LLMLingua 风格的压缩器，在 serve 时按需对 `core` 和 `full` projecti
 按 `(intent_hash, kinds, max_atoms)` 内容寻址。同一 session 里同样的
 查询零检索成本。corpus 重编译时失效。
 
-### ⚪ 多 Skill 组合预算
+### ⚪ 多 Prime 组合预算
 
 挂多个 corpus（v0.3 多 corpus MCP）时，runtime 按各 corpus 的意图分
 分配 token 预算，不再用固定配额。

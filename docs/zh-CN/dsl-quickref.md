@@ -117,7 +117,7 @@ Parser 强制三条规则：
 
 | Kind | 一句话用法 | 必填 body 字段 |
 |---|---|---|
-| `collection` | 可发布的原子打包（映射到一个 Skill） | `includes` |
+| `collection` | 可发布的原子打包（映射到一个 Prime） | `includes` |
 | `scope` | 命名 namespace 边界 | `name` + `members` |
 | `tradeoff` | 两个合理立场间的张力 | `position-a` + `position-b` |
 | `principle` | 高层启发（不直接可执行） | `claim` |
