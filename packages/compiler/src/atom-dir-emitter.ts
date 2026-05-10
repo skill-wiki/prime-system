@@ -24,7 +24,7 @@
 import { createHash } from "crypto";
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from "fs";
 import { join } from "path";
-import type { PrimeAST, AtomDeclaration, FieldNode, ArrayNode, StringNode, IdentNode, ObjectNode, NumberNode } from "@prime-lang/types";
+import type { PrimeAST, AtomDeclaration, FieldNode, ArrayNode, StringNode, IdentNode, ObjectNode, NumberNode } from "@skill-wiki/types";
 import { chunk, estimateTokens } from "./chunker.ts";
 import { emitXmlStub } from "./xml-stub-emitter.ts";
 import type { AtomMeta } from "./global-index-emitter.ts";

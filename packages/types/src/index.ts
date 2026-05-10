@@ -1,5 +1,5 @@
 /**
- * @module @prime-lang/types
+ * @module @skill-wiki/types
  * Core type definitions for the Prime Language system.
  *
  * This is the foundational package that all other Prime packages depend on.

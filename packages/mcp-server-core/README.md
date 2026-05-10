@@ -1,4 +1,4 @@
-# @prime-lang/mcp-server-core
+# @skill-wiki/mcp-server-core
 
 Generic [Model Context Protocol](https://modelcontextprotocol.io) server for any compiled [Prime](https://github.com/skill-wiki/prime-system) corpus. Exposes a single tool — `prime_query` — that browses atoms, traverses the edge graph, and returns projection-level paths the agent reads on demand.
 
@@ -7,8 +7,8 @@ The server **never returns atom body content**. It returns paths. The agent uses
 ## Install
 
 ```sh
-npm install -g @prime-lang/mcp-server-core
-# or run on demand: npx @prime-lang/mcp-server-core
+npm install -g @skill-wiki/mcp-server-core
+# or run on demand: npx @skill-wiki/mcp-server-core
 ```
 
 Requires Node.js >= 22.
@@ -20,7 +20,7 @@ Requires Node.js >= 22.
   "mcpServers": {
     "skill-wiki": {
       "command": "npx",
-      "args": ["@prime-lang/mcp-server-core"],
+      "args": ["@skill-wiki/mcp-server-core"],
       "env": { "PRIME_DIR": "/abs/path/to/compiled" }
     }
   }

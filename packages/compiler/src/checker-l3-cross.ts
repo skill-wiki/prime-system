@@ -27,7 +27,7 @@ import type {
   LinkShorthandNode,
   ObjectNode,
   ValueNode,
-} from "@prime-lang/types";
+} from "@skill-wiki/types";
 import type { Diagnostic } from "./types";
 
 type AnyAST = PrimeAST | AtomDeclaration;

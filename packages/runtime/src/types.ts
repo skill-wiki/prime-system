@@ -6,7 +6,7 @@
  * and EvaluationEngine during the load-execute-evaluate lifecycle.
  */
 
-import type { Identifier, PrimeType, Link } from "@prime-lang/types";
+import type { Identifier, PrimeType, Link } from "@skill-wiki/types";
 
 // ─── Index Types ───────────────────────────────────────────────────────────
 
@@ -265,7 +265,7 @@ export interface EvaluationReport {
 /**
  * A criterion definition passed to the evaluation engine.
  * This is the runtime representation used by EvaluationEngine,
- * slightly different from the @prime-lang/types Criterion which is
+ * slightly different from the @skill-wiki/types Criterion which is
  * the AST/compiler representation.
  */
 export interface RuntimeCriterion {

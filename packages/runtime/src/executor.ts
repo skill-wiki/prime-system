@@ -15,7 +15,7 @@
  *   Step.error_handler → Method.branches → VALIDATES Rule.severity → Stop
  */
 
-import type { Method, Step, Branch, Precondition } from "@prime-lang/types";
+import type { Method, Step, Branch, Precondition } from "@skill-wiki/types";
 import type { PrimeLoader } from "./loader";
 import type { IndexManager } from "./index-manager";
 import type { EvaluationEngine } from "./evaluator";

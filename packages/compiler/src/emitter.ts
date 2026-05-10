@@ -30,7 +30,7 @@ import type {
   ObjectNode,
   ParameterShorthandNode,
   ReferenceNode,
-} from "@prime-lang/types";
+} from "@skill-wiki/types";
 import type { DependencyGraph, InstalledPrime } from "./types";
 
 type AnyAST = PrimeAST | AtomDeclaration;

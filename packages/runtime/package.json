@@ -1,5 +1,5 @@
 {
-  "name": "@prime-lang/runtime",
+  "name": "@skill-wiki/runtime",
   "version": "0.1.0",
   "description": "Runtime for loading, executing, and evaluating compiled Primes",
   "main": "src/index.ts",
@@ -10,7 +10,7 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@prime-lang/types": "workspace:*",
+    "@skill-wiki/types": "workspace:*",
     "yaml": "^2.8.3",
     "zod": "^4.0.0"
   },

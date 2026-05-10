@@ -26,8 +26,8 @@ import type {
   ParameterShorthandNode,
   ThresholdNode,
   ValueNode,
-} from "@prime-lang/types";
-import type { AtomKind } from "@prime-lang/types";
+} from "@skill-wiki/types";
+import type { AtomKind } from "@skill-wiki/types";
 
 type AnyAST = PrimeAST | AtomDeclaration;
 

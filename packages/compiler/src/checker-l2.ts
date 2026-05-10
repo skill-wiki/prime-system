@@ -14,7 +14,7 @@
  * sends it to the Anthropic API via ai-client.ts, then parses with parseL2Response().
  */
 
-import type { PrimeAST, AtomDeclaration, FieldNode, ArrayNode, StringNode, StepNode } from "@prime-lang/types";
+import type { PrimeAST, AtomDeclaration, FieldNode, ArrayNode, StringNode, StepNode } from "@skill-wiki/types";
 import type { Diagnostic } from "./types";
 
 type AnyAST = PrimeAST | AtomDeclaration;

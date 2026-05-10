@@ -23,7 +23,7 @@ import { z } from "zod";
 import { parse as parseYaml } from "yaml";
 import { readFileSync, existsSync, readdirSync, statSync } from "fs";
 import * as path from "path";
-import type { PrimeAST, FieldNode, ArrayNode, StringNode, IdentNode } from "@prime-lang/types";
+import type { PrimeAST, FieldNode, ArrayNode, StringNode, IdentNode } from "@skill-wiki/types";
 import {
   DomainRegistry,
   type DomainPlugin,
@@ -315,7 +315,7 @@ export function loadDomainFromFile(filePath: string): LoadedDomainPlugin {
   for (const validator of config.validators) {
     if (validator.checker.startsWith("builtin:")) {
       // NOTE (v0.1.0): builtin validators are parsed and stored but NOT executed.
-      // The @prime-lang/validator-core execution engine is planned for v0.2.
+      // The @skill-wiki/validator-core execution engine is planned for v0.2.
       // Authors may declare builtin: validators today to future-proof their
       // domain.yaml; they will be silently no-ops until validator-core ships.
       validatedValidators.push(validator);

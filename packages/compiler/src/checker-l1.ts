@@ -24,7 +24,7 @@ import type {
   ReferenceNode,
   LinkShorthandNode,
   DecoratorNode,
-} from "@prime-lang/types";
+} from "@skill-wiki/types";
 import type { Diagnostic, InstalledPrime } from "./types";
 
 // ─── Helpers ───────────────────────────────────────────────────────────────

@@ -4,7 +4,7 @@
 
 import { describe, test, expect } from "bun:test";
 import { checkL1 } from "../src/checker-l1";
-import type { PrimeAST, StepNode, FieldNode, ArrayNode, StringNode, ThresholdNode } from "@prime-lang/types";
+import type { PrimeAST, StepNode, FieldNode, ArrayNode, StringNode, ThresholdNode } from "@skill-wiki/types";
 import type { InstalledPrime } from "../src/types";
 
 // ─── Test Helpers ──────────────────────────────────────────────────────────

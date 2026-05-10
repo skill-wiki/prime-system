@@ -1,5 +1,5 @@
 {
-  "name": "@prime-lang/cli",
+  "name": "@skill-wiki/cli",
   "version": "0.1.0",
   "description": "Prime CLI — compile, check, install, publish, search Prime atoms and corpora.",
   "type": "module",
@@ -17,6 +17,11 @@
     "prepublishOnly": "bun run build",
     "test": "bun test",
     "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@skill-wiki/types": "workspace:*",
+    "@skill-wiki/parser": "workspace:*",
+    "@skill-wiki/compiler": "workspace:*"
   },
   "keywords": [
     "prime-lang",

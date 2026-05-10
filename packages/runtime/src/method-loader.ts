@@ -14,7 +14,7 @@
 
 import { readFileSync, existsSync } from "fs";
 import { resolve } from "path";
-import type { Method } from "@prime-lang/types";
+import type { Method } from "@skill-wiki/types";
 
 export class MethodLoader {
   private methods: Map<string, Method> = new Map();

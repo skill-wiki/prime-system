@@ -1,5 +1,5 @@
 {
-  "name": "@prime-lang/parser",
+  "name": "@skill-wiki/parser",
   "version": "0.1.0",
   "description": "Parser for .prime source files — converts source text to AST",
   "main": "src/index.ts",
@@ -10,7 +10,7 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@prime-lang/types": "workspace:*"
+    "@skill-wiki/types": "workspace:*"
   },
   "license": "Apache-2.0"
 }

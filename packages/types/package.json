@@ -1,5 +1,5 @@
 {
-  "name": "@prime-lang/types",
+  "name": "@skill-wiki/types",
   "version": "0.1.0",
   "description": "Core type definitions for the Prime Language system",
   "main": "src/index.ts",

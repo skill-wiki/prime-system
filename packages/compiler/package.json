@@ -1,5 +1,5 @@
 {
-  "name": "@prime-lang/compiler",
+  "name": "@skill-wiki/compiler",
   "version": "0.1.0",
   "description": "AI-powered compiler for .prime files — structural, logic, and domain checking with optimized Markdown emission",
   "main": "src/index.ts",
@@ -10,8 +10,8 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@prime-lang/types": "workspace:*",
-    "@prime-lang/parser": "workspace:*"
+    "@skill-wiki/types": "workspace:*",
+    "@skill-wiki/parser": "workspace:*"
   },
   "license": "Apache-2.0"
 }

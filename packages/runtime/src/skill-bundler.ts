@@ -28,7 +28,7 @@ import type {
   ObjectNode,
   StringNode,
   ValueNode,
-} from "@prime-lang/types";
+} from "@skill-wiki/types";
 
 type AnyAST = PrimeAST | AtomDeclaration;
 

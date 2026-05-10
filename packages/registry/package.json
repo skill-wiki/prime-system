@@ -1,5 +1,5 @@
 {
-  "name": "@prime-lang/registry",
+  "name": "@skill-wiki/registry",
   "version": "0.1.0",
   "private": true,
   "license": "Apache-2.0",
@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "hono": "^4.7.6",
-    "@prime-lang/parser": "workspace:*",
-    "@prime-lang/types": "workspace:*"
+    "@skill-wiki/parser": "workspace:*",
+    "@skill-wiki/types": "workspace:*"
   }
 }

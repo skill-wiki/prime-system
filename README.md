@@ -59,7 +59,7 @@ Wire into Claude Code (see [docs/mcp.md](./docs/guides/mcp.md)):
   "mcpServers": {
     "skill-wiki": {
       "command": "bunx",
-      "args": ["@prime-lang/mcp-server-core"],
+      "args": ["@skill-wiki/mcp-server-core"],
       "env": { "PRIME_DIR": "/abs/path/to/compiled" }
     }
   }

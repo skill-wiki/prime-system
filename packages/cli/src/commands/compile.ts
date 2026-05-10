@@ -13,7 +13,7 @@ import { existsSync, readdirSync, readFileSync } from 'fs';
 import { header, success, error, warn, info, diagnosticLine, createSpinner, bold, green, yellow, red, gray } from '../utils/display';
 import { readFile, writeFile, fileExists } from '../utils/fs';
 
-import { parse } from '@prime-lang/parser';
+import { parse } from '@skill-wiki/parser';
 import {
   checkL1,
   resolve as resolveGraph,
@@ -24,9 +24,9 @@ import {
   estimateTokens,
   emitAtomDir,
   emitGlobalIndex,
-} from '@prime-lang/compiler';
-import type { InstalledPrime, AtomMeta } from '@prime-lang/compiler';
-import type { PrimeAST, AtomDeclaration } from '@prime-lang/types';
+} from '@skill-wiki/compiler';
+import type { InstalledPrime, AtomMeta } from '@skill-wiki/compiler';
+import type { PrimeAST, AtomDeclaration } from '@skill-wiki/types';
 
 function isPrimeAST(ast: PrimeAST | AtomDeclaration): ast is PrimeAST {
   return ast.type === "PrimeDeclaration";
@@ -112,7 +112,7 @@ export async function compileCommand(args: string[]) {
 
   if (level >= 2) {
     // L2 logic check would call AI — placeholder for now
-    // const { buildL2Prompt, parseL2Response } = await import('@prime-lang/compiler');
+    // const { buildL2Prompt, parseL2Response } = await import('@skill-wiki/compiler');
     // const prompt = buildL2Prompt(ast);
     // const response = await callAI(prompt);
     // diagnostics.push(...parseL2Response(response));
@@ -120,7 +120,7 @@ export async function compileCommand(args: string[]) {
 
   if (level >= 3) {
     // L3 domain check — same pattern
-    // const { buildL3Prompt, parseL3Response } = await import('@prime-lang/compiler');
+    // const { buildL3Prompt, parseL3Response } = await import('@skill-wiki/compiler');
     // const prompt = buildL3Prompt(ast);
     // const response = await callAI(prompt);
     // diagnostics.push(...parseL3Response(response));

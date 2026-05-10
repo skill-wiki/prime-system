@@ -59,7 +59,7 @@ PRIME_DIR=primes/compiled bun ../../packages/mcp-server-core/src/index.ts
   "mcpServers": {
     "skill-wiki": {
       "command": "bunx",
-      "args": ["@prime-lang/mcp-server-core"],
+      "args": ["@skill-wiki/mcp-server-core"],
       "env": { "PRIME_DIR": "/abs/path/to/compiled" }
     }
   }

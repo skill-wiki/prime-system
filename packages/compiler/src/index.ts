@@ -1,9 +1,9 @@
 /**
- * @module @prime-lang/compiler
+ * @module @skill-wiki/compiler
  * AI-powered compiler for .prime files.
  *
  * Compilation pipeline:
- *   Phase 1: Parse (.prime -> AST)           — handled by @prime-lang/parser
+ *   Phase 1: Parse (.prime -> AST)           — handled by @skill-wiki/parser
  *   Phase 2: Check (AST -> diagnostics)      — L1 structural, L2 logic, L3 domain
  *   Phase 3: Resolve (dependency graph)       — cycle, conflict, version checks
  *   Phase 4: Emit (AST -> .md outputs)        — optimized Markdown + bundle + index + graph
@@ -53,7 +53,7 @@ export type { EmitResult } from "./atom-dir-emitter";
 
 // ─── Imports for compile() ─────────────────────────────────────────────────
 
-import type { PrimeAST } from "@prime-lang/types";
+import type { PrimeAST } from "@skill-wiki/types";
 import type { CompileOptions, CompileResult, Diagnostic } from "./types";
 import { checkL1 } from "./checker-l1";
 import { checkL2Heuristic } from "./checker-l2-heuristic";
@@ -76,7 +76,7 @@ import {
  * Compile a .prime source file through the full pipeline.
  *
  * Pipeline:
- * 1. Parse source into AST (delegates to @prime-lang/parser)
+ * 1. Parse source into AST (delegates to @skill-wiki/parser)
  * 2. Run structural checks (L1, always)
  * 3. Run logic checks (L2, if level >= 2) — AI-powered via Anthropic API
  * 4. Run domain checks (L3, if level >= 3) — AI-powered via Anthropic API
@@ -101,12 +101,12 @@ export async function compile(
     // If not available, compilation cannot proceed
     let parserModule: any;
     try {
-      parserModule = await import("@prime-lang/parser");
+      parserModule = await import("@skill-wiki/parser");
     } catch {
       // Parser not available — this allows the compiler to be tested
       // independently. In production, the parser must be installed.
       throw new Error(
-        "Parser (@prime-lang/parser) not available. Install it or provide a pre-parsed AST."
+        "Parser (@skill-wiki/parser) not available. Install it or provide a pre-parsed AST."
       );
     }
     // The parser may return { ast, errors } or a PrimeAST directly

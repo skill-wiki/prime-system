@@ -19,7 +19,7 @@ import type {
   LinkShorthandNode,
   ObjectNode,
   FieldNode,
-} from "@prime-lang/types";
+} from "@skill-wiki/types";
 import type {
   Diagnostic,
   InstalledPrime,

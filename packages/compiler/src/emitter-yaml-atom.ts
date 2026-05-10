@@ -42,7 +42,7 @@ import type {
   BooleanNode,
   IdentNode,
   ValueNode,
-} from "@prime-lang/types";
+} from "@skill-wiki/types";
 
 type AnyAST = PrimeAST | AtomDeclaration;
 

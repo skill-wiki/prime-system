@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * @prime-lang/mcp-server-core
+ * @skill-wiki/mcp-server-core
  *
  * Generic MCP server for any compiled Skill Wiki / Prime corpus.
  *
@@ -26,7 +26,7 @@
  *     "mcpServers": {
  *       "skill-wiki": {
  *         "command": "bunx",
- *         "args": ["@prime-lang/mcp-server-core"],
+ *         "args": ["@skill-wiki/mcp-server-core"],
  *         "env": { "PRIME_DIR": "/abs/path/to/compiled" }
  *       }
  *     }
@@ -62,7 +62,7 @@ import {
   DomainRegistry,
   registerAll,
   type DomainPlugin,
-} from "@prime-lang/runtime";
+} from "@skill-wiki/runtime";
 
 // ─── Config ──────────────────────────────────────────────────────────────
 

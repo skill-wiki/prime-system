@@ -1,5 +1,5 @@
 /**
- * @module @prime-lang/runtime
+ * @module @skill-wiki/runtime
  * Runtime for loading, executing, and evaluating compiled Primes.
  *
  * Components:

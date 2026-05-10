@@ -1,4 +1,4 @@
-# `@prime-lang/runtime` — wired vs experimental modules
+# `@skill-wiki/runtime` — wired vs experimental modules
 
 The runtime package exports both the **production atom-loader** used by the
 MCP server and a set of **experimental modules** that sketch an alternative

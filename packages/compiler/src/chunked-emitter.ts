@@ -19,7 +19,7 @@ import type {
   ArrowNode,
   ObjectNode,
   ParameterShorthandNode,
-} from "@prime-lang/types";
+} from "@skill-wiki/types";
 
 // ─── Types ────────────────────────────────────────────────────────────────
 

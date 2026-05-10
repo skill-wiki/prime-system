@@ -31,7 +31,7 @@ import type {
   AppendNode,
   ExtendNode,
   SourceLocation,
-} from "@prime-lang/types";
+} from "@skill-wiki/types";
 
 import { type Token, TokenType } from "./lexer.ts";
 import { ParseError } from "./errors.ts";

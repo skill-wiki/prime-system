@@ -1,5 +1,5 @@
 /**
- * Tests for the @prime-lang/parser package.
+ * Tests for the @skill-wiki/parser package.
  *
  * Uses Bun's built-in test runner.
  */
@@ -24,7 +24,7 @@ import type {
   ThresholdNode,
   ParameterShorthandNode,
   DecoratorNode,
-} from "@prime-lang/types";
+} from "@skill-wiki/types";
 
 function asPrime(ast: PrimeAST | AtomDeclaration): PrimeAST {
   if (ast.type !== "PrimeDeclaration") throw new Error(`Expected PrimeAST, got ${ast.type}`);

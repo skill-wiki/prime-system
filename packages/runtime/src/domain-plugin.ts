@@ -22,7 +22,7 @@
  * files; users can edit, disable, or replace them.
  */
 
-import type { PrimeAST, AtomDeclaration, FieldNode, ArrayNode, StringNode } from "@prime-lang/types";
+import type { PrimeAST, AtomDeclaration, FieldNode, ArrayNode, StringNode } from "@skill-wiki/types";
 
 type AnyAST = PrimeAST | AtomDeclaration;
 

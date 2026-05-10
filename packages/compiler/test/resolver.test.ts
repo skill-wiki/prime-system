@@ -11,7 +11,7 @@ import type {
   StringNode,
   LinkShorthandNode,
   ReferenceNode,
-} from "@prime-lang/types";
+} from "@skill-wiki/types";
 import type { InstalledPrime } from "../src/types";
 
 // ─── Test Helpers ──────────────────────────────────────────────────────────

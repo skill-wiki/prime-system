@@ -21,8 +21,8 @@ import type {
   IdentNode,
   ArrayNode,
   ObjectNode,
-} from "@prime-lang/types";
-import { ATOM_KINDS } from "@prime-lang/types";
+} from "@skill-wiki/types";
+import { ATOM_KINDS } from "@skill-wiki/types";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

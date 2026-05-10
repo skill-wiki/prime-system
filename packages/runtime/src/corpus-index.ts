@@ -29,7 +29,7 @@ import type {
   NumberNode,
   IdentNode,
   ValueNode,
-} from "@prime-lang/types";
+} from "@skill-wiki/types";
 
 type AnyAST = PrimeAST | AtomDeclaration;
 import { CorpusGraph } from "./corpus-graph";

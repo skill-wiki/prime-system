@@ -14,7 +14,7 @@
  *   const executor = new PrimeExecutor(indexManager, loader, evaluator, stepExec);
  */
 
-import type { Step } from "@prime-lang/types";
+import type { Step } from "@skill-wiki/types";
 import type { ExecutionContext, StepResult } from "./types";
 
 export type AIProvider = "anthropic" | "openai" | "deepseek";

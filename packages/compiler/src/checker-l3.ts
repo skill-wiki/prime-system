@@ -18,7 +18,7 @@ import type {
   FieldNode,
   ArrayNode,
   StringNode,
-} from "@prime-lang/types";
+} from "@skill-wiki/types";
 import type { Diagnostic } from "./types";
 
 // ─── Helpers ───────────────────────────────────────────────────────────────

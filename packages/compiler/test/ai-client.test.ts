@@ -13,7 +13,7 @@ import { describe, it, expect, beforeEach, afterEach, mock } from "bun:test";
 import { callAI, hasApiKey, AI_MODELS } from "../src/ai-client";
 import { buildL2Prompt, parseL2Response } from "../src/checker-l2";
 import { buildL3Prompt, parseL3Response } from "../src/checker-l3";
-import type { PrimeAST } from "@prime-lang/types";
+import type { PrimeAST } from "@skill-wiki/types";
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────
 

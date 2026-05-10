@@ -22,7 +22,7 @@
  *   </atom>
  */
 
-import type { PrimeAST, AtomDeclaration, FieldNode, ArrayNode, StringNode, IdentNode, ObjectNode } from "@prime-lang/types";
+import type { PrimeAST, AtomDeclaration, FieldNode, ArrayNode, StringNode, IdentNode, ObjectNode } from "@skill-wiki/types";
 
 type AnyAST = PrimeAST | AtomDeclaration;
 

@@ -8,7 +8,7 @@ import { PrimeLoader } from "../src/loader";
 import { EvaluationEngine } from "../src/evaluator";
 import { MethodLoader } from "../src/method-loader";
 import { createMockStepExecutor } from "../src/ai-step-executor";
-import type { Method, Step } from "@prime-lang/types";
+import type { Method, Step } from "@skill-wiki/types";
 import type { ExecutionContext, StepResult } from "../src/types";
 
 type StepExecutorFn = (step: Step, context: ExecutionContext) => StepResult | Promise<StepResult>;

@@ -1,12 +1,12 @@
-# @prime-lang/cli
+# @skill-wiki/cli
 
 The command-line interface for [Prime Language](https://github.com/skill-wiki/prime-system) — a knowledge-protocol DSL for AI agents.
 
 ## Install
 
 ```sh
-npm install -g @prime-lang/cli
-# or: bun add -g @prime-lang/cli
+npm install -g @skill-wiki/cli
+# or: bun add -g @skill-wiki/cli
 ```
 
 Requires Node.js >= 22.
