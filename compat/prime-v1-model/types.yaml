@@ -1,0 +1,31 @@
+kind: definitions
+version: 1.0.0
+definitions:
+  - { kind: type, name: fact, version: 1.0.0 }
+  - { kind: type, name: term, version: 1.0.0 }
+  - { kind: type, name: value, version: 1.0.0 }
+  - { kind: type, name: category, version: 1.0.0 }
+  - { kind: type, name: example, version: 1.0.0 }
+  - { kind: type, name: counter-example, version: 1.0.0 }
+  - { kind: type, name: source, version: 1.0.0 }
+  - { kind: type, name: metric, version: 1.0.0 }
+  - { kind: type, name: step, version: 1.0.0 }
+  - { kind: type, name: check, version: 1.0.0 }
+  - { kind: type, name: transform, version: 1.0.0 }
+  - { kind: type, name: tool, version: 1.0.0 }
+  - { kind: type, name: method, version: 1.0.0 }
+  - { kind: type, name: rule, version: 1.0.0 }
+  - { kind: type, name: taxonomy, version: 1.0.0 }
+  - { kind: type, name: pattern, version: 1.0.0 }
+  - { kind: type, name: anti-pattern, version: 1.0.0 }
+  - { kind: type, name: type, version: 1.0.0 }
+  - { kind: type, name: persona, version: 1.0.0 }
+  - { kind: type, name: voice, version: 1.0.0 }
+  - { kind: type, name: constraint, version: 1.0.0 }
+  - { kind: type, name: template, version: 1.0.0 }
+  - { kind: type, name: provocation, version: 1.0.0 }
+  - { kind: type, name: collection, version: 1.0.0 }
+  - { kind: type, name: scope, version: 1.0.0 }
+  - { kind: type, name: tradeoff, version: 1.0.0 }
+  - { kind: type, name: principle, version: 1.0.0 }
+  - { kind: type, name: feedback, version: 1.0.0 }

@@ -1,0 +1,50 @@
+kind: definitions
+version: 1.0.0
+definitions:
+  - kind: projection
+    name: summary
+    version: 1.0.0
+    targetTokens: 50
+    include: [name, kind, version, description, kind-specific-one-liner, tags, domain]
+    exclude: [facts, definitions, categories, checks, steps, sources, examples, relations, notes, rationale, provenance, lifecycle]
+    typeGroups: &groups
+      data: [fact, term, value, category, example, counter-example, source, metric]
+      behaviour: [step, check, transform, tool]
+      composition: [method, rule, taxonomy, pattern, anti-pattern, type]
+      style-meta: [persona, voice, constraint, template, provocation, collection, scope, tradeoff, principle, feedback]
+    rules:
+      - { layer: summary, typeRef: "group:data", include: [name, kind, version, description, kind-specific-one-liner, tags, domain] }
+      - { layer: summary, typeRef: "group:behaviour", include: [name, kind, version, description, kind-specific-one-liner, tags, domain] }
+      - { layer: summary, typeRef: "group:composition", include: [name, kind, version, description, kind-specific-one-liner, tags, domain] }
+      - { layer: summary, typeRef: "group:style-meta", include: [name, kind, version, description, kind-specific-one-liner, tags, domain] }
+  - kind: projection
+    name: core
+    version: 1.0.0
+    targetTokens: 200
+    include: [name, kind, version, description, kind-specific-one-liner, tags, domain]
+    exclude: [sources, examples, relations, provenance, notes, rationale, lifecycle]
+    typeGroups: *groups
+    rules:
+      - { layer: core, typeRef: "group:data", include: [facts, definitions, categories, checks, steps] }
+      - { layer: core, typeRef: "group:behaviour", include: [checks, steps, signature, predicate, effect] }
+      - { layer: core, typeRef: "group:composition", include: [checks, steps, facts, categories, includes, severity_combination] }
+      - { layer: core, typeRef: "group:style-meta", include: [facts, checks, includes, steps, constraint-values] }
+  - kind: projection
+    name: full
+    version: 1.0.0
+    targetTokens: 800
+    include: [name, kind, version, description, kind-specific-one-liner, tags, domain, facts, definitions, categories, checks, steps, signature, predicate, effect, includes, severity_combination, constraint-values, sources, examples, relations, notes, rationale, provenance, unprocessed-fields]
+    typeGroups: *groups
+    rules:
+      - { layer: full, typeRef: "group:data", include: [sources, examples, relations, notes, rationale, provenance, full-categories, unprocessed-fields] }
+      - { layer: full, typeRef: "group:behaviour", include: [sources, examples, relations, notes, rationale, provenance, full-categories, unprocessed-fields] }
+      - { layer: full, typeRef: "group:composition", include: [sources, examples, relations, notes, rationale, provenance, full-categories, unprocessed-fields] }
+      - { layer: full, typeRef: "group:style-meta", include: [sources, examples, relations, notes, rationale, provenance, full-categories, unprocessed-fields] }
+  - kind: retrieval-profile
+    name: default
+    version: 1.0.0
+    projection: core
+    candidateGenerators: [{name: lexical, weight: 0.6}, {name: graph-neighbors, weight: 0.4}]
+    features: { lexicalScore: 0.7, graphAffinity: 0.3 }
+    constraints: [respect-conflicts, requires-closure]
+    reranker: stable-linear-v1

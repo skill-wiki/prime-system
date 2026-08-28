@@ -35,6 +35,10 @@
         "@skill-wiki/types": "workspace:*",
       },
     },
+    "packages/ir": {
+      "name": "@skill-wiki/ir",
+      "version": "0.1.0",
+    },
     "packages/mcp-server-core": {
       "name": "@skill-wiki/mcp-server-core",
       "version": "0.1.0",
@@ -44,6 +48,14 @@
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.0.0",
         "@skill-wiki/runtime": "workspace:*",
+        "zod": "^4.0.0",
+      },
+    },
+    "packages/model-schema": {
+      "name": "@skill-wiki/model-schema",
+      "version": "0.1.0",
+      "dependencies": {
+        "yaml": "^2.8.3",
         "zod": "^4.0.0",
       },
     },
@@ -86,7 +98,11 @@
 
     "@skill-wiki/compiler": ["@skill-wiki/compiler@workspace:packages/compiler"],
 
+    "@skill-wiki/ir": ["@skill-wiki/ir@workspace:packages/ir"],
+
     "@skill-wiki/mcp-server-core": ["@skill-wiki/mcp-server-core@workspace:packages/mcp-server-core"],
+
+    "@skill-wiki/model-schema": ["@skill-wiki/model-schema@workspace:packages/model-schema"],
 
     "@skill-wiki/parser": ["@skill-wiki/parser@workspace:packages/parser"],
 

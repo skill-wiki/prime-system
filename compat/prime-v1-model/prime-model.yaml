@@ -1,0 +1,7 @@
+protocol: prime/model/v2
+name: prime-v1-compatibility
+version: 1.0.0
+files:
+  - types.yaml
+  - relations.yaml
+  - projections.yaml

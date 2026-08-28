@@ -1,0 +1,10 @@
+{
+  "name": "@skill-wiki/model-schema",
+  "version": "0.1.0",
+  "description": "Strict external model package schema and YAML loader",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": { "test": "bun test", "typecheck": "tsc --noEmit -p tsconfig.json" },
+  "license": "Apache-2.0",
+  "dependencies": { "yaml": "^2.8.3", "zod": "^4.0.0" }
+}
