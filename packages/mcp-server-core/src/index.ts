@@ -9,33 +9,58 @@ import {
   loadCorpusSnapshot,
   loadIndex,
   loadAtomMeta,
-  resolveProjection,
-  discoverDomains,
-  DomainRegistry,
-  registerAll,
-  type DomainPlugin,
   type BundleDiagnostic,
   type GlobalIndex,
   type SnapshotRef,
 } from "@skill-wiki/runtime";
-import {
-  createPrimeQueryResponse,
-  createPrimeResourceUri,
-} from "./query-response";
+import type { SnapshotRef as IrSnapshotRef } from "@skill-wiki/ir";
+import type { Principal } from "@skill-wiki/query-engine";
+import type { ProjectionScope, TransportKind } from "@skill-wiki/projection-engine";
+import { createPrimeQueryResponse, type ResourceIdentity } from "./query-response";
 export {
   createPrimeQueryResponse,
   createPrimeResourceUri,
   type QueryResult,
   type QueryResponseResult,
   type PrimeQueryResponse,
+  type ResourceIdentity,
 } from "./query-response";
-import { executePrimeQuery, type QueryArguments } from "./query-engine";
+export {
+  buildCorpusGraph,
+  type CorpusGraph,
+  type AtomMetaLike,
+  type IndexAtomLike,
+} from "./corpus-graph";
+export {
+  cheaperProjections,
+  loadServeModel,
+  resolveModelRoot,
+  ModelContextError,
+  type ModelResolution,
+  type ServeModel,
+} from "./model-context";
+export {
+  DEFAULT_GENERATOR_BINDINGS,
+  executePrimeQuery,
+  resolvePrimeUri,
+  type GeneratorBinding,
+  type GeneratorMechanism,
+  type QueryArguments,
+  type ServeOptions,
+  type ServeOutcome,
+} from "./serve";
+
+import { buildCorpusGraph, type CorpusGraph } from "./corpus-graph";
+import { loadServeModel, resolveModelRoot, type ServeModel } from "./model-context";
+import { executePrimeQuery, resolvePrimeUri, type QueryArguments, type ServeOptions } from "./serve";
 
 export interface PrimeMcpOptions {
   primeDir: string;
   requireManifest?: boolean;
   stderr?: Pick<Console, "error">;
   environment?: Record<string, string | undefined>;
+  /** Model Package root; overrides `PRIME_MODEL_DIR` and bundle discovery. */
+  modelRoot?: string;
 }
 
 export interface PrimeMcpInstance {
@@ -43,21 +68,70 @@ export interface PrimeMcpInstance {
   index: GlobalIndex;
   snapshot: SnapshotRef;
   diagnostics: readonly BundleDiagnostic[];
+  model: ServeModel;
+  corpus: CorpusGraph;
+  serve: ServeOptions;
 }
 
 const PRIME_QUERY_SCHEMA = z.object({
   scope: z.enum(["atoms", "related", "show"]),
   query: z.string().optional(),
   id: z.string().optional(),
-  level: z.enum(["summary", "core", "full"]).optional().default("core"),
+  // Level names are Model Package data, so this is a string and an unknown value
+  // is rejected by the projection catalog with the declared names listed. A `enum`
+  // here would hard-code the v1 model's three level names into the protocol.
+  level: z.string().optional(),
   kind: z.string().optional(),
+  seeds: z.array(z.string().min(1)).optional(),
   limit: z.number().int().positive().max(100).optional().default(10),
 });
+
+const PRIME_RESOURCE_SCHEMA = z.object({ uri: z.string().min(1) });
+
+const TRANSPORT_ENV = "PRIME_TRANSPORT";
+const TENANT_ENV = "PRIME_TENANT";
+const WORKSPACE_ENV = "PRIME_WORKSPACE";
+const MAX_TOKENS_ENV = "PRIME_MAX_TOKENS";
+/** Local stdio agent: the pointer transport is the correct default for it (§9.5). */
+const DEFAULT_TRANSPORT: TransportKind = "path";
+const DEFAULT_TENANT = "local";
+const DEFAULT_MAX_TOKENS = 8000;
+
+function readTransport(environment: Record<string, string | undefined>): TransportKind {
+  const raw = environment[TRANSPORT_ENV];
+  return raw === "inline" || raw === "uri" || raw === "path" ? raw : DEFAULT_TRANSPORT;
+}
+
+function readPositiveInt(raw: string | undefined, fallback: number): number {
+  if (raw === undefined) return fallback;
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+/**
+ * The identity a request runs as.
+ *
+ * There is no authentication on a stdio MCP server, so there is no authenticated
+ * principal to derive this from: the local user already has the bundle on disk.
+ * The ACL is nonetheless wired and enforced ahead of everything else, so a corpus
+ * format that starts carrying `visibility`/`policyLabels` is filtered on without
+ * another cutover. See the lane report — this is a declared gap, not a default
+ * chosen for convenience.
+ */
+function localPrincipal(): Principal {
+  return {
+    id: "local",
+    allowedVisibility: ["private", "shared", "public"],
+    grantedPolicyLabels: [],
+  };
+}
 
 /**
  * Construct the server without connecting stdio. An environment can be
  * injected to make boot configuration deterministic in tests and embedders.
- * All filesystem reads happen once here, at boot, against compiled artifacts.
+ * All filesystem reads happen once here, at boot, against compiled artifacts —
+ * including every `atom.yaml`, because relation expansion needs the whole edge
+ * set before it can walk any of it.
  */
 export function createPrimeMcpServer(options: PrimeMcpOptions): PrimeMcpInstance {
   const stderr = options.stderr ?? console;
@@ -67,60 +141,93 @@ export function createPrimeMcpServer(options: PrimeMcpOptions): PrimeMcpInstance
     stderr.error(`[prime-mcp-core] ${diagnostic.severity} ${diagnostic.code}: ${diagnostic.message}`);
   }
   const index = loadIndex(options.primeDir);
-  const domainRegistry = new DomainRegistry();
-  const primeParent = resolveFsPath(options.primeDir, "..");
-  const roots = [primeParent];
-  if (process.cwd() !== primeParent) roots.push(process.cwd());
-  const plugins: DomainPlugin[] = [];
-  const seenNames = new Set<string>();
-  for (const root of roots) {
-    for (const plugin of discoverDomains(root)) {
-      if (!seenNames.has(plugin.name)) {
-        seenNames.add(plugin.name);
-        plugins.push(plugin);
-      }
-    }
-  }
-  registerAll(domainRegistry, plugins);
-  const names = domainRegistry.names();
-  if (names.length > 0) stderr.error(`[prime-mcp-core] domains: ${names.length} (${names.join(", ")})`);
-  else stderr.error("[prime-mcp-core] domains: 0 (no domain.yaml found — plain ranking active)");
 
-  const domainTags = new Set<string>();
-  for (const name of names) {
-    for (const tag of domainRegistry.get(name)!.tags) domainTags.add(tag.toLowerCase());
+  const resolution = resolveModelRoot(options.primeDir, environment, options.modelRoot);
+  const model = loadServeModel(resolution);
+  stderr.error(
+    `[prime-mcp-core] model ${model.model.manifest.name}@${model.model.manifest.version} (${resolution.origin}) · ` +
+      `profiles ${Object.keys(model.profiles).sort().join(",")} · projections ${model.catalog.profiles().join(",")}`,
+  );
+
+  const irSnapshot: IrSnapshotRef = {
+    modelRelease: model.model.manifest.version,
+    modelDigest: loaded.snapshot.schemaDigest,
+    corpusRelease: loaded.snapshot.release,
+    corpusDigest: loaded.snapshot.contentDigest,
+  };
+  const corpus = buildCorpusGraph({
+    atoms: index.atoms,
+    loadMeta: (id) => loadAtomMeta(options.primeDir, id),
+    snapshot: irSnapshot,
+    corpus: loaded.snapshot.corpus,
+  });
+  for (const diagnostic of corpus.diagnostics) {
+    stderr.error(`[prime-mcp-core] ${diagnostic.severity} ${diagnostic.code}: ${diagnostic.message}`);
   }
-  let kindBoosts: Record<string, number> = {};
-  if (environment.PRIME_KIND_BOOSTS) {
-    try { kindBoosts = JSON.parse(environment.PRIME_KIND_BOOSTS) as Record<string, number>; } catch { /* original behavior: no boosts */ }
-  }
+
+  const identity: ResourceIdentity = {
+    tenant: environment[TENANT_ENV] ?? DEFAULT_TENANT,
+    corpus: loaded.snapshot.corpus,
+    release: loaded.snapshot.release,
+  };
+  const projectionScope: ProjectionScope = {
+    tenant: identity.tenant,
+    workspace: environment[WORKSPACE_ENV] ?? identity.tenant,
+    corpus: identity.corpus,
+    release: identity.release,
+    snapshot: irSnapshot,
+  };
+  const serve: ServeOptions = {
+    model,
+    corpus,
+    bundleRoot: resolveFsPath(options.primeDir),
+    scope: projectionScope,
+    principal: localPrincipal(),
+    transport: readTransport(environment),
+    maxTokens: readPositiveInt(environment[MAX_TOKENS_ENV], DEFAULT_MAX_TOKENS),
+  };
 
   const server = new McpServer({ name: "prime-mcp-core", version: "0.1.0" }, { capabilities: { tools: {} } });
   server.tool(
     "prime_query",
-    "Browse a compiled Prime corpus. Results contain projection paths, never source or projection content.",
+    "Browse a compiled Prime corpus. Every result carries a prime:// resource URI; the payload is a projection path, inline content or the URI itself depending on the negotiated transport.",
     async (extra) => {
       const raw = (extra as unknown as { params?: { arguments?: unknown } }).params?.arguments ?? {};
       const parsed = PRIME_QUERY_SCHEMA.safeParse(raw);
-      const args: QueryArguments = parsed.success ? parsed.data : { scope: "atoms", level: "core", limit: 10 };
-      const outcome = executePrimeQuery(args, {
-        atoms: index.atoms,
-        kindBoosts,
-        domainTags,
-        loadMeta: (id) => loadAtomMeta(options.primeDir, id),
-        resolveProjection: (id, level) => resolveProjection(options.primeDir, id, level),
-      });
+      const args: QueryArguments = parsed.success ? parsed.data : { scope: "atoms", limit: 10 };
+      const outcome = executePrimeQuery(args, serve);
       if ("error" in outcome) return { content: [{ type: "text", text: outcome.error }] };
-
       return {
         content: [{
           type: "text",
-          text: JSON.stringify(createPrimeQueryResponse(loaded.snapshot, outcome.results, index.totalTokens), null, 2),
+          text: JSON.stringify(
+            createPrimeQueryResponse(
+              loaded.snapshot,
+              identity,
+              outcome.results,
+              index.totalTokens,
+              outcome.diagnostics.map((d) => ({ code: d.code, message: d.message, severity: d.severity })),
+            ),
+            null,
+            2,
+          ),
         }],
       };
     },
   );
-  return { server, index, snapshot: loaded.snapshot, diagnostics: loaded.diagnostics };
+  server.tool(
+    "prime_resource",
+    "Resolve a prime:// resource URI to its projection content. This is what makes the URI transport usable for a consumer that cannot read server-local paths (§11.3).",
+    async (extra) => {
+      const raw = (extra as unknown as { params?: { arguments?: unknown } }).params?.arguments ?? {};
+      const parsed = PRIME_RESOURCE_SCHEMA.safeParse(raw);
+      if (!parsed.success) return { content: [{ type: "text", text: "prime_resource requires `uri`." }] };
+      const outcome = resolvePrimeUri(parsed.data.uri, serve);
+      if ("error" in outcome) return { content: [{ type: "text", text: outcome.error }] };
+      return { content: [{ type: "text", text: outcome.content }] };
+    },
+  );
+  return { server, index, snapshot: loaded.snapshot, diagnostics: loaded.diagnostics, model, corpus, serve };
 }
 
 /** Production stdio entry point; kept separate so import remains side-effect free. */
@@ -134,7 +241,7 @@ export async function runStdioServer(environment: Record<string, string | undefi
   });
   console.error(`[prime-mcp-core] ${instance.index.total} atoms · ${instance.index.totalTokens} tokens · snapshot ${instance.snapshot.corpus}@${instance.snapshot.release}`);
   await instance.server.connect(new StdioServerTransport());
-  console.error("[prime-mcp-core] ready · tool: prime_query · stdio transport active");
+  console.error(`[prime-mcp-core] ready · tools: prime_query, prime_resource · transport ${instance.serve.transport} · stdio active`);
 }
 
 const isEntrypoint = Boolean(process.argv[1]) && import.meta.url === pathToFileURL(resolveFsPath(process.argv[1])).href;

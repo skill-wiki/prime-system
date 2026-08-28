@@ -1,25 +1,87 @@
 import { describe, expect, it } from "bun:test";
-import { createPrimeQueryResponse, createPrimeResourceUri } from "../src/query-response";
+import { parseProjectionUri } from "@skill-wiki/projection-engine";
+import { createPrimeQueryResponse, createPrimeResourceUri, type QueryResult } from "../src/query-response";
+
+const SNAPSHOT = {
+  kind: "manifest" as const, protocolVersion: "2.0.0", irVersion: "2", compilerVersion: "2.1.0",
+  emitterVersion: "3", corpus: "org.example/test", release: "2026.08.28.1",
+  sourceRevision: "git:abc", models: {}, schemaDigest: "sha256:" + "a".repeat(64),
+  contentDigest: "sha256:" + "b".repeat(64), indexDigest: "sha256:" + "c".repeat(64),
+  createdAt: "2026-08-28T00:00:00Z",
+};
+
+const IDENTITY = { tenant: "local", corpus: "org.example/test", release: "2026.08.28.1" };
+
+const RESULT: QueryResult = {
+  id: "@example/unit", kind: "unit", description: "test", tokens: 2, level: "core", profile: "core",
+  transport: "path", bytes: 8, digest: "sha256:" + "d".repeat(64), path: "/local/projection.md",
+};
 
 describe("createPrimeQueryResponse", () => {
-  it("keeps legacy result fields while adding portable snapshot metadata", () => {
-    const response = createPrimeQueryResponse({
-      kind: "manifest", protocolVersion: "2.0.0", irVersion: "2", compilerVersion: "2.1.0",
-      emitterVersion: "3", corpus: "org.example/test", release: "2026.08.28.1",
-      sourceRevision: "git:abc", models: {}, schemaDigest: "sha256:" + "a".repeat(64),
-      contentDigest: "sha256:" + "b".repeat(64), indexDigest: "sha256:" + "c".repeat(64),
-      createdAt: "2026-08-28T00:00:00Z",
-    }, [{ id: "@example/unit", kind: "unit", description: "test", tokens: 2, level: "core", path: "/local/projection.md" }], 2);
+  it("keeps the snapshot metadata portable and never leaks the server's prime dir", () => {
+    const response = createPrimeQueryResponse(SNAPSHOT, IDENTITY, [RESULT], 2);
     expect(response.total_index_tokens).toBe(2);
-    expect(response.results[0]?.path).toBe("/local/projection.md");
     expect(response.snapshot).not.toHaveProperty("primeDir");
     expect(response.snapshot.release).toBe("2026.08.28.1");
-    expect(response.results[0]?.resource_uri).toBe("prime://corpus/org.example%2Ftest/releases/2026.08.28.1/units/%40example%2Funit/projections/core");
+    expect(response.diagnostics).toEqual([]);
   });
-  it("encodes every URI segment, including legacy release identity", () => {
-    expect(createPrimeResourceUri({ kind: "legacy", protocolVersion: "legacy", irVersion: "legacy", compilerVersion: "unknown", emitterVersion: "unknown", corpus: "a/b", release: "index:abc def", sourceRevision: "unknown", models: {}, schemaDigest: "x", contentDigest: "x", indexDigest: "x", createdAt: "1970-01-01T00:00:00Z" }, "@a/b", "core")).toBe("prime://corpus/a%2Fb/releases/index%3Aabc%20def/units/%40a%2Fb/projections/core");
+
+  it("carries the local path only for the pointer transport", () => {
+    const response = createPrimeQueryResponse(SNAPSHOT, IDENTITY, [RESULT], 2);
+    expect(response.results[0]?.path).toBe("/local/projection.md");
+    const inline = createPrimeQueryResponse(
+      SNAPSHOT, IDENTITY,
+      [{ ...RESULT, transport: "inline", path: undefined, content: "body" }], 2,
+    );
+    expect(inline.results[0]?.path).toBeUndefined();
+    expect(inline.results[0]?.content).toBe("body");
   });
-  it("uses RFC3986 segment encoding without local paths", () => {
-    expect(createPrimeResourceUri({ kind: "manifest", protocolVersion: "2", irVersion: "2", compilerVersion: "2", emitterVersion: "2", corpus: "a/b!'()*", release: "r: 1%", sourceRevision: "x", models: {}, schemaDigest: "x", contentDigest: "x", indexDigest: "x", createdAt: "x" }, "@a/雪", "full")).toBe("prime://corpus/a%2Fb%21%27%28%29%2A/releases/r%3A%201%25/units/%40a%2F%E9%9B%AA/projections/full");
+
+  it("surfaces diagnostics rather than dropping them", () => {
+    const response = createPrimeQueryResponse(SNAPSHOT, IDENTITY, [RESULT], 2, [
+      { code: "X", message: "y", severity: "warning" },
+    ]);
+    expect(response.diagnostics).toHaveLength(1);
+  });
+});
+
+describe("createPrimeResourceUri", () => {
+  /**
+   * The pre-cutover grammar was
+   * `prime://corpus/<corpus>/releases/<release>/units/<id>/projections/<level>` —
+   * six segments, a literal `corpus` where §11.3 puts the tenant, and no profile.
+   * Nothing in the repo could parse it back. These assertions are the replacement
+   * contract: §11.3 shape, and a real round-trip through the engine's parser.
+   */
+  it("emits the §11.3 seven-segment shape", () => {
+    const uri = createPrimeResourceUri(IDENTITY, "@example/unit", "core", "core");
+    expect(uri).toBe(
+      "prime://local/org.example%2Ftest@2026.08.28.1/units/%40example%2Funit/projections/core/core",
+    );
+  });
+
+  it("round-trips every field through the engine's parser", () => {
+    const uri = createPrimeResourceUri(
+      { tenant: "t 1", corpus: "a/b!'()*", release: "index:abc def" },
+      "@a/雪",
+      "pf/one",
+      "lv wide",
+    );
+    const parsed = parseProjectionUri(uri);
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.value).toEqual({
+      tenant: "t 1", corpus: "a/b!'()*", release: "index:abc def",
+      unitId: "@a/雪", profile: "pf/one", level: "lv wide",
+    });
+  });
+
+  it("keeps a legacy release identity addressable", () => {
+    const uri = createPrimeResourceUri(
+      { tenant: "local", corpus: "legacy", release: "index:abc" }, "@a/b", "core", "core",
+    );
+    const parsed = parseProjectionUri(uri);
+    expect(parsed.ok).toBe(true);
+    if (parsed.ok) expect(parsed.value.release).toBe("index:abc");
   });
 });

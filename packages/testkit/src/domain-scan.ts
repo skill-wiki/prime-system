@@ -311,7 +311,14 @@ function literalShape(line: string, span: Span | undefined, term: string): Liter
 }
 
 const TEST_RUNNER_IMPORT = /from\s+["'](?:bun:test|node:test|vitest|@jest\/globals)["']/;
-const RELATIVE_IMPORT = /(?:from\s*|import\s*\(\s*|require\s*\(\s*)["'](\.[^"']*)["']/g;
+/**
+ * Includes the bare side-effect form `import "./x.ts";`. Omitting it made the
+ * tier fail *open*: a module loaded only for its side effects is loaded, yet it
+ * would read as `unreachable` and have its closed-set violations demoted from
+ * error to warning. There are zero such imports in the workspace today, so this
+ * changes no current count — it closes the hole before something lands in it.
+ */
+const RELATIVE_IMPORT = /(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*|^\s*import\s+|;\s*import\s+)["'](\.[^"']*)["']/gm;
 
 /** A module is test-shaped by what it is, not only by where it sits. */
 function isTestShaped(relativePath: string, source: string): boolean {
@@ -361,8 +368,14 @@ function declaredEntries(packageDir: string): readonly string[] {
  * Deliberately follows only relative specifiers: a `@skill-wiki/x` import crosses
  * into another package, and that package is walked from its own entry, so the
  * closure never has to model workspace resolution.
+ *
+ * Exported because the package-wiring gate must ask the *same* question one
+ * level up ("is this package reached by anything that runs?"). Two independent
+ * notions of "production code" would let a module be engine-tier for one gate
+ * and test-tier for the other, which is how a package ends up 100% tested and
+ * still dead.
  */
-function reachableFrom(packageDir: string): ReadonlySet<string> {
+export function reachableFrom(packageDir: string): ReadonlySet<string> {
   const seen = new Set<string>();
   const queue = [...declaredEntries(packageDir)];
   while (queue.length > 0) {

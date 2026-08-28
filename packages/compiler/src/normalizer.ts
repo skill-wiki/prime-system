@@ -1,9 +1,20 @@
 import type { AtomDeclaration, UnitDeclaration, ValueNode } from "@skill-wiki/types";
 import type { LoadedModel, TypeDefinition } from "@skill-wiki/model-schema";
-import type { SourceRefIR, TypedValueIR, UnitIR } from "@skill-wiki/ir";
+import type { GraphEdgeIR, SourceRefIR, TypedValueIR, UnitIR } from "@skill-wiki/ir";
+import { buildRelationIndex, type RelationIndex } from "./relation-semantics";
 
 export interface NormalizeDiagnostic { readonly code: string; readonly message: string; readonly field?: string; readonly typeRef?: string; readonly source: SourceRefIR }
-export interface NormalizeContext { readonly corpus: string; readonly version: string; readonly digest: string; readonly lifecycle?: UnitIR["lifecycle"]; readonly visibility?: UnitIR["visibility"] }
+/**
+ * `id` lets the caller supply the corpus-resolved unit id.
+ *
+ * Without it the only identity available here is the declaration name
+ * (`fact WaterBoilsAt100C`), while the corpus addresses the same unit as
+ * `@example/fact-water-boils-at-100c` — the id its `id:` field declares. Every
+ * relation edge's `from` and every emitted directory path is keyed on that id,
+ * so leaving it to be re-derived downstream is how two paths end up with two
+ * different identities for one unit.
+ */
+export interface NormalizeContext { readonly corpus: string; readonly version: string; readonly digest: string; readonly id?: string; readonly lifecycle?: UnitIR["lifecycle"]; readonly visibility?: UnitIR["visibility"] }
 export type NormalizeResult = { ok: true; value: UnitIR } | { ok: false; diagnostics: readonly NormalizeDiagnostic[] };
 type ConvertResult = { ok: true; value: TypedValueIR } | { ok: false; code: string };
 const scalarTypes = new Set(["string", "number", "boolean", "integer", "unknown"]);
@@ -51,6 +62,71 @@ function convertUnknown(value: ValueNode, filename?: string): ConvertResult {
   return { ok: false, code: "UNSUPPORTED_VALUE" };
 }
 
+/**
+ * The target of one relation value.
+ *
+ * `String`, `Ident` and `Reference` are all legal spellings of a unit id in the
+ * v1 corpus — `related: [@example/term-celsius]` lexes as `Ident`, not
+ * `Reference`, because the language has no sigil rule that would make it one.
+ * Anything else is not an id and is skipped rather than coerced.
+ */
+function relationTarget(value: ValueNode): string {
+  if (value.type === "String" || value.type === "Ident") return value.value;
+  if (value.type === "Reference") return value.path.join("/");
+  return "";
+}
+
+/**
+ * Lift the unit's link declarations into `UnitIR.relations`.
+ *
+ * Which field keys are relations, and what the canonical name of each spelling
+ * is, are **model facts** read through `RelationIndex` — there is no relation
+ * name literal here (D-3 forbids a third hand-written narrowing).
+ *
+ * Edge ids are `from|relation|to`, which is stable across runs and across
+ * source reordering: `computeCompiledUnitContentDigest` sorts relations by id,
+ * so a counter-based id would make the content digest depend on declaration
+ * order. The same triple is the dedup key, reproducing the legacy emitter's
+ * `(type, target)` dedup.
+ */
+function extractRelations(
+  body: readonly { key: string; value: ValueNode }[],
+  from: string,
+  index: RelationIndex,
+): GraphEdgeIR[] {
+  const edges: GraphEdgeIR[] = [];
+  const seen = new Set<string>();
+  for (const field of body) {
+    const definition = index.definition(field.key);
+    if (!definition) continue;
+    const values = field.value.type === "Array" ? field.value.items : [field.value];
+    for (const item of values) {
+      const to = relationTarget(item);
+      if (!to) continue;
+      const id = `${from}|${definition.name}|${to}`;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      edges.push({ id, relationRef: definition.name, from, to });
+    }
+  }
+  return edges;
+}
+
+/**
+ * One relation index per loaded model.
+ *
+ * Built from the model that was handed in rather than from
+ * `defaultRelationIndex()`: normalization already knows which model package it
+ * is normalizing against, and reaching for the v1 default here would make a
+ * second model silently inherit v1's relation set.
+ */
+const relationIndexes = new WeakMap<LoadedModel, RelationIndex>();
+function relationIndexFor(model: LoadedModel): RelationIndex {
+  let index = relationIndexes.get(model);
+  if (!index) { index = buildRelationIndex(model); relationIndexes.set(model, index); }
+  return index;
+}
+
 function convert(value: ValueNode, expected: string, filename: string | undefined, knownTypes: Set<string>): ConvertResult {
   if (expected === "unknown") return convertUnknown(value, filename);
   const source = sourceOf(value, filename);
@@ -76,7 +152,8 @@ function normalize(name: string, typeRef: string, body: readonly { key: string; 
   for (const field of body) { const fieldSource = sourceOf(field, filename); if (seen.has(field.key)) { diagnostics.push({ code: "DUPLICATE_FIELD", message: `Duplicate field: ${field.key}`, field: field.key, source: fieldSource }); continue; } seen.add(field.key); const definition = definitions.get(field.key); if (!definition && type.additionalFields === "reject") { diagnostics.push({ code: "UNKNOWN_FIELD", message: `Unknown field: ${field.key}`, field: field.key, typeRef: resolved, source: fieldSource }); continue; } const expected = definition?.typeRef ?? "unknown"; const converted = convert(field.value, expected, filename, knownTypes); if (!converted.ok) { diagnostics.push({ code: converted.code, message: `Field '${field.key}' does not match ${expected}`, field: field.key, typeRef: expected, source: fieldSource }); continue; } fields[field.key] = converted.value; }
   for (const definition of type.fields) if (definition.required && !fields[definition.name]) diagnostics.push({ code: "MISSING_REQUIRED_FIELD", message: `Missing required field: ${definition.name}`, field: definition.name, typeRef: resolved, source: declarationSource });
   if (diagnostics.length) return { ok: false, diagnostics };
-  return { ok: true, value: { identity: { id: name, version: context.version, digest: context.digest, corpus: context.corpus }, typeRef: resolved as UnitIR["typeRef"], implements: [], fields, relations: [], citations: [], policyLabels: [], lifecycle: context.lifecycle ?? "active", visibility: context.visibility ?? "shared", provenance: { source: declarationSource }, projections: {} } };
+  const id = context.id ?? name;
+  return { ok: true, value: { identity: { id, version: context.version, digest: context.digest, corpus: context.corpus }, typeRef: resolved as UnitIR["typeRef"], implements: [], fields, relations: extractRelations(body, id, relationIndexFor(model)), citations: [], policyLabels: [], lifecycle: context.lifecycle ?? "active", visibility: context.visibility ?? "shared", provenance: { source: declarationSource }, projections: {} } };
 }
 export function normalizeUnit(ast: UnitDeclaration, model: LoadedModel, context: NormalizeContext): NormalizeResult { return normalize(ast.name, ast.typeRef.name, ast.body, ast.filename, sourceOf(ast, ast.filename), model, context); }
 

@@ -20,6 +20,7 @@ import { dirname, resolve } from "node:path";
 import type {
   PrimeAST,
   AtomDeclaration,
+  UnitDeclaration,
   FieldNode,
   ArrayNode,
   StringNode,
@@ -36,10 +37,23 @@ import type { ProjectionDefinition } from "@skill-wiki/model-schema";
 import { loadModelOrThrow } from "@skill-wiki/model-schema";
 import { defaultRelationIndex } from "./relation-semantics";
 
-type AnyAST = PrimeAST | AtomDeclaration;
+/**
+ * Everything this renderer can read.
+ *
+ * `UnitDeclaration` is here because the generic `unit X : @model/type { … }`
+ * syntax must reach the SAME renderer as the v1 kind form. Rendering it
+ * elsewhere is what produced two renderers in this package, and with them a
+ * corpus whose bytes depended on which front end had parsed it.
+ */
+export type ChunkableAST = PrimeAST | AtomDeclaration | UnitDeclaration;
+type AnyAST = ChunkableAST;
 
 function isPrimeAST(ast: AnyAST): ast is PrimeAST {
   return ast.type === "PrimeDeclaration";
+}
+
+function isUnitDeclaration(ast: AnyAST): ast is UnitDeclaration {
+  return ast.type === "UnitDeclaration";
 }
 
 // ─── Public types ──────────────────────────────────────────────────────────
@@ -178,8 +192,17 @@ function objStrField(obj: ObjectNode, key: string): string {
   return "";
 }
 
-/** Derive the unit kind from the AST — kind form, explicit field, or legacy extends */
+/** Derive the unit kind from the AST — kind form, generic type ref, explicit field, or legacy extends */
 function deriveKind(ast: AnyAST): string {
+  // Generic form: the kind survives only as a possibly model-qualified type
+  // reference (`unit X : @prime-v1-compatibility/fact`). Stripping the model
+  // prefix is what makes the macro'd form and the kind form land in the same
+  // projection group instead of both falling through to the default group.
+  if (isUnitDeclaration(ast)) {
+    const ref = ast.typeRef.name;
+    const separator = ref.startsWith("@") ? ref.indexOf("/") : -1;
+    return (separator < 0 ? ref : ref.slice(separator + 1)).toLowerCase();
+  }
   // Kind form: parser returns an AtomDeclaration with `kind` directly.
   if (!isPrimeAST(ast)) {
     return ast.kind.toLowerCase();
@@ -395,14 +418,6 @@ function appendSection(
   }
 }
 
-function buildCore(ast: AnyAST, kind: string, summary: string, rules: ChunkProjectionRules): string {
-  const lines: string[] = [summary];
-  for (const section of sectionsFor("core", kind, rules)) {
-    appendSection(section, ast, lines, "core", rules);
-  }
-  return lines.join("\n");
-}
-
 /**
  * Field keys that belong in `full` but NOT in `core`. These are meta /
  * provenance / cross-reference fields — useful for forensics but not for
@@ -448,14 +463,6 @@ function appendCoreUnprocessedFields(ast: AnyAST, lines: string[]): void {
 }
 
 // ─── Level 3 — Full ───────────────────────────────────────────────────────
-
-function buildFull(ast: AnyAST, kind: string, core: string, rules: ChunkProjectionRules): string {
-  const lines: string[] = [core];
-  for (const section of sectionsFor("full", kind, rules)) {
-    appendSection(section, ast, lines, "full", rules);
-  }
-  return lines.join("\n");
-}
 
 // ─── Catch-all: emit fields the structured pipeline didn't already cover ────
 
@@ -900,18 +907,93 @@ function buildSignature(ast: AnyAST): string {
 // ─── Public API ────────────────────────────────────────────────────────────
 
 /**
- * Split a parsed AST into the projection levels the model declares.
+ * The section names `appendSection` can actually render.
  *
- * @param ast - The parsed PrimeAST or AtomDeclaration
+ * Mirrors that switch's case list and lives next to it on purpose. It exists so
+ * a caller can ask "does this model address my section vocabulary at all?"
+ * before choosing a renderer, instead of discovering the answer as an empty
+ * projection.
+ */
+const ENGINE_SECTIONS: ReadonlySet<string> = new Set([
+  "facts", "definitions", "categories", "checks", "steps", "signature",
+  "predicate", "effect", "includes", "severity_combination",
+  "constraint-values", "sources", "examples", "relations", "notes",
+  "rationale", "provenance", "full-categories", "unprocessed-fields",
+]);
+
+/**
+ * Whether the model's projections address this renderer's section vocabulary
+ * for the given unit.
+ *
+ * This is the dispatch key between the two rendering contracts that actually
+ * exist in this repo, and it is **data**: the v1 model declares section names
+ * (`facts`, `checks`, `relations`, …) in its `rules[].include`, while a model
+ * like the `ticket-model` fixture declares plain field selectors (`title`,
+ * `priority`, `*`). One renderer cannot satisfy both, and
+ * `ProjectionDefinitionSchema` has no field that says which is meant — see the
+ * W6-A lane report §3.3. Reading the answer off the selectors is the only
+ * option that does not put a model name in engine code.
+ */
+export function usesSectionVocabulary(ast: AnyAST, rules: ChunkProjectionRules): boolean {
+  const group = groupOf(deriveKind(ast), rules);
+  for (const perGroup of Object.values(rules.sections)) {
+    for (const section of perGroup[group] ?? []) if (ENGINE_SECTIONS.has(section)) return true;
+  }
+  return false;
+}
+
+/**
+ * Render an ordered chain of projection layers, keyed by projection name.
+ *
+ * Each layer is the previous layer plus the sections the model declares for it;
+ * `order[0]` is the base layer and gets the header block. That chain is not in
+ * the model — `ProjectionDefinition` has no `basedOn` field — so it is stated
+ * here rather than pretended to be data.
+ *
+ * This is the single rendering authority in the package. `chunk()` below is a
+ * thin adapter for callers that want the three v1 layers under fixed property
+ * names, and the generic pipeline calls this function with the model's own
+ * declared projection order. Both therefore produce the same bytes **by
+ * construction**: there is one code path, not two implementations that get
+ * compared afterwards.
+ */
+export function chunkNamedLayers(
+  ast: AnyAST,
+  order: readonly string[],
+  rules: ChunkProjectionRules = defaultProjectionRules(),
+): ReadonlyMap<string, string> {
+  const rendered = new Map<string, string>();
+  const [base, ...layers] = order;
+  if (base === undefined) return rendered;
+  const kind = deriveKind(ast);
+  let previous = buildSummary(ast, kind, rules);
+  rendered.set(base, previous);
+  for (let position = 0; position < layers.length; position++) {
+    const name = layers[position]!;
+    const lines: string[] = [previous];
+    // Only the last layer emits the meta/provenance keys its predecessors
+    // skipped; that distinction is what `appendSection`'s `layer` argument
+    // selects, and the last declared layer is the widest one.
+    const layer = position === layers.length - 1 ? "full" : "core";
+    for (const section of sectionsFor(name, kind, rules)) {
+      appendSection(section, ast, lines, layer, rules);
+    }
+    previous = lines.join("\n");
+    rendered.set(name, previous);
+  }
+  return rendered;
+}
+
+/**
+ * Split a parsed AST into the three v1 projection levels.
+ *
+ * @param ast - The parsed PrimeAST, AtomDeclaration or UnitDeclaration
  * @param rules - Projection rules folded from a model's ProjectionDefinitions.
  *                Defaults to the v1 compatibility model in `compat/`, so legacy
  *                callers keep working while the kind knowledge stays in data.
  * @returns { summary, core, full } — each a Markdown string
  */
 export function chunk(ast: AnyAST, rules: ChunkProjectionRules = defaultProjectionRules()): ChunkLevels {
-  const kind = deriveKind(ast);
-  const summary = buildSummary(ast, kind, rules);
-  const core = buildCore(ast, kind, summary, rules);
-  const full = buildFull(ast, kind, core, rules);
-  return { summary, core, full };
+  const layers = chunkNamedLayers(ast, ["summary", "core", "full"], rules);
+  return { summary: layers.get("summary") ?? "", core: layers.get("core") ?? "", full: layers.get("full") ?? "" };
 }

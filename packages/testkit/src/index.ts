@@ -25,5 +25,11 @@ export {
 
 export {
   scanDomainSemantics, domainScanCheck, formatDomainScan, loadVocabulary, vocabularyFromModel, mergeVocabularies,
+  reachableFrom,
   type DomainScanOptions, type DomainScanReport, type DomainHit, type HitContext, type Vocabulary,
 } from "./domain-scan.ts";
+
+export {
+  buildPackageGraph, packageWiringCheck, formatPackageGraph,
+  type PackageGraphOptions, type PackageGraphReport, type WorkspacePackage, type PackageRole,
+} from "./package-graph.ts";

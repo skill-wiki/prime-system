@@ -1,5 +1,5 @@
 import { existsSync, readdirSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadModel } from "@skill-wiki/model-schema";
 import { formatReport } from "./diagnostics.ts";
@@ -8,6 +8,7 @@ import { loadCorpus } from "./corpus.ts";
 import { runCorpusConformance } from "./corpus-conformance.ts";
 import { corpusFromV1Sources } from "./corpus-adapter.ts";
 import { closedSetCheck, domainScanCheck, formatDomainScan, loadVocabulary, mergeVocabularies, scanDomainSemantics, vocabularyFromModel, type Vocabulary } from "./domain-scan.ts";
+import { buildPackageGraph, formatPackageGraph, packageWiringCheck } from "./package-graph.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = resolve(HERE, "..");
@@ -20,6 +21,7 @@ const USAGE = `prime testkit
   bun packages/testkit/src/cli.ts corpus-v1 <model-root> <sources-dir> [--name=N] [--citation-fields=a,b] [--licenses=A,B]
   bun packages/testkit/src/cli.ts scan   [--roots=dir,dir] [--model=<model-root>] [--vocabulary=file.yaml]
                                          [--markdown] [--max-rows=N] [--all-hits] [--closed-sets]
+  bun packages/testkit/src/cli.ts wiring [--packages=dir] [--markdown]
 
 Exit code is 1 when any check fails.`;
 
@@ -139,6 +141,30 @@ function runCorpusV1(argv: readonly string[]): number {
   return result.status === "fail" ? 1 : 0;
 }
 
+/**
+ * Kept as its own suite rather than folded into `scan`: it answers a different
+ * question (is this code reached?) from a different input (the manifests and the
+ * package graph, not a vocabulary), and merging them would hide one behind the
+ * other's exit code.
+ */
+function runWiring(argv: readonly string[]): number {
+  const graph = buildPackageGraph({
+    packagesDir: option(argv, "packages") ?? join(REPO_ROOT, "packages"),
+    reportRoot: REPO_ROOT,
+  });
+  if (flag(argv, "markdown")) { console.log(formatPackageGraph(graph)); console.log(""); }
+  const outcome = packageWiringCheck(graph);
+  const failed = outcome.status === "fail" ? 1 : 0;
+  console.log(formatReport({
+    suite: "package-wiring", subject: relative(REPO_ROOT, resolve(option(argv, "packages") ?? join(REPO_ROOT, "packages"))),
+    status: failed > 0 ? "fail" : "pass", checks: [outcome],
+    counts: { pass: 1 - failed, fail: failed, skip: 0 },
+    errorCount: outcome.findings.filter(f => f.severity === "error").length,
+    warningCount: outcome.findings.filter(f => f.severity === "warning").length,
+  }));
+  return failed;
+}
+
 export function main(argv: readonly string[]): number {
   const [command, ...rest] = argv;
   switch (command) {
@@ -146,6 +172,7 @@ export function main(argv: readonly string[]): number {
     case "corpus": return runCorpus(rest);
     case "corpus-v1": return runCorpusV1(rest);
     case "scan": return runScan(rest);
+    case "wiring": return runWiring(rest);
     default: console.error(USAGE); return 2;
   }
 }

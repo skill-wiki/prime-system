@@ -5,6 +5,7 @@ import { parse } from "@skill-wiki/parser";
 import type { LoadedModel, ProjectionDefinition } from "@skill-wiki/model-schema";
 import type { CompiledUnitIR, ProjectionArtifactIR, TypedValueIR, UnitIR, ValueIR } from "@skill-wiki/ir";
 import type { AtomMeta } from "./global-index-emitter";
+import { buildChunkProjectionRules, chunkNamedLayers, estimateTokens, usesSectionVocabulary, type ChunkableAST, type ChunkProjectionRules } from "./chunker";
 import { normalizeUnit, type NormalizeContext, type NormalizeDiagnostic } from "./normalizer";
 
 export interface CompileUnitOptions { readonly projections?: readonly string[]; }
@@ -13,7 +14,15 @@ export type CompileUnitResult = { readonly ok: true; readonly value: CompiledUni
 export interface EmitCompiledUnitResult { readonly directory: string; readonly meta: AtomMeta; readonly files: readonly string[]; }
 
 const sha256 = (value: string | Uint8Array) => `sha256:${createHash("sha256").update(value).digest("hex")}`;
-const tokenCount = (content: string) => Math.ceil(Buffer.byteLength(content, "utf8") / 4);
+/**
+ * Token estimate, delegated to the chunker's estimator.
+ *
+ * It counts characters, not bytes. That difference is not cosmetic on this
+ * corpus: `100°C` is 5 characters and 6 bytes, so a byte-based count reports a
+ * different budget than the one the baseline `_index.xml` was built with.
+ * One estimator, one number.
+ */
+const tokenCount = (content: string) => estimateTokens(content);
 const genericSource = { loc: { line: 0, column: 0, offset: 0 } };
 const compare = (left: string, right: string) => left < right ? -1 : left > right ? 1 : 0;
 function framedDigest(parts: readonly string[]): string { const hash = createHash("sha256"); for (const part of parts) { const bytes = Buffer.from(part, "utf8"); hash.update(`${bytes.length}:`); hash.update(bytes); hash.update(";"); } return `sha256:${hash.digest("hex")}`; }
@@ -47,6 +56,24 @@ function toValue(value: TypedValueIR): ValueIR {
   return Object.fromEntries(Object.entries(value.fields).sort(([a], [b]) => compare(a, b)).map(([key, item]) => [key, toValue(item)]));
 }
 function firstString(value: TypedValueIR): string | undefined { if (value.kind === "string") return value.value; if (value.kind === "array") for (const item of value.items) { const found = firstString(item); if (found !== undefined) return found; } if (value.kind === "object") for (const [, item] of Object.entries(value.fields).sort(([a], [b]) => compare(a, b))) { const found = firstString(item); if (found !== undefined) return found; } return undefined; }
+/** A declared scalar field, read as the corpus wrote it. */
+function declaredScalar(unit: UnitIR, field: string): string | undefined { const value = unit.fields[field]; return value?.kind === "string" ? value.value : undefined; }
+function declaredStrings(unit: UnitIR, field: string): readonly string[] { const value = unit.fields[field]; return value?.kind === "array" ? value.items.flatMap(item => item.kind === "string" ? [item.value] : []) : []; }
+/**
+ * `description` is the unit's own declared description.
+ *
+ * It used to be "the first string found in the alphabetically first field",
+ * which on the v1 corpus resolved to `applies-to[0]` rather than `statement` —
+ * a value no source file ever asked to be the description. The declared field
+ * is read first; the scan survives only as the fallback for a model whose type
+ * has no `description`, and the id is the last resort because
+ * `finalizeCorpusBundle` rejects an empty one.
+ */
+function declaredDescription(unit: UnitIR): string {
+  const declared = declaredScalar(unit, "description");
+  const scanned = declared ?? Object.entries(unit.fields).sort(([a], [b]) => compare(a, b)).map(([, value]) => firstString(value)).find((value): value is string => value !== undefined);
+  return (scanned ?? "").replace(/\s+/g, " ").trim() || unit.identity.id;
+}
 /** Markdown scalar contract: all strings (including references) are JSON quoted. */
 function renderValue(value: ValueIR): string { return JSON.stringify(value); }
 function match(selector: string, field: string): boolean {
@@ -56,7 +83,22 @@ function match(selector: string, field: string): boolean {
   if (selector.endsWith("*")) return field.startsWith(selector.slice(0, -1));
   return selector === field || selector === `fields.${field}`;
 }
-function renderProjection(unit: UnitIR, definition: ProjectionDefinition): { content: string; selectors: readonly string[] } {
+/** The selectors a layer honoured, for the artifact record. */
+function layerSelectors(definition: ProjectionDefinition, rules: ChunkProjectionRules, typeRef: string): readonly string[] {
+  const group = Object.entries(rules.groupOfType).find(([type]) => type === typeRef.toLowerCase())?.[1] ?? rules.defaultGroup;
+  return [...new Set([...definition.include, ...(rules.sections[definition.name]?.[group] ?? [])])].sort(compare);
+}
+/**
+ * Render a projection declared as a set of FIELD selectors.
+ *
+ * This is not a second renderer for the v1 corpus — `usesSectionVocabulary`
+ * routes that corpus to the chunker. It is the only renderer for a model whose
+ * `ProjectionDefinition` names fields rather than the engine's section
+ * vocabulary (`packages/model-schema/test/fixtures/ticket-model` does exactly
+ * that), and deleting it would make an unknown model uncompilable — the ADR-1
+ * property plan §21 uses as its judgement criterion.
+ */
+function renderSelectedFields(unit: UnitIR, definition: ProjectionDefinition): { content: string; selectors: readonly string[] } {
   const selectors = [...definition.include]; const excluded = [...definition.exclude];
   for (const rule of definition.rules) {
     const applies = !rule.typeRef || rule.typeRef === "*" || rule.typeRef === unit.typeRef || (rule.typeRef.startsWith("group:") && (definition.typeGroups[rule.typeRef.slice(6)] ?? []).includes(unit.typeRef));
@@ -79,26 +121,43 @@ function renderProjection(unit: UnitIR, definition: ProjectionDefinition): { con
 /**
  * Render projections for an already-normalized unit.
  *
+ * `ast` is required, and is the whole point of this lane: the projection
+ * renderer is `chunker.chunk*`, the same function the legacy atom-dir emitter
+ * calls, reading the same AST. Byte equality with the production corpus is
+ * therefore a property of the construction rather than something measured after
+ * the fact. The previous implementation rendered a second time from `UnitIR`
+ * with its own `JSON.stringify` field dump and agreed with production on 0 of
+ * 96 projections.
+ *
  * Split out of `compileUnit` because normalization has more than one front end:
  * the generic `unit` syntax goes through `normalizeUnit`, while an untouched v1
  * `.prime` atom goes through `normalizePrimeV1Atom` (plan §6.3 syntax macro).
- * Keeping the parse step welded to the render step forced every caller to hand
- * over a source string, which is exactly why the v1 corpus had no way into this
- * pipeline at all — `compileUnit` rejected it with EXPECTED_UNIT_DECLARATION.
  */
-export function compileNormalizedUnit(unit: UnitIR, model: LoadedModel, options: CompileUnitOptions = {}): CompileUnitResult {
+export function compileNormalizedUnit(unit: UnitIR, ast: ChunkableAST, model: LoadedModel, options: CompileUnitOptions = {}): CompileUnitResult {
   const selection = selectedProjections(model, options.projections);
   if (!selection.ok) return selection;
+  const declared = model.definitions.filter((d): d is ProjectionDefinition => d.kind === "projection");
+  const rules = buildChunkProjectionRules(declared);
+  // A model that declares section names is rendered by the layer chain; a model
+  // that declares plain field selectors is rendered by the selector renderer
+  // below. See `usesSectionVocabulary` and the W6-A report §3.3 — the protocol
+  // has no field that states which contract a projection means, so the
+  // selectors themselves are the only data available to dispatch on.
+  const layers = usesSectionVocabulary(ast, rules)
+    ? chunkNamedLayers(ast, declared.map(definition => definition.name), rules)
+    : undefined;
   const projections: Record<string, ProjectionArtifactIR> = {};
   for (const definition of selection.value) {
-    const rendered = renderProjection(unit, definition);
+    const layer = layers?.get(definition.name);
+    const rendered = layer === undefined
+      ? renderSelectedFields(unit, definition)
+      : { content: `${layer}\n`, selectors: layerSelectors(definition, rules, unit.typeRef) };
     const path = `chunks/${safeName(definition.name)}.md`;
     projections[definition.name] = { name: definition.name, path, content: rendered.content, bytes: Buffer.byteLength(rendered.content, "utf8"), digest: sha256(rendered.content), tokens: tokenCount(rendered.content), selectors: rendered.selectors };
   }
-  const description = (Object.entries(unit.fields).sort(([a], [b]) => compare(a, b)).map(([, value]) => firstString(value)).find((value): value is string => value !== undefined) ?? "").replace(/\s+/g, " ").trim() || unit.identity.id;
   const tokens = Object.fromEntries(Object.entries(projections).map(([name, artifact]) => [name, artifact.tokens]));
   const contentDigest = computeCompiledUnitContentDigest(unit, projections);
-  return { ok: true, value: { kind: "compiled-unit", unit, projections, meta: { id: unit.identity.id, kind: unit.typeRef, version: unit.identity.version, description, domain: unit.identity.corpus, tags: [unit.typeRef], tokens, projection: Object.fromEntries(Object.entries(projections).sort(([a], [b]) => compare(a, b)).map(([name, artifact]) => [name, artifact.path])), contentDigest } } };
+  return { ok: true, value: { kind: "compiled-unit", unit, projections, meta: { id: unit.identity.id, kind: unit.typeRef, version: unit.identity.version, description: declaredDescription(unit), domain: declaredScalar(unit, "domain") ?? unit.identity.corpus, tags: declaredStrings(unit, "tags"), tokens, projection: Object.fromEntries(Object.entries(projections).sort(([a], [b]) => compare(a, b)).map(([name, artifact]) => [name, artifact.path])), contentDigest } } };
 }
 
 /** Parse, normalize, and render a generic `unit` declaration without legacy compiler stages. */
@@ -108,7 +167,7 @@ export function compileUnit(source: string, model: LoadedModel, context: Normali
   if (parsed.ast.type !== "UnitDeclaration") return { ok: false, diagnostics: [{ code: "EXPECTED_UNIT_DECLARATION", message: "Generic compilation requires a UnitDeclaration.", source: { filename: parsed.ast.filename, loc: parsed.ast.loc } }] };
   const normalized = normalizeUnit(parsed.ast, model, context);
   if (!normalized.ok) return normalized;
-  return compileNormalizedUnit(normalized.value, model, options);
+  return compileNormalizedUnit(normalized.value, parsed.ast, model, options);
 }
 
 function safeName(name: string): string {

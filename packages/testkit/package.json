@@ -4,6 +4,7 @@
   "description": "Domain-agnosticism conformance suites: model, corpus, engine invariants, and a zero-domain-semantics scanner",
   "main": "src/index.ts",
   "types": "src/index.ts",
+  "bin": { "prime-testkit": "src/cli.ts" },
   "scripts": { "test": "bun test", "typecheck": "tsc --noEmit -p tsconfig.json" },
   "license": "Apache-2.0",
   "dependencies": {

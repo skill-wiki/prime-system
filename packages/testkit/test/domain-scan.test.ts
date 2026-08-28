@@ -1,11 +1,12 @@
 import { expect, test } from "bun:test";
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import {
   closedSetCheck, domainScanCheck, loadVocabulary, mergeVocabularies, scanDomainSemantics,
   type DomainScanReport, type Vocabulary,
 } from "../src/domain-scan.ts";
+import { defaultVocabulary } from "../src/cli.ts";
 import { removeTree } from "./helpers.ts";
 
 /**
@@ -376,4 +377,74 @@ test("a declaration wrapped in doc comments is still a code hit, and the comment
   // The exported declaration and the field's type reference gate; the
   // `/** Persona name */` between them does not.
   expect(scan.hits.map(h => [h.line, h.context])).toEqual([[4, "code"], [5, "comment"], [10, "code"]]);
+});
+
+/**
+ * W6-C: the same contradiction, but asserted against the REAL workspace instead
+ * of a synthetic source — which is what it takes to close it.
+ *
+ * The dispute survived three rounds because both sides were talking about real
+ * files: a coordinator's `grep -n Fact|Method|Category` on `packages/types`
+ * lands overwhelmingly on doc comments, while the gate reports the same terms
+ * "in code". A synthetic fixture cannot settle that; only re-deriving the verdict
+ * from the actual files, with an independent comment stripper, can.
+ *
+ * The invariant is written so it survives the cleanup: when `types` is finally
+ * de-domained there are zero gating hits and the loop body simply never runs.
+ */
+test("every gating first-generation hit in the real workspace survives an independent comment strip", () => {
+  const repoRoot = resolve(import.meta.dir, "..", "..", "..");
+  const packagesDir = join(repoRoot, "packages");
+  const roots = readdirSync(packagesDir, { withFileTypes: true })
+    .filter(e => e.isDirectory()).map(e => join(packagesDir, e.name, "src")).filter(existsSync).sort();
+  const vocabulary = defaultVocabulary();
+  const scan = scanDomainSemantics({ roots, vocabulary, reportRoot: repoRoot, completeScan: true });
+
+  /**
+   * Deliberately a second, dumb implementation rather than a call back into
+   * `spansForFile`: using the classifier to vindicate the classifier is what
+   * kept this open. Strips block-comment bodies, doc-comment continuation lines
+   * and `//` tails, and nothing else.
+   */
+  const stripComments = (lines: readonly string[]): readonly string[] => {
+    let inBlock = false;
+    return lines.map(line => {
+      let out = line;
+      if (inBlock) {
+        const end = out.indexOf("*/");
+        if (end < 0) return "";
+        out = out.slice(end + 2);
+        inBlock = false;
+      }
+      for (;;) {
+        const open = out.indexOf("/*");
+        if (open < 0) break;
+        const close = out.indexOf("*/", open + 2);
+        if (close < 0) { out = out.slice(0, open); inBlock = true; break; }
+        out = out.slice(0, open) + out.slice(close + 2);
+      }
+      const slash = out.indexOf("//");
+      return slash < 0 ? out : out.slice(0, slash);
+    });
+  };
+
+  const gating = scan.hits.filter(h => !h.ambiguous && h.context === "code" && h.exemption === undefined);
+  const sourceCache = new Map<string, readonly string[]>();
+  for (const hit of gating) {
+    let stripped = sourceCache.get(hit.path);
+    if (stripped === undefined) {
+      stripped = stripComments(readFileSync(join(repoRoot, hit.path), "utf8").split("\n"));
+      sourceCache.set(hit.path, stripped);
+    }
+    const line = stripped[hit.line - 1] ?? "";
+    // If the gate were counting comments, the term would be gone after stripping.
+    expect(line.toLowerCase()).toContain(hit.matched.toLowerCase());
+  }
+
+  // And the other half of the explanation: the terms DO also appear in comments,
+  // in quantity, under a different code that never gates. Without this the next
+  // reader repeats the grep and reaches the same wrong conclusion.
+  const commentHits = scan.hits.filter(h => !h.ambiguous && h.context === "comment");
+  if (gating.length > 0) expect(commentHits.length).toBeGreaterThan(gating.length);
+  expect(domainScanCheck(scan).findings.filter(f => f.code === "DOMAIN_TERM_IN_CORE").every(f => f.severity === "error")).toBe(true);
 });

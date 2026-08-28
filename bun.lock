@@ -81,6 +81,10 @@
       },
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.0.0",
+        "@skill-wiki/ir": "workspace:*",
+        "@skill-wiki/model-schema": "workspace:*",
+        "@skill-wiki/projection-engine": "workspace:*",
+        "@skill-wiki/query-engine": "workspace:*",
         "@skill-wiki/runtime": "workspace:*",
         "zod": "^4.0.0",
       },
@@ -141,6 +145,9 @@
     "packages/testkit": {
       "name": "@skill-wiki/testkit",
       "version": "0.1.0",
+      "bin": {
+        "prime-testkit": "src/cli.ts",
+      },
       "dependencies": {
         "@skill-wiki/ir": "workspace:*",
         "@skill-wiki/model-schema": "workspace:*",
