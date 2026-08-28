@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { doctorCommand, formatDoctorHuman, formatDoctorJson, parseDoctorArgs, runDoctor } from "../src/commands/doctor";
 import { PrimeBundleError } from "@skill-wiki/runtime";
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "fs";
+import { cpSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 
@@ -30,7 +30,7 @@ describe("doctor", () => {
 
 const manifestFixture = join(import.meta.dir, "fixtures", "doctor-manifest");
 const legacyFixture = join(import.meta.dir, "..", "..", "runtime", "test", "fixtures", "atom-dir");
-function withBundle(mutate: (dir: string) => void, run: (dir: string) => void) { const dir = mkdtempSync(join(tmpdir(), "prime-doctor-")); try { cpSync(manifestFixture, dir, { recursive: true }); mutate(dir); run(dir); } finally { rmSync(dir, { recursive: true, force: true }); } }
+function withBundle(mutate: (dir: string) => void, run: (dir: string) => void) { const dir = mkdtempSync(join(realpathSync(tmpdir()), "prime-doctor-")); try { cpSync(manifestFixture, dir, { recursive: true }); mutate(dir); run(dir); } finally { rmSync(dir, { recursive: true, force: true }); } }
 describe("doctor default runtime loaders", () => {
   it("loads valid manifest fixture", () => { const result = runDoctor({ dir: manifestFixture, strictManifest: false, json: true }); expect(result.exitCode).toBe(0); expect(result.report.mode).toBe("manifest"); });
   it("loads legacy fixture with warning", () => { const result = runDoctor({ dir: legacyFixture, strictManifest: false, json: true }); expect(result.exitCode).toBe(0); expect(result.report.mode).toBe("legacy"); });
