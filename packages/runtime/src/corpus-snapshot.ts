@@ -4,12 +4,15 @@
  * This module is intentionally limited to boot-time artifact verification. It
  * never parses .prime source or invokes the compiler.
  */
-import { existsSync, readFileSync } from "fs";
+import { existsSync, lstatSync, readFileSync, readdirSync } from "fs";
 import { createHash } from "crypto";
-import { join } from "path";
+import { isAbsolute, join, parse as parsePath, relative, resolve, sep } from "path";
 
 export const CORPUS_MANIFEST_FILE = "corpus.manifest.json";
 export const CORPUS_INDEX_FILE = "_index.xml";
+/** Exact root-relative names that are OS/build noise, never corpus artifacts. */
+export const CORPUS_NONARTIFACT_NOISE = [".DS_Store"] as const;
+const EPHEMERAL_BUNDLE_FILE = /^\.prime-bundle-(?:index|manifest)-(?:stage|backup)-\d+-\d+$/;
 export const SUPPORTED_CORPUS_PROTOCOL_MAJOR = 2;
 export const SUPPORTED_CORPUS_IR_VERSION = "2";
 
@@ -19,7 +22,9 @@ export type PrimeBundleErrorCode =
   | "PROTOCOL_VERSION_UNSUPPORTED"
   | "IR_VERSION_UNSUPPORTED"
   | "INDEX_MISSING"
-  | "INDEX_DIGEST_MISMATCH";
+  | "INDEX_DIGEST_MISMATCH"
+  | "CONTENT_DIGEST_MISMATCH"
+  | "BUNDLE_CONTENT_INVALID";
 
 export interface BundleDiagnostic {
   code: PrimeBundleErrorCode;
@@ -104,6 +109,47 @@ const DIGEST_FIELDS = ["schemaDigest", "contentDigest", "indexDigest"] as const;
 
 function sha256(bytes: Uint8Array): string {
   return `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
+}
+function assertNoLexicalSymlinkAncestor(path: string): void { const absolute = resolve(path); const root = parsePath(absolute).root; let current: string = root; for (const part of absolute.slice(root.length).split(sep).filter(Boolean)) { current = join(current, part); if (!existsSync(current)) break; const stat = lstatSync(current); if (stat.isSymbolicLink()) throw new PrimeBundleError("BUNDLE_CONTENT_INVALID", "Corpus root path contains a symbolic-link ancestor.", { context: { path: current } }); } }
+/** Locale-independent canonical order for artifact paths and stable metadata. */
+export function compareCanonicalStrings(left: string, right: string): number { return left < right ? -1 : left > right ? 1 : 0; }
+
+/**
+ * Hash corpus artifacts using sorted POSIX paths and length-framed bytes.
+ * The release manifest and temporary manifest files are intentionally omitted
+ * so the manifest does not hash itself. Any link or special file fails closed.
+ */
+export function computeCorpusContentDigest(corpusRoot: string): string {
+  assertNoLexicalSymlinkAncestor(corpusRoot);
+  const root = resolve(corpusRoot);
+  let rootStat: ReturnType<typeof lstatSync>;
+  try { rootStat = lstatSync(root); } catch (cause) { throw new PrimeBundleError("BUNDLE_CONTENT_INVALID", "Corpus root is not readable.", { cause }); }
+  if (!rootStat.isDirectory() || rootStat.isSymbolicLink()) throw new PrimeBundleError("BUNDLE_CONTENT_INVALID", "Corpus root must be a real directory.", { context: { root } });
+  const files: Array<{ path: string; bytes: Buffer }> = [];
+  const visit = (dir: string): void => {
+    let names: string[];
+    try { names = readdirSync(dir); } catch (cause) { throw new PrimeBundleError("BUNDLE_CONTENT_INVALID", "Unable to read corpus directory.", { cause, context: { dir } }); }
+    for (const name of names.sort(compareCanonicalStrings)) {
+      const absolute = join(dir, name);
+      let stat: ReturnType<typeof lstatSync>;
+      try { stat = lstatSync(absolute); } catch (cause) { throw new PrimeBundleError("BUNDLE_CONTENT_INVALID", "Unable to inspect corpus entry.", { cause, context: { file: absolute } }); }
+      const rel = relative(root, absolute);
+      if (!rel || isAbsolute(rel) || rel.split(sep).includes("..")) throw new PrimeBundleError("BUNDLE_CONTENT_INVALID", "Corpus entry escapes its root.", { context: { file: absolute } });
+      if (stat.isSymbolicLink()) throw new PrimeBundleError("BUNDLE_CONTENT_INVALID", "Corpus cannot contain symbolic links.", { context: { file: rel } });
+      if (stat.isDirectory()) { visit(absolute); continue; }
+      if (!stat.isFile()) throw new PrimeBundleError("BUNDLE_CONTENT_INVALID", "Corpus can contain only regular files.", { context: { file: rel } });
+      const posix = rel.split(sep).join("/");
+      if (posix === CORPUS_MANIFEST_FILE || /^\.corpus\.manifest\.json\.tmp-[A-Za-z0-9._-]+$/.test(posix) || EPHEMERAL_BUNDLE_FILE.test(posix) || CORPUS_NONARTIFACT_NOISE.includes(name as typeof CORPUS_NONARTIFACT_NOISE[number])) continue;
+      try { files.push({ path: posix, bytes: readFileSync(absolute) }); } catch (cause) { throw new PrimeBundleError("BUNDLE_CONTENT_INVALID", "Unable to read corpus artifact.", { cause, context: { file: rel } }); }
+    }
+  };
+  visit(root);
+  const hash = createHash("sha256");
+  for (const file of files.sort((a, b) => compareCanonicalStrings(a.path, b.path))) {
+    const pathBytes = Buffer.from(file.path, "utf8");
+    hash.update(`${pathBytes.length}:`); hash.update(pathBytes); hash.update(`:${file.bytes.length}:`); hash.update(file.bytes); hash.update(";");
+  }
+  return `sha256:${hash.digest("hex")}`;
 }
 
 function manifestError(message: string, cause?: unknown): never {
@@ -222,12 +268,14 @@ export function loadCorpusSnapshot(
   primeDir: string,
   options: LoadCorpusSnapshotOptions = {},
 ): LoadedCorpusSnapshot {
+  assertNoLexicalSymlinkAncestor(primeDir);
   const indexPath = join(primeDir, CORPUS_INDEX_FILE);
   if (!existsSync(indexPath)) {
     throw new PrimeBundleError("INDEX_MISSING", "Compiled corpus is missing _index.xml.", {
       context: { file: CORPUS_INDEX_FILE },
     });
   }
+  if (lstatSync(indexPath).isSymbolicLink() || !lstatSync(indexPath).isFile()) throw new PrimeBundleError("BUNDLE_CONTENT_INVALID", "Corpus index must be a regular non-symlink file.", { context: { file: CORPUS_INDEX_FILE } });
   const indexDigest = sha256(readFileSync(indexPath));
   const manifestPath = join(primeDir, CORPUS_MANIFEST_FILE);
   if (!existsSync(manifestPath)) {
@@ -246,6 +294,7 @@ export function loadCorpusSnapshot(
       }],
     };
   }
+  if (lstatSync(manifestPath).isSymbolicLink() || !lstatSync(manifestPath).isFile()) throw new PrimeBundleError("BUNDLE_CONTENT_INVALID", "Corpus manifest must be a regular non-symlink file.", { context: { file: CORPUS_MANIFEST_FILE } });
 
   let parsed: unknown;
   try {
@@ -257,6 +306,12 @@ export function loadCorpusSnapshot(
   if (manifest.indexDigest !== indexDigest) {
     throw new PrimeBundleError("INDEX_DIGEST_MISMATCH", "_index.xml does not match manifest indexDigest.", {
       context: { expected: manifest.indexDigest, actual: indexDigest },
+    });
+  }
+  const contentDigest = computeCorpusContentDigest(primeDir);
+  if (manifest.contentDigest !== contentDigest) {
+    throw new PrimeBundleError("CONTENT_DIGEST_MISMATCH", "Corpus artifacts do not match manifest contentDigest.", {
+      context: { expected: manifest.contentDigest, actual: contentDigest },
     });
   }
   return { manifest, snapshot: snapshotFromManifest(manifest), diagnostics: [] };

@@ -52,6 +52,8 @@ export { emitAtomDir } from "./atom-dir-emitter";
 export type { EmitResult } from "./atom-dir-emitter";
 export { normalizeUnit, normalizePrimeV1Atom } from "./normalizer";
 export type { NormalizeContext, NormalizeDiagnostic, NormalizeResult } from "./normalizer";
+export { compileUnit, emitCompiledUnit, computeCompiledUnitContentDigest } from "./generic-unit";
+export type { CompileUnitOptions, CompileUnitDiagnostic, CompileUnitResult, EmitCompiledUnitResult } from "./generic-unit";
 
 // ─── Imports for compile() ─────────────────────────────────────────────────
 

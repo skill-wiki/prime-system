@@ -59,6 +59,7 @@ function xmlEscape(s: string): string {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&apos;");
 }
+const stableCompare = (left: string, right: string): number => left < right ? -1 : left > right ? 1 : 0;
 
 /** Truncate description to ~80 chars for index line */
 function truncate(s: string, max = 80): string {
@@ -121,11 +122,11 @@ export function buildGlobalIndexXml(atoms: AtomMeta[]): string {
   const deprecatedAtoms = atoms.filter(a => !!a.deprecated_at);
 
   // Sort atoms deterministically by id
-  const sorted = [...activeAtoms].sort((a, b) => a.id.localeCompare(b.id));
+  const sorted = [...activeAtoms].sort((a, b) => stableCompare(a.id, b.id));
 
   const clusters = groupByDomain(sorted);
   // Sort cluster names deterministically
-  const clusterNames = [...clusters.keys()].sort();
+  const clusterNames = [...clusters.keys()].sort(stableCompare);
 
   const totalTokens = sorted.reduce((sum, a) => sum + (a.tokens.core || 0), 0);
 
@@ -139,7 +140,7 @@ export function buildGlobalIndexXml(atoms: AtomMeta[]): string {
     const clusterAtoms = clusters.get(clusterName)!;
     const density = computeDensity(clusterAtoms);
     // Sort atoms within cluster by id
-    const sortedClusterAtoms = [...clusterAtoms].sort((a, b) => a.id.localeCompare(b.id));
+    const sortedClusterAtoms = [...clusterAtoms].sort((a, b) => stableCompare(a.id, b.id));
 
     lines.push(`  <cluster name="${xmlEscape(clusterName)}" density="${density}">`);
 
@@ -153,7 +154,7 @@ export function buildGlobalIndexXml(atoms: AtomMeta[]): string {
       if (hasEdges) {
         // Sort edges deterministically: by type, then target
         const sortedEdges = [...atom.edges!].sort((a, b) =>
-          a.type.localeCompare(b.type) || a.target.localeCompare(b.target)
+          stableCompare(a.type, b.type) || stableCompare(a.target, b.target)
         );
         for (const e of sortedEdges) {
           lines.push(
@@ -169,7 +170,7 @@ export function buildGlobalIndexXml(atoms: AtomMeta[]): string {
 
   // Emit deprecated atoms section so agents know they exist but are stale
   if (deprecatedAtoms.length > 0) {
-    const sortedDeprecated = [...deprecatedAtoms].sort((a, b) => a.id.localeCompare(b.id));
+    const sortedDeprecated = [...deprecatedAtoms].sort((a, b) => stableCompare(a.id, b.id));
     lines.push(`  <deprecated_atoms count="${sortedDeprecated.length}">`);
     for (const atom of sortedDeprecated) {
       const supersede = atom.superseded_by ? ` superseded_by="${xmlEscape(atom.superseded_by)}"` : "";

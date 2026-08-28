@@ -1,0 +1,10 @@
+{
+  "name": "@skill-wiki/bundle",
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": { "build": "bun build src/index.ts --outdir dist --target node", "test": "bun test", "lint": "tsc --noEmit" },
+  "dependencies": { "@skill-wiki/compiler": "workspace:*", "@skill-wiki/ir": "workspace:*", "@skill-wiki/runtime": "workspace:*" },
+  "devDependencies": { "@skill-wiki/model-schema": "workspace:*" },
+  "license": "Apache-2.0"
+}

@@ -23,6 +23,29 @@ export interface RetrievalProfileDefIR { readonly name: string; readonly version
 export interface SchemaIR { readonly protocolVersion: string; readonly model: { readonly name: string; readonly version: string; readonly digest: string }; readonly types: Readonly<Record<string, TypeDefIR>>; readonly relations: Readonly<Record<string, RelationDefIR>>; readonly functions: Readonly<Record<string, FunctionDefIR>>; readonly actions: Readonly<Record<string, ActionDefIR>>; readonly projections: Readonly<Record<string, ProjectionDefIR>>; readonly retrievalProfiles: Readonly<Record<string, RetrievalProfileDefIR>>; readonly policies?: Readonly<Record<string, ValueIR>>; readonly validators?: Readonly<Record<string, ValueIR>> }
 export interface ProvenanceIR { readonly source: SourceRefIR; readonly attributes?: Readonly<Record<string, ValueIR>> }
 export interface UnitIR { readonly identity: { readonly id: string; readonly version: string; readonly digest: string; readonly corpus: string }; readonly typeRef: TypeRef; readonly implements: readonly TypeRef[]; readonly fields: Readonly<Record<string, TypedValueIR>>; readonly relations: readonly GraphEdgeIR[]; readonly citations: readonly string[]; readonly policyLabels: readonly string[]; readonly lifecycle: "draft" | "active" | "deprecated" | "deleted"; readonly visibility: "private" | "shared" | "public"; readonly provenance: ProvenanceIR; readonly projections: Readonly<Record<string, ValueIR>> }
+/** Stable metadata for one rendered projection. `path` is POSIX-relative to a unit directory. */
+export interface ProjectionArtifactIR { readonly name: string; readonly path: string; readonly content: string; readonly bytes: number; readonly digest: string; readonly tokens: number; readonly selectors: readonly string[] }
+/**
+ * The generic compiler output. It intentionally contains no parser AST or
+ * domain-specific enum: a corpus finalizer can consume `meta` directly.
+ */
+export interface CompiledUnitMetaIR {
+  readonly id: string;
+  readonly kind: string;
+  readonly version: string;
+  readonly description: string;
+  readonly domain: string;
+  readonly tags: readonly string[];
+  readonly tokens: Readonly<Record<string, number>>;
+  readonly projection: Readonly<Record<string, string>>;
+  readonly contentDigest: string;
+}
+export interface CompiledUnitIR {
+  readonly kind: "compiled-unit";
+  readonly unit: UnitIR;
+  readonly projections: Readonly<Record<string, ProjectionArtifactIR>>;
+  readonly meta: CompiledUnitMetaIR;
+}
 export interface GraphEdgeIR { readonly id: string; readonly relationRef: string; readonly from: string; readonly to: string; readonly attributes?: Readonly<Record<string, ValueIR>> }
 export interface GraphIR { readonly snapshot: SnapshotRef; readonly units: readonly UnitIR[]; readonly edges: readonly GraphEdgeIR[]; readonly diagnostics: readonly DiagnosticIR[]; readonly indexes: Readonly<Record<string, readonly string[]>> }
 export interface SelectionCandidateIR { readonly unitId: string; readonly score: number; readonly featureValues: Readonly<Record<string, number>>; readonly reasons: readonly string[] }

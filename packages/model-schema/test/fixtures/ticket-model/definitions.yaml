@@ -1,6 +1,7 @@
 kind: definitions
 version: 1.0.0
 definitions:
+  - {kind: type, name: Note, version: 1.0.0, fields: [{name: body, typeRef: string, required: true}]}
   - kind: type
     name: Ticket
     version: 1.0.0
@@ -9,3 +10,6 @@ definitions:
   - {kind: relation, name: owned-by, version: 1.0.0, from: Ticket, to: Owner, cardinality: many-to-one, directional: true, semantics: {traversal: one-hop, selection: expand, loadOrder: before, cyclePolicy: reject, conflictSeverity: none}}
   - {kind: function, name: TicketSummary, version: 1.0.0, inputs: [{name: ticket, typeRef: Ticket}], output: string, purity: pure, deterministic: true, provider: declarative-fixture}
   - {kind: action, name: ResolveTicket, version: 1.0.0, inputs: [{name: ticket, typeRef: Ticket}], output: boolean, capabilities: [], sideEffects: none, idempotency: idempotent, approval: never}
+  - {kind: projection, name: summary, version: 1.0.0, targetTokens: 80, include: [title], rules: [{typeRef: Ticket, include: [priority]}]}
+  - {kind: projection, name: core, version: 1.0.0, targetTokens: 200, include: [title, priority, active], rules: [{typeRef: group:ticket-types, include: [owner]}], typeGroups: {ticket-types: [Ticket]}}
+  - {kind: projection, name: full, version: 1.0.0, targetTokens: 500, include: ["*"]}

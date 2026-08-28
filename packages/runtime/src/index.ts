@@ -74,6 +74,9 @@ export {
 } from "./atom-loader";
 export {
   loadCorpusSnapshot,
+  computeCorpusContentDigest,
+  compareCanonicalStrings,
+  CORPUS_NONARTIFACT_NOISE,
   validateCorpusManifest,
   validateCorpusManifestCompatibility,
   PrimeBundleError,
