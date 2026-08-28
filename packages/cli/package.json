@@ -1,7 +1,7 @@
 {
   "name": "@skill-wiki/cli",
   "version": "0.1.0",
-  "description": "Prime CLI — compile, check, install, publish, search Prime atoms and corpora.",
+  "description": "Prime CLI \u2014 compile, check, install, publish, search Prime atoms and corpora.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -19,10 +19,15 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@skill-wiki/types": "workspace:*",
-    "@skill-wiki/parser": "workspace:*",
+    "@skill-wiki/action-runtime": "workspace:*",
+    "@skill-wiki/bundle": "workspace:*",
     "@skill-wiki/compiler": "workspace:*",
-    "@skill-wiki/runtime": "workspace:*"
+    "@skill-wiki/event-store": "workspace:*",
+    "@skill-wiki/ir": "workspace:*",
+    "@skill-wiki/model-schema": "workspace:*",
+    "@skill-wiki/parser": "workspace:*",
+    "@skill-wiki/runtime": "workspace:*",
+    "@skill-wiki/types": "workspace:*"
   },
   "keywords": [
     "prime-lang",

@@ -2,7 +2,8 @@
  * prime search <query> [--type <type>] [--tag <tag>]
  */
 
-import { header, bold, gray, cyan, yellow, green } from '../utils/display';
+import { header, bold, gray, yellow } from '../utils/display';
+import { paintFor } from '../utils/kind-color';
 
 const REGISTRY_URL = 'https://prime.dev/api';
 
@@ -43,7 +44,9 @@ function displayResults(results: any[]) {
   }
 
   for (const r of results) {
-    const typeColor = r.type === 'knowledge' ? cyan : r.type === 'method' ? green : yellow;
+    // See ls.ts: the paint is a stable hash of the type name, so a registry
+    // returning a type this CLI has never seen renders exactly as well.
+    const typeColor = paintFor(String(r.type ?? ''));
     const stars = '★'.repeat(Math.round(r.rating || 0)) + '☆'.repeat(5 - Math.round(r.rating || 0));
 
     console.log(`  ${bold(r.name)}  ${typeColor(r.type)}  ${yellow(stars)}  ${gray(`${r.downloads || 0} uses`)}`);

@@ -1,22 +1,20 @@
 /**
  * Sanity test against a hand-written .prime fixture.
  *
- * The 2955-atom migrated corpus is produced by scripts/yaml-to-prime.ts
- * and therefore has a predictable shape (simple facts:[{...}] or
- * checks:[{...}]) that the L2 heuristic was calibrated against.
+ * This guards against a subtle failure mode: human-authored .prime files that
+ * exercise richer language features (nested source objects, thresholds,
+ * exemptions, enhances/contradicts pairs) should still parse and pass L1
+ * cleanly, and their link declarations should survive in every syntactic shape.
  *
- * This test guards against a subtle failure mode: human-authored .prime
- * files that exercise richer language features (nested source objects,
- * thresholds, exemptions, enhances/contradicts pairs) should still pass
- * L1 and L2 cleanly. If they don't, the heuristic's false-positive rate
- * on real-world authored content is higher than we think.
+ * The L2-heuristic assertion was removed with its subject (W7-A deleted
+ * `checker-l2-heuristic.ts`, which had zero production consumers).
  */
 
 import { describe, test, expect } from "bun:test";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { parseLegacy as parse } from "../../parser/src/index";
-import { checkL1, checkL2Heuristic } from "../src";
+import { checkL1 } from "../src";
 
 const FIXTURE = join(import.meta.dir, "../fixtures/hand-authored/focus-ring-mandate.prime");
 
@@ -31,15 +29,6 @@ describe("hand-authored .prime fixture", () => {
   test("passes L1 structural checks", () => {
     const l1Errors = checkL1(ast).filter((d) => d.level === "error");
     expect(l1Errors).toEqual([]);
-  });
-
-  test("does not trip any L2 heuristic warning", () => {
-    const l2 = checkL2Heuristic(ast);
-    const warns = l2.filter((d) => d.level === "warn");
-    if (warns.length > 0) {
-      console.warn("L2 heuristic warns (unexpected):", warns.map((w) => w.message));
-    }
-    expect(warns).toEqual([]);
   });
 
   test("preserves nested objects (source), arrays of objects (checks), thresholds, exemptions", () => {

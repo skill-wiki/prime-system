@@ -1,0 +1,5 @@
+protocol: prime/model/v2
+name: audit-fixture
+version: 1.0.0
+files:
+  - definitions.yaml

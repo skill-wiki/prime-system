@@ -186,3 +186,33 @@ export function applyV1SyntaxMacro(ast: AtomDeclaration, modelName: string): Uni
 export function normalizePrimeV1Atom(ast: AtomDeclaration, model: LoadedModel, context: NormalizeContext): NormalizeResult {
   return normalizeUnit(applyV1SyntaxMacro(ast, model.manifest.name), model, context);
 }
+
+/** A declared scalar field of a v1 atom, accepting the quoted and bare spellings alike. */
+function declaredField(ast: AtomDeclaration | UnitDeclaration, key: string): string {
+  const field = ast.body.find(entry => entry.key === key);
+  if (!field) return "";
+  if (field.value.type === "String" || field.value.type === "Ident") return field.value.value;
+  return "";
+}
+
+/**
+ * The corpus-resolved id of a v1 atom, for `NormalizeContext.id`.
+ *
+ * This is the v1 addressing convention, so it belongs beside the v1 syntax
+ * macro: the id a `.prime` file declares (or the module-prefixed one it
+ * implies) is the key every relation edge's `from` and every emitted artifact
+ * directory is built on. It lived privately inside the legacy atom-dir emitter,
+ * which meant deleting that emitter would have silently changed every unit's
+ * identity; the caller cannot re-derive it without copying these four rules.
+ */
+export function deriveV1AtomId(ast: AtomDeclaration | UnitDeclaration): string {
+  const name = declaredField(ast, "name") || ast.name;
+  const declaredId = declaredField(ast, "id");
+  if (declaredId) return declaredId;
+  const module = declaredField(ast, "module");
+  const bare = name.replace(/^m\d+-/, "");
+  if (/^M\d+$/.test(module)) return `@${module}/${bare}`;
+  const prefixed = name.match(/^(m\d+)-/);
+  if (prefixed) return `@${prefixed[1]!.toUpperCase()}/${bare}`;
+  return `@prime/${name}`;
+}

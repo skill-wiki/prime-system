@@ -2,7 +2,8 @@
  * prime ls — List installed Primes.
  */
 
-import { header, bold, cyan, green, yellow, gray } from '../utils/display';
+import { header, bold, green, gray } from '../utils/display';
+import { paintFor } from '../utils/kind-color';
 import { findPrimesDir } from '../utils/fs';
 import { readdirSync, readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -43,7 +44,9 @@ export async function lsCommand(_args: string[]) {
 
     const type = typeMatch?.[1]?.toLowerCase() || 'unknown';
     const version = versionMatch?.[1] || '?';
-    const typeColor = type === 'knowledge' ? cyan : type === 'method' ? green : yellow;
+    // Colour is derived from the type name, never from a table of known type
+    // names: such a table is a closed set of model vocabulary inside the engine.
+    const typeColor = paintFor(type);
     const compiled = hasCompiled ? green('✅') : gray('—');
 
     rows.push([name, typeColor(type), version, compiled]);

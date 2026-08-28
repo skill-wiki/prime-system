@@ -163,13 +163,23 @@ describe("preserved external semantics", () => {
     const options = serve();
     const outcome = executePrimeQuery({ scope: "related", id: TEA, limit: 10 }, options);
     if ("error" in outcome) throw new Error(outcome.error);
-    // The frozen baseline for this exact call.
+    // Source declaration order, which is what the model-driven extractor produces:
+    // method-make-tea declares `requires: [fact, rule]` (:30) before `enhances:
+    // [term-celsius]` (:35). The pre-cutover baseline listed term-celsius first —
+    // an artifact of the deleted extractor grouping edges by verb name
+    // alphabetically (enhances < related < requires), not a semantic guarantee.
+    // Declaration order also agrees with D-7: `requires` is loadOrder: before, so
+    // its targets precede the unit that requires them.
     expect(outcome.results.map((r) => r.id)).toEqual([
-      "@example/term-celsius",
       "@example/fact-water-boils-at-100c",
       "@example/rule-altitude-affects-boiling",
+      "@example/term-celsius",
     ]);
-    expect(outcome.results[0]!.description.startsWith("[related] ")).toBe(true);
+    // The promise is that every reached unit says which relation reached it, not that
+    // any particular verb comes first. results[0] is now prefixed `[requires]` because
+    // that is the block method-make-tea declares first (:30).
+    for (const result of outcome.results) expect(result.description).toMatch(/^\[[a-z][a-z-]*\] /);
+    expect(outcome.results[0]!.description.startsWith("[requires] ")).toBe(true);
     const limited = executePrimeQuery({ scope: "related", id: TEA, limit: 1 }, options);
     if ("error" in limited) throw new Error(limited.error);
     expect(limited.results).toHaveLength(1);

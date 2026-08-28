@@ -99,22 +99,12 @@ function computeDensity(atoms: AtomMeta[]): string {
 // ─── Public API ─────────────────────────────────────────────────────────────
 
 /**
- * Emit the global `_index.xml` listing all compiled atoms.
+ * Build the `_index.xml` corpus index.
  *
- * @param atoms - List of AtomMeta for all compiled atoms
- * @param outDir - Directory to write `_index.xml` into
- * @returns The total token count of the generated index
- */
-export function emitGlobalIndex(atoms: AtomMeta[], outDir: string): number {
-  const content = buildGlobalIndexXml(atoms);
-  mkdirSync(outDir, { recursive: true });
-  writeFileSync(join(outDir, "_index.xml"), content, "utf-8");
-  return Math.ceil(content.length / 4);
-}
-
-/**
- * Build the `_index.xml` XML string without writing to disk.
- * Used internally and for testing.
+ * The writer that used to sit here (`emitGlobalIndex`) was removed with the
+ * legacy atom-dir chain: a corpus index is one of the two artifacts a corpus
+ * bundle commits atomically, so writing it belongs to
+ * `bundle.finalizeCorpusBundle`, which is this builder's only caller.
  */
 export function buildGlobalIndexXml(atoms: AtomMeta[]): string {
   // Split active vs deprecated atoms (PRIME-SPEC v1 §6)

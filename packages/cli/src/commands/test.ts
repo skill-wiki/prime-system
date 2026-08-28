@@ -23,13 +23,16 @@ export async function testCommand(args: string[]) {
   header(`Testing evaluation criteria: ${basename(filePath)}`);
 
   const source = await readFile(filePath);
-  const base = source.match(/extends\s+(\w+)/)?.[1];
 
   let passed = 0;
   let failed = 0;
   let warnings = 0;
 
-  if (base === 'Method') {
+  // Which criteria blocks to test is decided by what the source *declares*, not
+  // by which type it extends: branching on a type name would hardcode a closed
+  // set of model vocabulary, and it also silently skipped any other type that
+  // declares the same blocks.
+  if (/(?:success|failure)_criteria:/.test(source)) {
     // Test success_criteria
     console.log(`\n  ${bold('success_criteria:')}`);
     const scMatch = source.match(/success_criteria:\s*\{([\s\S]*?)\n\s*\}/);
@@ -103,11 +106,11 @@ export async function testCommand(args: string[]) {
         passed++;
       }
     } else {
-      console.log(`    ${gray('—')} No failure_criteria (optional for Method)`);
+      console.log(`    ${gray('—')} No failure_criteria (optional)`);
     }
   }
 
-  if (base === 'Rule') {
+  if (/(?:checks|thresholds):/.test(source)) {
     console.log(`\n  ${bold('checks:')}`);
     const checksMatch = source.match(/checks:\s*\[([\s\S]*?)\]/);
     if (checksMatch) {

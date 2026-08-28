@@ -4,11 +4,13 @@
  *   .prime source
  *     → parser.parse
  *     → checkL1           (must be clean)
- *     → checkL2Heuristic  (record for sanity)
  *     → checkL3Cross      (with other atoms in the corpus)
  *     → resolve           (dependency graph)
- *     → emitMarkdown      (compact L2 block)
- *     → emitYamlAtom      (MCP-compatible round-trip)
+ *     → emitMarkdown      (compact projection)
+
+ * Stages 3 and 7 were removed with their subjects: W7-A deleted the L2 heuristic
+ * checker and the YAML-frontmatter emitter, both of which had zero production
+ * consumers once `scripts/build-atom-dirs.ts` moved onto the unified pipeline.
  *
  * The test uses three hand-authored .prime sources — a Knowledge atom,
  * a Rule atom that requires it, and a second Rule that contradicts the
@@ -23,15 +25,12 @@
  */
 
 import { describe, test, expect } from "bun:test";
-import { parse as parseYaml } from "yaml";
 import { parseLegacy as parse } from "../../parser/src/index";
 import {
   checkL1,
-  checkL2Heuristic,
   checkL3Cross,
   resolve,
   emitMarkdown,
-  emitYamlAtom,
 } from "../src";
 
 const KNOWLEDGE = `
@@ -94,7 +93,7 @@ function parseOrThrow(src: string) {
   return ast;
 }
 
-describe("E2E: parse → L1 → L2 → L3 → resolve → emit", () => {
+describe("E2E: parse → L1 → L3 → resolve → emit", () => {
   const astKnowledge = parseOrThrow(KNOWLEDGE);
   const astRule = parseOrThrow(RULE_REQ);
   const astBad = parseOrThrow(RULE_CONTRADICT);
@@ -110,12 +109,6 @@ describe("E2E: parse → L1 → L2 → L3 → resolve → emit", () => {
       const errs = checkL1(ast).filter((d) => d.level === "error");
       expect(errs).toEqual([]);
     }
-  });
-
-  test("3. L2 heuristic detects vague pass_condition on the bad rule", () => {
-    const goodFindings = checkL2Heuristic(astRule);
-    // The well-formed rule should have no warn-level findings.
-    expect(goodFindings.filter((d) => d.level === "warn")).toEqual([]);
   });
 
   test("4. L3 cross finds the contradicts pair", () => {
@@ -136,18 +129,4 @@ describe("E2E: parse → L1 → L2 → L3 → resolve → emit", () => {
     expect(md).toContain("Tab through the page");
   });
 
-  test("7. emitYamlAtom round-trips into a valid YAML-frontmatter atom", () => {
-    const text = emitYamlAtom(astRule);
-    const m = text.match(/^---\n([\s\S]*?)\n---/);
-    expect(m).not.toBeNull();
-    const fm = parseYaml(m![1]) as Record<string, unknown>;
-    expect(fm.id).toBe("@prime/focus-ring-required");
-    expect(fm.type).toBe("rule");
-    expect(fm.severity).toBe("block");
-    expect(fm.priority).toBe(1);
-    expect(fm.claim).toBe(
-      "Tab through the page and confirm every button/link/input shows a visible focus outline"
-    );
-    expect(fm.requires).toBe("focus-ring");
-  });
 });

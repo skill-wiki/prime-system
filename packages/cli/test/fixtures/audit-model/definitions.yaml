@@ -1,0 +1,113 @@
+# A model package that exists to exercise the audit action end to end. It is a
+# *fixture model*, so it may name whatever it likes — the point of the test is
+# that the CLI reads these names rather than knowing them.
+#
+# The audit action is shaped after plan §5.4's `EvaluateArtifact`: no side
+# effects, idempotency required, no approval. `sideEffects: none` /
+# `idempotency: idempotent` / `approval: never` are the names the protocol schema
+# (`packages/model-schema`) actually accepts for those three properties.
+kind: definitions
+version: 1.0.0
+definitions:
+  - kind: type
+    name: Widget
+    version: 1.0.0
+    additionalFields: reject
+    fields:
+      - { name: label, typeRef: string, required: true }
+
+  - kind: type
+    name: Gadget
+    version: 1.0.0
+    additionalFields: reject
+    fields:
+      - { name: label, typeRef: string, required: true }
+
+  - kind: type
+    name: Verdict
+    version: 1.0.0
+    additionalFields: reject
+    fields:
+      - { name: label, typeRef: string, required: true }
+      - { name: score, typeRef: integer }
+      - { name: failed, typeRef: integer }
+
+  # `cyclePolicy: reject` selects a cycle rule; `conflictSeverity: error` makes a
+  # dangling target a failure rather than a note.
+  - kind: relation
+    name: needs
+    version: 1.0.0
+    from: Widget
+    to: Widget
+    cardinality: many-to-many
+    directional: true
+    semantics: { traversal: transitive, selection: closure, loadOrder: before, cyclePolicy: reject, conflictSeverity: error }
+
+  # Same shape, but the model declares that violating it is not a conflict, so a
+  # dangling target here must be reported and must NOT fail the audit.
+  - kind: relation
+    name: mentions
+    version: 1.0.0
+    from: Widget
+    to: Gadget
+    cardinality: many-to-many
+    directional: true
+    semantics: { traversal: one-hop, selection: informational, loadOrder: none, cyclePolicy: allow, conflictSeverity: none }
+
+  - kind: projection
+    name: summary
+    version: 1.0.0
+    targetTokens: 40
+    include: [label]
+
+  - kind: projection
+    name: core
+    version: 1.0.0
+    targetTokens: 120
+    include: [label]
+
+  # No compiled bundle carries an artifact under this name, so the
+  # projection-present rule has something to actually report.
+  - kind: projection
+    name: rationale
+    version: 1.0.0
+    targetTokens: 200
+    include: [label]
+
+  - kind: action
+    name: AuditCorpus
+    version: 1.0.0
+    sideEffects: none
+    idempotency: idempotent
+    approval: never
+    provider: evaluator/default
+    capabilities: [corpus.read]
+    inputs:
+      - { name: subject, typeRef: string, required: true }
+    output: integer
+
+  - kind: action
+    name: AttestCorpus
+    version: 1.0.0
+    sideEffects: none
+    idempotency: idempotent
+    approval: never
+    provider: evaluator/default
+    capabilities: [corpus.read]
+    inputs:
+      - { name: subject, typeRef: string, required: true }
+    output: Verdict
+
+  # Present so the CLI's refusal of effectful actions can be tested against a
+  # real declaration rather than a hand-built object.
+  - kind: action
+    name: PublishCorpus
+    version: 1.0.0
+    sideEffects: write
+    idempotency: non-idempotent
+    approval: always
+    provider: writer/default
+    capabilities: [corpus.write]
+    inputs:
+      - { name: subject, typeRef: string, required: true }
+    output: boolean

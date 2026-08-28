@@ -1,12 +1,15 @@
 /**
  * @module @skill-wiki/compiler
- * AI-powered compiler for .prime files.
+ * Compiler for `.prime` sources.
  *
- * Compilation pipeline:
- *   Phase 1: Parse (.prime -> AST)           — handled by @skill-wiki/parser
- *   Phase 2: Check (AST -> diagnostics)      — L1 structural, L2 logic, L3 domain
- *   Phase 3: Resolve (dependency graph)       — cycle, conflict, version checks
- *   Phase 4: Emit (AST -> .md outputs)        — optimized Markdown + bundle + index + graph
+ * Compilation pipeline (plan §8.1):
+ *   Discover sources → Parse → Resolve model → Normalize to IR
+ *     → L1 structural checks → Link references and relations
+ *     → L3 corpus/graph checks → Emit projections
+ *
+ * There is one public build entry, `compileSource`. Optional-provider semantic
+ * checks (L2/L3 LLM) are reported as recorded skips rather than implemented
+ * here; see `SkippedStage`.
  */
 
 // ─── Re-exports ────────────────────────────────────────────────────────────
@@ -23,15 +26,8 @@ export type {
 } from "./types";
 
 export { checkL1 } from "./checker-l1";
-export { checkL2Heuristic } from "./checker-l2-heuristic";
-export { buildL2Prompt, parseL2Response } from "./checker-l2";
-export { buildL3Prompt, parseL3Response } from "./checker-l3";
 export { checkL3Cross } from "./checker-l3-cross";
 export type { L3CrossOptions, L3CrossFinding } from "./checker-l3-cross";
-export { callAI, hasApiKey, AI_MODELS } from "./ai-client";
-export type { AIClientOptions } from "./ai-client";
-export { L2Cache, defaultL2Cache, L2_PROMPT_VERSION } from "./l2-cache";
-export type { L2CacheEntry, L2CacheOptions } from "./l2-cache";
 export { resolve } from "./resolver";
 export type { ResolveResult } from "./resolver";
 export {
@@ -41,30 +37,19 @@ export {
   emitGraph,
   estimateTokens,
 } from "./emitter";
-export { emitYamlAtom } from "./emitter-yaml-atom";
 export { chunk, estimateTokens as estimateChunkTokens } from "./chunker";
 export type { ChunkLevels } from "./chunker";
-export { emitXmlStub } from "./xml-stub-emitter";
-export type { AtomTokenCounts } from "./xml-stub-emitter";
-export { emitGlobalIndex, buildGlobalIndexXml } from "./global-index-emitter";
+export { buildGlobalIndexXml } from "./global-index-emitter";
 export type { AtomMeta } from "./global-index-emitter";
-export { emitAtomDir } from "./atom-dir-emitter";
-export type { EmitResult } from "./atom-dir-emitter";
-export { normalizeUnit, normalizePrimeV1Atom, applyV1SyntaxMacro } from "./normalizer";
+export { normalizeUnit, normalizePrimeV1Atom, applyV1SyntaxMacro, deriveV1AtomId } from "./normalizer";
 export type { NormalizeContext, NormalizeDiagnostic, NormalizeResult } from "./normalizer";
 export { compileUnit, compileNormalizedUnit, emitCompiledUnit, computeCompiledUnitContentDigest } from "./generic-unit";
 export type { CompileUnitOptions, CompileUnitDiagnostic, CompileUnitResult, EmitCompiledUnitResult } from "./generic-unit";
 
-// ─── Imports for compile() ─────────────────────────────────────────────────
+// ─── Imports ───────────────────────────────────────────────────────────────
 
-import type { LegacySyntaxAST, SyntaxAST } from "@skill-wiki/types";
-import type { CompileOptions, CompileResult, Diagnostic } from "./types";
+import type { Diagnostic } from "./types";
 import { checkL1 } from "./checker-l1";
-import { checkL2Heuristic } from "./checker-l2-heuristic";
-import { buildL2Prompt, parseL2Response } from "./checker-l2";
-import { buildL3Prompt, parseL3Response } from "./checker-l3";
-import { callAI, hasApiKey, AI_MODELS } from "./ai-client";
-import { defaultL2Cache } from "./l2-cache";
 import { resolve } from "./resolver";
 import {
   emitMarkdown,
@@ -73,188 +58,6 @@ import {
   emitGraph,
   estimateTokens,
 } from "./emitter";
-
-// ─── Compile Function ──────────────────────────────────────────────────────
-
-/**
- * Compile a .prime source file through the full pipeline.
- *
- * Pipeline:
- * 1. Parse source into AST (delegates to @skill-wiki/parser)
- * 2. Run structural checks (L1, always)
- * 3. Run logic checks (L2, if level >= 2) — AI-powered via Anthropic API
- * 4. Run domain checks (L3, if level >= 3) — AI-powered via Anthropic API
- * 5. Resolve dependencies
- * 6. Emit optimized Markdown outputs
- *
- * @param source - The .prime source code string
- * @param options - Compilation options
- * @returns Compilation result with diagnostics and output artifacts
- */
-export async function compile(
-  source: string,
-  options: CompileOptions = {}
-): Promise<CompileResult> {
-  const { level = 1, output, bundle = false, installedPrimes = new Map() } = options;
-  const diagnostics: Diagnostic[] = [];
-
-  // ── Phase 1: Parse ────────────────────────────────────────────────────
-  let ast: LegacySyntaxAST;
-  try {
-    // Try to dynamically import the parser
-    // If not available, compilation cannot proceed
-    let parserModule: any;
-    try {
-      parserModule = await import("@skill-wiki/parser");
-    } catch {
-      // Parser not available — this allows the compiler to be tested
-      // independently. In production, the parser must be installed.
-      throw new Error(
-        "Parser (@skill-wiki/parser) not available. Install it or provide a pre-parsed AST."
-      );
-    }
-    // The parser may return { ast, errors } or a PrimeAST directly
-    const parseResult = parserModule.parse(source);
-    if (parseResult && typeof parseResult === "object" && "ast" in parseResult) {
-      const parsedAst = parseResult.ast as SyntaxAST;
-      // If the parser returned errors, add them as diagnostics
-      if (parseResult.errors && Array.isArray(parseResult.errors)) {
-        for (const err of parseResult.errors) {
-          diagnostics.push({
-            level: "error",
-            line: err.line ?? 0,
-            message: err.message ?? String(err),
-            source: "L1:structure",
-          });
-        }
-        if (parseResult.errors.length > 0) {
-          return { success: false, diagnostics };
-        }
-      }
-      if (parsedAst.type === "UnitDeclaration") return { success: false, diagnostics: [{ level: "error", line: parsedAst.loc.line, message: "Generic compile is not connected; use the normalize API", source: "L1:structure" }] };
-      ast = parsedAst;
-    } else {
-      ast = parseResult as LegacySyntaxAST;
-    }
-  } catch (parseError) {
-    return {
-      success: false,
-      diagnostics: [
-        {
-          level: "error",
-          line: 0,
-          message:
-            parseError instanceof Error
-              ? parseError.message
-              : "Unknown parse error",
-          source: "L1:structure",
-        },
-      ],
-    };
-  }
-
-  // ── Phase 2: Check ────────────────────────────────────────────────────
-
-  // Level 1: Structural checks (always)
-  const l1Diagnostics = checkL1(ast, installedPrimes);
-  diagnostics.push(...l1Diagnostics);
-
-  // Level 2: Semantic checks (if level >= 2)
-  //   Step 1 — offline heuristic always runs (deterministic, free).
-  //   Step 2 — LLM pass runs only if ANTHROPIC_API_KEY is present, and the
-  //            cache is consulted first so re-compiles are free.
-  if (level >= 2) {
-    diagnostics.push(...checkL2Heuristic(ast));
-
-    if (hasApiKey()) {
-      const astJson = JSON.stringify(ast);
-      const model = AI_MODELS.L2;
-      const cached = defaultL2Cache.get(astJson, model);
-      if (cached) {
-        diagnostics.push(...cached);
-      } else {
-        const l2Response = await callAI(buildL2Prompt(ast), { model });
-        if (l2Response) {
-          const l2Diagnostics = parseL2Response(l2Response);
-          defaultL2Cache.put(astJson, model, l2Diagnostics);
-          diagnostics.push(...l2Diagnostics);
-        }
-      }
-    } else if (level === 2) {
-      console.warn(
-        "[prime-compiler] LLM L2 skipped (set ANTHROPIC_API_KEY for the full semantic pass)"
-      );
-    }
-  }
-
-  // Level 3: Domain checks (if level >= 3)
-  if (level >= 3) {
-    if (hasApiKey() && ast.type === "PrimeDeclaration") {
-      const l3Prompt = buildL3Prompt(ast);
-      const l3Response = await callAI(l3Prompt, { model: AI_MODELS.L3 });
-      if (l3Response) {
-        const l3Diagnostics = parseL3Response(l3Response);
-        diagnostics.push(...l3Diagnostics);
-      }
-    } else if (level >= 3 && !(level >= 2)) {
-      // Only print the skip message if we didn't already print it for L2
-      console.warn(
-        "[prime-compiler] AI checks skipped (set ANTHROPIC_API_KEY for L2/L3 checks)"
-      );
-    }
-  }
-
-  // Check for errors — if any L1 errors, compilation fails
-  const hasErrors = diagnostics.some((d) => d.level === "error");
-  if (hasErrors) {
-    return { success: false, diagnostics };
-  }
-
-  // ── Phase 3: Resolve ──────────────────────────────────────────────────
-  const { graph, diagnostics: resolverDiags } = resolve(ast, installedPrimes);
-  diagnostics.push(...resolverDiags);
-
-  // Check for resolver errors
-  const hasResolverErrors = resolverDiags.some((d) => d.level === "error");
-  if (hasResolverErrors) {
-    return { success: false, diagnostics };
-  }
-
-  // ── Phase 4: Emit ─────────────────────────────────────────────────────
-  const md = emitMarkdown(ast);
-  const indexYaml = emitIndex(ast, graph);
-  const graphYaml = emitGraph(graph);
-
-  let bundleMd: string | undefined;
-  if (bundle) {
-    bundleMd = emitBundle(ast, graph, installedPrimes);
-  }
-
-  // Estimate token counts
-  const sourceTokens = estimateTokens(source);
-  const compiledTokens = estimateTokens(md);
-  const bundleTokens = bundleMd ? estimateTokens(bundleMd) : undefined;
-
-  // Re-emit index with token counts
-  const indexWithTokens = emitIndex(
-    ast,
-    graph,
-    sourceTokens,
-    compiledTokens,
-    bundleTokens
-  );
-
-  return {
-    success: true,
-    diagnostics,
-    outputs: {
-      md,
-      bundle: bundleMd,
-      index: indexWithTokens,
-      graph: graphYaml,
-    },
-  };
-}
 
 // ─── §8.1 Unified Compile Pipeline ─────────────────────────────────────────
 //
@@ -268,12 +71,15 @@ export async function compile(
 // It runs the SAME stages in the SAME order as the CLI did, on purpose: this
 // entry is about where the sequence lives, not about changing what it emits.
 
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { basename, dirname, join } from "node:path";
+import { basename, dirname, join, resolve as resolvePath } from "node:path";
+import { fileURLToPath } from "node:url";
 import { parseLegacy } from "@skill-wiki/parser";
+import { loadModelOrThrow, type LoadedModel } from "@skill-wiki/model-schema";
 import type { AtomDeclaration, PrimeAST } from "@skill-wiki/types";
-import { emitAtomDir } from "./atom-dir-emitter";
-import { emitGlobalIndex, type AtomMeta } from "./global-index-emitter";
+import { compileNormalizedUnit, emitCompiledUnit } from "./generic-unit";
+import { deriveV1AtomId, normalizePrimeV1Atom } from "./normalizer";
 import type { InstalledPrime } from "./types";
 
 export type PipelineEmitMode = "atom-dir" | "markdown";
@@ -330,6 +136,23 @@ export interface CompilePipelineResult {
 
 function isPrimeDeclaration(ast: PrimeAST | AtomDeclaration): ast is PrimeAST {
   return ast.type === "PrimeDeclaration";
+}
+
+/**
+ * The v1 compatibility model, resolved the same way the chunker resolves it.
+ *
+ * A `.prime` file in the legacy kind form declares no model, so the one model
+ * that gives its kinds a type is the compat package. Loading it here rather than
+ * hardcoding kind names is what keeps `atom-dir` emit free of built-in domain
+ * semantics (§3.1).
+ */
+let cachedV1Model: LoadedModel | undefined;
+function v1CompatibilityModel(): LoadedModel {
+  if (!cachedV1Model) {
+    const here = dirname(fileURLToPath(import.meta.url));
+    cachedV1Model = loadModelOrThrow(resolvePath(here, "../../../compat/prime-v1-model"));
+  }
+  return cachedV1Model;
 }
 
 function stringField(ast: PrimeAST | AtomDeclaration, key: string): string | undefined {
@@ -428,11 +251,36 @@ export function compileSource(options: CompilePipelineOptions): CompilePipelineR
 
   // ── Emit ────────────────────────────────────────────────────────────────
   if (emit === "atom-dir") {
-    const result = emitAtomDir(ast, outputDir);
-    const metas: AtomMeta[] = [result.meta];
-    emitGlobalIndex(metas, outputDir);
-    report({ phase: "emit", ok: true, detail: "Emitted atom directory" });
-    return { ok: true, diagnostics, skipped, sourceLines, dependencyCount, outputDir, emit, files: [...result.files], tokens: { ...result.tokens }, atomId: result.atomId, atomDirSkipped: result.skipped, atomOutDir: result.outDir };
+    if (ast.type === "PrimeDeclaration") {
+      const diagnostic: Diagnostic = { level: "error", line: ast.loc.line, message: "Unit-directory emit requires a kind-form declaration; the `prime … extends …` form has no model type to normalize against.", source: "L1:structure" };
+      report({ phase: "check", ok: false, detail: "Unsupported declaration form for unit-directory emit" });
+      return { ok: false, failedPhase: "check", diagnostics: [...diagnostics, diagnostic], skipped, sourceLines, dependencyCount, outputDir, emit, files: [] };
+    }
+    const model = v1CompatibilityModel();
+    const normalized = normalizePrimeV1Atom(ast, model, {
+      corpus: basename(outputDir),
+      version: stringField(ast, "version") ?? "1.0.0",
+      digest: `sha256:${createHash("sha256").update(source, "utf8").digest("hex")}`,
+      id: deriveV1AtomId(ast),
+    });
+    if (!normalized.ok) {
+      const normalizeDiagnostics = normalized.diagnostics.map<Diagnostic>(entry => ({ level: "error", line: entry.source.loc.line, message: `${entry.code}: ${entry.message}`, source: "L1:structure" }));
+      report({ phase: "check", ok: false, detail: `${normalizeDiagnostics.length} normalization errors` });
+      return { ok: false, failedPhase: "check", diagnostics: [...diagnostics, ...normalizeDiagnostics], skipped, sourceLines, dependencyCount, outputDir, emit, files: [] };
+    }
+    const compiled = compileNormalizedUnit(normalized.value, ast, model);
+    if (!compiled.ok) {
+      const compileDiagnostics = compiled.diagnostics.map<Diagnostic>(entry => ({ level: "error", line: entry.source?.loc.line ?? 0, message: `${entry.code}: ${entry.message}`, source: "L1:structure" }));
+      report({ phase: "check", ok: false, detail: `${compileDiagnostics.length} projection errors` });
+      return { ok: false, failedPhase: "check", diagnostics: [...diagnostics, ...compileDiagnostics], skipped, sourceLines, dependencyCount, outputDir, emit, files: [] };
+    }
+    const emitted = emitCompiledUnit(compiled.value, outputDir);
+    report({ phase: "emit", ok: true, detail: "Emitted unit directory" });
+    // The corpus index is deliberately not written here. A single-file compile
+    // knows one unit, and the previous implementation wrote a one-atom
+    // `_index.xml` over whatever corpus index already existed in the output
+    // directory. Corpus-level artifacts belong to the corpus-level entry point.
+    return { ok: true, diagnostics, skipped, sourceLines, dependencyCount, outputDir, emit, files: [...emitted.files], tokens: { ...compiled.value.meta.tokens }, atomId: emitted.meta.id, atomDirSkipped: false, atomOutDir: emitted.directory };
   }
 
   const primeName = stringField(ast, "name") ?? basename(options.file, ".prime");

@@ -23,6 +23,8 @@
  *   prime search <query>          Search the registry
  *   prime info <name>             View Prime details
  *   prime ls                      List installed Primes (.primes/ dir)
+ *   prime action preflight|run    Plan or execute a side-effect-free audit Action
+ *   prime run inspect|replay      Read or fold back an Action run's append-only log
  */
 
 import { compileCommand } from './commands/compile';
@@ -44,6 +46,8 @@ import { composeCommand } from './commands/compose';
 import { testCommand } from './commands/test';
 import { infoCommand } from './commands/info';
 import { doctorCommand } from './commands/doctor';
+import { actionCommand } from './commands/action';
+import { runCommand } from './commands/run';
 
 const VERSION = '0.1.0';
 
@@ -79,6 +83,12 @@ Package Management:
   info <name>             View Prime details
   ls                      List installed Primes (.primes/)
   doctor [--dir <path>]   Inspect a compiled corpus bundle
+
+Actions & Runs:
+  action preflight        Plan an audit Action without invoking a provider
+  action run              Execute a side-effect-free audit Action
+  run inspect <runId>     Print a run's status and event log
+  run replay <runId>      Fold a run back out of its append-only log
 
 Options:
   --version, -v           Show version
@@ -164,6 +174,16 @@ async function main() {
         break;
       case 'doctor': {
         const exitCode = doctorCommand(commandArgs);
+        if (exitCode !== 0) process.exitCode = exitCode;
+        break;
+      }
+      case 'action': {
+        const exitCode = await actionCommand(commandArgs);
+        if (exitCode !== 0) process.exitCode = exitCode;
+        break;
+      }
+      case 'run': {
+        const exitCode = runCommand(commandArgs);
         if (exitCode !== 0) process.exitCode = exitCode;
         break;
       }
