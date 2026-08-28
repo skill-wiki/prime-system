@@ -13,7 +13,7 @@ import { existsSync, readdirSync, readFileSync } from 'fs';
 import { header, success, error, warn, info, diagnosticLine, createSpinner, bold, green, yellow, red, gray } from '../utils/display';
 import { readFile, writeFile, fileExists } from '../utils/fs';
 
-import { parse } from '@skill-wiki/parser';
+import { parseLegacy as parse } from '@skill-wiki/parser';
 import {
   checkL1,
   resolve as resolveGraph,

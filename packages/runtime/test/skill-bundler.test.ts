@@ -3,7 +3,7 @@
  */
 
 import { describe, test, expect } from "bun:test";
-import { parse } from "../../parser/src/index";
+import { parseLegacy as parse } from "../../parser/src/index";
 import { CorpusGraph } from "../src/corpus-graph";
 import { bundleSkill } from "../src/skill-bundler";
 

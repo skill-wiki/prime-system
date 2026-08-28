@@ -21,7 +21,7 @@ import { describe, test, expect, beforeAll, afterAll, spyOn } from "bun:test";
 import { writeFileSync, mkdirSync, rmSync } from "fs";
 import * as path from "path";
 import * as os from "os";
-import { parse } from "../../parser/src/index";
+import { parseLegacy as parse } from "../../parser/src/index";
 import {
   loadDomainFromFile,
   discoverDomains,

@@ -5,7 +5,7 @@
  */
 
 import { describe, test, expect } from "bun:test";
-import { parse, tokenize, TokenType, ParseError } from "../src/index";
+import { parseLegacy as parse, tokenize, TokenType, ParseError } from "../src/index";
 import type {
   PrimeAST,
   AtomDeclaration,

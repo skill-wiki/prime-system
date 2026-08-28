@@ -6,7 +6,7 @@
  */
 
 import { describe, test, expect } from "bun:test";
-import { parse } from "../../parser/src/index";
+import { parseLegacy as parse } from "../../parser/src/index";
 import {
   DomainRegistry,
   type DomainPlugin,
