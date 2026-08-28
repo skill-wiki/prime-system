@@ -20,10 +20,13 @@ import {
 } from "@skill-wiki/runtime";
 import {
   createPrimeQueryResponse,
+  createPrimeResourceUri,
 } from "./query-response";
 export {
   createPrimeQueryResponse,
+  createPrimeResourceUri,
   type QueryResult,
+  type QueryResponseResult,
   type PrimeQueryResponse,
 } from "./query-response";
 import { executePrimeQuery, type QueryArguments } from "./query-engine";

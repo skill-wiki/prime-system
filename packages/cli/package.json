@@ -21,7 +21,8 @@
   "dependencies": {
     "@skill-wiki/types": "workspace:*",
     "@skill-wiki/parser": "workspace:*",
-    "@skill-wiki/compiler": "workspace:*"
+    "@skill-wiki/compiler": "workspace:*",
+    "@skill-wiki/runtime": "workspace:*"
   },
   "keywords": [
     "prime-lang",

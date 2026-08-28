@@ -43,6 +43,7 @@ import { decomposeCommand } from './commands/decompose';
 import { composeCommand } from './commands/compose';
 import { testCommand } from './commands/test';
 import { infoCommand } from './commands/info';
+import { doctorCommand } from './commands/doctor';
 
 const VERSION = '0.1.0';
 
@@ -77,6 +78,7 @@ Package Management:
   search <query>          Search the registry
   info <name>             View Prime details
   ls                      List installed Primes (.primes/)
+  doctor [--dir <path>]   Inspect a compiled corpus bundle
 
 Options:
   --version, -v           Show version
@@ -160,6 +162,11 @@ async function main() {
       case 'ls':
         await lsCommand(commandArgs);
         break;
+      case 'doctor': {
+        const exitCode = doctorCommand(commandArgs);
+        if (exitCode !== 0) process.exitCode = exitCode;
+        break;
+      }
       default:
         console.error(`Unknown command: ${command}`);
         printUsage();

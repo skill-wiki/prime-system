@@ -1,0 +1,14 @@
+{
+  "protocolVersion": "2.0.0",
+  "irVersion": "2",
+  "compilerVersion": "2.1.0",
+  "emitterVersion": "3",
+  "corpus": "org.example/test",
+  "release": "2026.08.28.1",
+  "sourceRevision": "git:abc123",
+  "models": { "org.example/model": "2.0.0" },
+  "schemaDigest": "sha256:df0ad6e43880f0f5c6a4c2a0e4e5c0b6c1646d1f7f3153c4031ff9f05f8b0bea",
+  "contentDigest": "sha256:ed7002b439e9ac8450aa3ee2ba88a2f767f1c31e7e9b8655a75b15ff9711b1c1",
+  "indexDigest": "sha256:32532479dbdea5177a25c7ed0923712e0113b751ab208a708790901f5f2683f0",
+  "createdAt": "2026-08-28T00:00:00Z"
+}
