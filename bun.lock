@@ -24,6 +24,7 @@
       "dependencies": {
         "@skill-wiki/compiler": "workspace:*",
         "@skill-wiki/parser": "workspace:*",
+        "@skill-wiki/runtime": "workspace:*",
         "@skill-wiki/types": "workspace:*",
       },
     },
@@ -31,6 +32,8 @@
       "name": "@skill-wiki/compiler",
       "version": "0.1.0",
       "dependencies": {
+        "@skill-wiki/ir": "workspace:*",
+        "@skill-wiki/model-schema": "workspace:*",
         "@skill-wiki/parser": "workspace:*",
         "@skill-wiki/types": "workspace:*",
       },
