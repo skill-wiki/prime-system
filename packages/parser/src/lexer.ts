@@ -16,6 +16,7 @@ export enum TokenType {
   APPEND = "APPEND",
   EXTEND = "EXTEND",
   AS = "AS",
+  UNIT = "UNIT",
 
   // 28 atom-kind keywords (§4 of PRIME.md)
   // Data / Value layer (8)
@@ -98,6 +99,7 @@ export enum TokenType {
 const KEYWORDS: Record<string, TokenType> = {
   // Legacy keyword
   prime: TokenType.PRIME,
+  unit: TokenType.UNIT,
   // Structural keywords
   extends: TokenType.EXTENDS,
   override: TokenType.OVERRIDE,

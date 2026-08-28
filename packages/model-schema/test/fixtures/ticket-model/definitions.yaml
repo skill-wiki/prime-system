@@ -1,8 +1,11 @@
 kind: definitions
 version: 1.0.0
 definitions:
-  - {kind: type, name: Ticket, version: 1.0.0}
-  - {kind: type, name: Owner, version: 1.0.0}
+  - kind: type
+    name: Ticket
+    version: 1.0.0
+    fields: [{name: title, typeRef: string, required: true}, {name: priority, typeRef: integer}, {name: active, typeRef: boolean}, {name: owner, typeRef: Owner}, {name: metadata, typeRef: unknown}]
+  - {kind: type, name: Owner, version: 1.0.0, fields: [{name: name, typeRef: string, required: true}]}
   - {kind: relation, name: owned-by, version: 1.0.0, from: Ticket, to: Owner, cardinality: many-to-one, directional: true, semantics: {traversal: one-hop, selection: expand, loadOrder: before, cyclePolicy: reject, conflictSeverity: none}}
   - {kind: function, name: TicketSummary, version: 1.0.0, inputs: [{name: ticket, typeRef: Ticket}], output: string, purity: pure, deterministic: true, provider: declarative-fixture}
   - {kind: action, name: ResolveTicket, version: 1.0.0, inputs: [{name: ticket, typeRef: Ticket}], output: boolean, capabilities: [], sideEffects: none, idempotency: idempotent, approval: never}

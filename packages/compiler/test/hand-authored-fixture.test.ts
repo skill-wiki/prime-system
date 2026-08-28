@@ -15,7 +15,7 @@
 import { describe, test, expect } from "bun:test";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { parse } from "../../parser/src/index";
+import { parseLegacy as parse } from "../../parser/src/index";
 import { checkL1, checkL2Heuristic } from "../src";
 
 const FIXTURE = join(import.meta.dir, "../fixtures/hand-authored/focus-ring-mandate.prime");

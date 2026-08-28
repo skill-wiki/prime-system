@@ -3,7 +3,7 @@
  */
 
 import { describe, test, expect } from "bun:test";
-import { parse } from "../../parser/src/index";
+import { parseLegacy as parse } from "../../parser/src/index";
 import { checkL2Heuristic } from "../src/checker-l2-heuristic";
 
 function diag(source: string) {

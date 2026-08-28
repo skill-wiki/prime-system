@@ -31,6 +31,8 @@ import type {
   AppendNode,
   ExtendNode,
   SourceLocation,
+  UnitDeclaration,
+  SyntaxAST,
 } from "@skill-wiki/types";
 
 import { type Token, TokenType } from "./lexer.ts";
@@ -229,6 +231,7 @@ export class Parser {
     return (
       tok.type === TokenType.IDENT ||
       tok.type === TokenType.PRIME ||
+      tok.type === TokenType.UNIT ||
       tok.type === TokenType.EXTENDS ||
       tok.type === TokenType.AS ||
       ATOM_KIND_TYPES.has(tok.type)
@@ -305,13 +308,14 @@ export class Parser {
   /**
    * Parse the entire .prime file.
    *
-   * Supports two top-level forms:
+   * Supports three top-level forms:
    *   1. Legacy:   `prime Name extends Base { ... }`  → PrimeAST
    *   2. New-style: `<kind> Name { ... }`             → AtomDeclaration
+   *   3. Generic: `unit Name : TypeRef { ... }`        → UnitDeclaration
    *
    * Returns a discriminated union so callers can narrow by `.type`.
    */
-  parse(): { ast: PrimeAST | AtomDeclaration; errors: ParseError[] } {
+  parse(): { ast: SyntaxAST; errors: ParseError[] } {
     this.skipTrivia();
 
     // Parse decorators before the keyword
@@ -320,6 +324,7 @@ export class Parser {
     this.skipTrivia();
 
     const keywordTok = this.current();
+    if (keywordTok.type === TokenType.UNIT) return this.parseUnitDeclaration(decorators, keywordTok);
 
     // ── New-style: one of the 28 atom-kind keywords ───────────────────
     const atomKind = ATOM_TOKEN_TO_KIND.get(keywordTok.type);
@@ -328,7 +333,7 @@ export class Parser {
     }
 
     // ── Legacy: `prime Name extends Base { ... }` ────────────────────
-    this.expect(TokenType.PRIME, "Expected an atom-kind keyword or 'prime' at top level");
+    this.expect(TokenType.PRIME, "Expected 'prime', an atom-kind keyword, or 'unit' at top level");
     this.skipTrivia();
 
     const nameTok = this.expect(TokenType.IDENT, "Expected prime name (PascalCase identifier)");
@@ -370,6 +375,23 @@ export class Parser {
       ast.filename = this.filename;
     }
 
+    return { ast, errors: this.errors };
+  }
+
+  private parseUnitDeclaration(decorators: DecoratorNode[], keywordTok: Token): { ast: UnitDeclaration; errors: ParseError[] } {
+    this.advance(); this.skipTrivia();
+    const nameTok = this.expect(TokenType.IDENT, "Expected unit name after 'unit'"); this.skipTrivia();
+    this.expect(TokenType.COLON, "Expected ':' after unit name"); this.skipTrivia();
+    const typeTok = this.current();
+    const validTypeRef = typeTok.type === TokenType.IDENT || ATOM_KIND_TYPES.has(typeTok.type);
+    if (!validTypeRef) {
+      this.addError("Expected type reference after ':'", typeTok, "Use an identifier or legacy atom-kind name");
+      if (!this.isAtEnd() && !this.check(TokenType.LBRACE)) this.advance();
+    } else this.advance();
+    this.skipTrivia(); this.expect(TokenType.LBRACE, "Expected '{' to open unit body"); this.skipTrivia();
+    const body = this.parseBody(); this.skipTrivia(); this.expect(TokenType.RBRACE, "Expected '}' to close unit body");
+    const ast: UnitDeclaration = { type: "UnitDeclaration", name: nameTok.value, typeRef: { type: "TypeRef", name: typeTok.value, loc: this.loc(typeTok) }, decorators, body, loc: this.loc(keywordTok) };
+    if (this.filename) ast.filename = this.filename;
     return { ast, errors: this.errors };
   }
 
@@ -785,6 +807,10 @@ export class Parser {
 
       case TokenType.IDENT: {
         return this.parseIdentValue();
+      }
+      case TokenType.UNIT: {
+        this.advance();
+        return { type: "Ident", value: tok.value, loc: this.loc(tok) } as IdentNode;
       }
 
       default: {

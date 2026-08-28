@@ -4,7 +4,7 @@
  */
 
 import { describe, test, expect } from "bun:test";
-import { parse } from "../../parser/src/index";
+import { parseLegacy as parse } from "../../parser/src/index";
 import { buildL2Prompt } from "../src/checker-l2";
 
 function promptFor(source: string): string {

@@ -50,10 +50,12 @@ export { emitGlobalIndex, buildGlobalIndexXml } from "./global-index-emitter";
 export type { AtomMeta } from "./global-index-emitter";
 export { emitAtomDir } from "./atom-dir-emitter";
 export type { EmitResult } from "./atom-dir-emitter";
+export { normalizeUnit, normalizePrimeV1Atom } from "./normalizer";
+export type { NormalizeContext, NormalizeDiagnostic, NormalizeResult } from "./normalizer";
 
 // ─── Imports for compile() ─────────────────────────────────────────────────
 
-import type { PrimeAST } from "@skill-wiki/types";
+import type { LegacySyntaxAST, SyntaxAST } from "@skill-wiki/types";
 import type { CompileOptions, CompileResult, Diagnostic } from "./types";
 import { checkL1 } from "./checker-l1";
 import { checkL2Heuristic } from "./checker-l2-heuristic";
@@ -95,7 +97,7 @@ export async function compile(
   const diagnostics: Diagnostic[] = [];
 
   // ── Phase 1: Parse ────────────────────────────────────────────────────
-  let ast: PrimeAST;
+  let ast: LegacySyntaxAST;
   try {
     // Try to dynamically import the parser
     // If not available, compilation cannot proceed
@@ -112,7 +114,7 @@ export async function compile(
     // The parser may return { ast, errors } or a PrimeAST directly
     const parseResult = parserModule.parse(source);
     if (parseResult && typeof parseResult === "object" && "ast" in parseResult) {
-      ast = parseResult.ast as PrimeAST;
+      const parsedAst = parseResult.ast as SyntaxAST;
       // If the parser returned errors, add them as diagnostics
       if (parseResult.errors && Array.isArray(parseResult.errors)) {
         for (const err of parseResult.errors) {
@@ -127,8 +129,10 @@ export async function compile(
           return { success: false, diagnostics };
         }
       }
+      if (parsedAst.type === "UnitDeclaration") return { success: false, diagnostics: [{ level: "error", line: parsedAst.loc.line, message: "Generic compile is not connected; use the normalize API", source: "L1:structure" }] };
+      ast = parsedAst;
     } else {
-      ast = parseResult as PrimeAST;
+      ast = parseResult as LegacySyntaxAST;
     }
   } catch (parseError) {
     return {
@@ -183,7 +187,7 @@ export async function compile(
 
   // Level 3: Domain checks (if level >= 3)
   if (level >= 3) {
-    if (hasApiKey()) {
+    if (hasApiKey() && ast.type === "PrimeDeclaration") {
       const l3Prompt = buildL3Prompt(ast);
       const l3Response = await callAI(l3Prompt, { model: AI_MODELS.L3 });
       if (l3Response) {

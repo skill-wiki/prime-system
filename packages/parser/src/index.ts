@@ -32,7 +32,7 @@
  * ```
  */
 
-import type { PrimeAST, AtomDeclaration } from "@skill-wiki/types";
+import type { SyntaxAST, LegacySyntaxAST } from "@skill-wiki/types";
 import { tokenize } from "./lexer.ts";
 import { Parser } from "./parser.ts";
 import { ParseError } from "./errors.ts";
@@ -51,10 +51,20 @@ import { ParseError } from "./errors.ts";
 export function parse(
   source: string,
   filename?: string
-): { ast: PrimeAST | AtomDeclaration; errors: ParseError[] } {
+): { ast: SyntaxAST; errors: ParseError[] } {
   const tokens = tokenize(source, filename);
   const parser = new Parser(tokens, filename, source);
   return parser.parse();
+}
+/** Parse only legacy declarations; generic units are deliberately rejected. */
+export function parseLegacy(source: string, filename?: string): { ast: LegacySyntaxAST; errors: ParseError[] } {
+  const result = parse(source, filename);
+  const ast = result.ast;
+  if (ast.type === "UnitDeclaration") {
+    throw new ParseError({ message: "Generic unit is not supported by legacy consumers; use normalize API", line: ast.loc.line, column: ast.loc.column, filename });
+  }
+  if (ast.type === "PrimeDeclaration" || ast.type === "AtomDeclaration") return { ast, errors: result.errors };
+  throw new Error("Unreachable syntax AST variant");
 }
 
 // Re-export sub-modules for advanced usage

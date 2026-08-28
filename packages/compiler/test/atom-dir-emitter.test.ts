@@ -5,7 +5,7 @@
 import { describe, test, expect, beforeAll, afterAll } from "bun:test";
 import { existsSync, readFileSync, rmSync, mkdirSync } from "fs";
 import { join } from "path";
-import { parse } from "../../parser/src/index";
+import { parseLegacy as parse } from "../../parser/src/index";
 import { emitAtomDir } from "../src/atom-dir-emitter";
 import { emitGlobalIndex, buildGlobalIndexXml } from "../src/global-index-emitter";
 import type { AtomMeta } from "../src/global-index-emitter";

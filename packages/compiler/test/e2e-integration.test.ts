@@ -20,7 +20,7 @@
 
 import { describe, test, expect } from "bun:test";
 import { parse as parseYaml } from "yaml";
-import { parse } from "../../parser/src/index";
+import { parseLegacy as parse } from "../../parser/src/index";
 import {
   checkL1,
   checkL2Heuristic,

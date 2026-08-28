@@ -4,7 +4,7 @@
 
 import { describe, test, expect } from "bun:test";
 import { parse as parseYaml } from "yaml";
-import { parse } from "../../parser/src/index";
+import { parseLegacy as parse } from "../../parser/src/index";
 import { emitYamlAtom } from "../src/emitter-yaml-atom";
 
 function emitFrom(source: string): { text: string; frontmatter: Record<string, unknown> } {

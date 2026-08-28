@@ -5,6 +5,15 @@ export interface SnapshotRef { readonly modelRelease: string; readonly modelDige
 export type BundleSnapshotRef = SnapshotRef;
 export interface DiagnosticIR { readonly code: string; readonly message: string; readonly path?: readonly string[]; readonly severity: "error" | "warning" | "info" }
 export type ValueIR = null | boolean | number | string | readonly ValueIR[] | { readonly [key: string]: ValueIR };
+export interface SourceLocationIR { readonly line: number; readonly column: number; readonly offset: number }
+export interface SourceRefIR { readonly filename?: string; readonly loc: SourceLocationIR }
+export type TypedValueIR =
+  | { readonly kind: "string"; readonly value: string; readonly source: SourceRefIR; readonly declaredTypeRef?: string }
+  | { readonly kind: "number"; readonly value: number; readonly source: SourceRefIR; readonly declaredTypeRef?: string }
+  | { readonly kind: "boolean"; readonly value: boolean; readonly source: SourceRefIR; readonly declaredTypeRef?: string }
+  | { readonly kind: "reference"; readonly path: readonly string[]; readonly target: string; readonly alias?: string; readonly source: SourceRefIR; readonly declaredTypeRef?: string }
+  | { readonly kind: "array"; readonly items: readonly TypedValueIR[]; readonly source: SourceRefIR; readonly declaredTypeRef?: string }
+  | { readonly kind: "object"; readonly fields: Readonly<Record<string, TypedValueIR>>; readonly source: SourceRefIR; readonly declaredTypeRef?: string };
 export interface TypeDefIR { readonly name: string; readonly version: string; readonly fields: Readonly<Record<string, TypeRef>> }
 export interface RelationDefIR { readonly name: string; readonly version: string; readonly from: TypeRef; readonly to: TypeRef; readonly semantics: Readonly<Record<string, ValueIR>> }
 export interface FunctionDefIR { readonly name: string; readonly version: string; readonly inputs: Readonly<Record<string, TypeRef>>; readonly output: TypeRef; readonly provider?: string }
@@ -12,7 +21,8 @@ export interface ActionDefIR { readonly name: string; readonly version: string; 
 export interface ProjectionDefIR { readonly name: string; readonly version: string; readonly targetTokens: number; readonly rules: readonly Readonly<Record<string, ValueIR>>[] }
 export interface RetrievalProfileDefIR { readonly name: string; readonly version: string; readonly projectionRef: string; readonly featureWeights: Readonly<Record<string, number>> }
 export interface SchemaIR { readonly protocolVersion: string; readonly model: { readonly name: string; readonly version: string; readonly digest: string }; readonly types: Readonly<Record<string, TypeDefIR>>; readonly relations: Readonly<Record<string, RelationDefIR>>; readonly functions: Readonly<Record<string, FunctionDefIR>>; readonly actions: Readonly<Record<string, ActionDefIR>>; readonly projections: Readonly<Record<string, ProjectionDefIR>>; readonly retrievalProfiles: Readonly<Record<string, RetrievalProfileDefIR>>; readonly policies?: Readonly<Record<string, ValueIR>>; readonly validators?: Readonly<Record<string, ValueIR>> }
-export interface UnitIR { readonly identity: { readonly id: string; readonly version: string; readonly digest: string; readonly corpus: string }; readonly typeRef: TypeRef; readonly implements: readonly TypeRef[]; readonly fields: Readonly<Record<string, ValueIR>>; readonly relations: readonly GraphEdgeIR[]; readonly citations: readonly string[]; readonly policyLabels: readonly string[]; readonly lifecycle: "draft" | "active" | "deprecated" | "deleted"; readonly visibility: "private" | "shared" | "public"; readonly provenance: Readonly<Record<string, ValueIR>>; readonly projections: Readonly<Record<string, ValueIR>> }
+export interface ProvenanceIR { readonly source: SourceRefIR; readonly attributes?: Readonly<Record<string, ValueIR>> }
+export interface UnitIR { readonly identity: { readonly id: string; readonly version: string; readonly digest: string; readonly corpus: string }; readonly typeRef: TypeRef; readonly implements: readonly TypeRef[]; readonly fields: Readonly<Record<string, TypedValueIR>>; readonly relations: readonly GraphEdgeIR[]; readonly citations: readonly string[]; readonly policyLabels: readonly string[]; readonly lifecycle: "draft" | "active" | "deprecated" | "deleted"; readonly visibility: "private" | "shared" | "public"; readonly provenance: ProvenanceIR; readonly projections: Readonly<Record<string, ValueIR>> }
 export interface GraphEdgeIR { readonly id: string; readonly relationRef: string; readonly from: string; readonly to: string; readonly attributes?: Readonly<Record<string, ValueIR>> }
 export interface GraphIR { readonly snapshot: SnapshotRef; readonly units: readonly UnitIR[]; readonly edges: readonly GraphEdgeIR[]; readonly diagnostics: readonly DiagnosticIR[]; readonly indexes: Readonly<Record<string, readonly string[]>> }
 export interface SelectionCandidateIR { readonly unitId: string; readonly score: number; readonly featureValues: Readonly<Record<string, number>>; readonly reasons: readonly string[] }

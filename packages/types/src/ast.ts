@@ -146,6 +146,11 @@ export interface AtomDeclaration extends ASTNodeBase {
   /** Source filename (if provided). */
   filename?: string;
 }
+export interface TypeRefNode extends ASTNodeBase { type: "TypeRef"; name: string; }
+export interface UnitDeclaration extends ASTNodeBase { type: "UnitDeclaration"; name: string; typeRef: TypeRefNode; decorators: DecoratorNode[]; body: FieldNode[]; filename?: string; }
+export type SyntaxAST = PrimeAST | AtomDeclaration | UnitDeclaration;
+/** Legacy declarations accepted by checker/chunker/emitter pipelines. */
+export type LegacySyntaxAST = PrimeAST | AtomDeclaration;
 
 /**
  * A decorator node (e.g. @sealed, @abstract).

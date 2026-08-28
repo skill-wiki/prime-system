@@ -2,7 +2,7 @@ import { afterEach, describe, expect, test } from "bun:test";
 import { mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadModel, loadModelOrThrow, ModelLoadError, ModelManifestSchema } from "../src/index.ts";
+import { loadModel, loadModelOrThrow, ModelLoadError, ModelManifestSchema, TypeDefinitionSchema } from "../src/index.ts";
 const compat = join(import.meta.dir, "../../../compat/prime-v1-model"); const ticket = join(import.meta.dir, "fixtures/ticket-model"); const roots: string[] = [];
 const codes = (root: string) => { const r = loadModel(root); return r.ok ? [] : r.diagnostics.map(d => d.code); };
 function fixture(manifest: string, files: Record<string, string>): string { const root = mkdtempSync(join(tmpdir(), "model-schema-")); roots.push(root); writeFileSync(join(root, "prime-model.yaml"), manifest); for (const [file, content] of Object.entries(files)) writeFileSync(join(root, file), content); return root; }
@@ -19,4 +19,5 @@ describe("external model loader", () => {
   test("rejects traversal and manifest symlink escapes", () => { const root = fixture("protocol: prime/model/v2\nname: x\nversion: 1.0.0\nfiles: [../x]\n", {}); expect(codes(root)).toContain("PATH_OUTSIDE_ROOT"); const outside = fixture("protocol: prime/model/v2\nname: x\nversion: 1.0.0\nfiles: [d.yaml]\n", {"d.yaml":"kind: definitions\nversion: 1.0.0\ndefinitions: [{kind: type, name: X, version: 1.0.0}]\n"}); const linked = mkdtempSync(join(tmpdir(), "model-schema-link-")); roots.push(linked); symlinkSync(join(outside, "prime-model.yaml"), join(linked, "prime-model.yaml")); expect(codes(linked)).toContain("PATH_OUTSIDE_ROOT"); });
   test("throws diagnostics-bearing error", () => { const root = fixture("protocol: prime/model/v2\nname: x\nversion: 1.0.0\nfiles: [../x]\n", {}); expect(() => loadModelOrThrow(root)).toThrow(ModelLoadError); });
   test("rejects a missing model root without throwing", () => { expect(codes(join(tmpdir(), "no-such-model-root")).includes("MODEL_ROOT_INVALID")).toBe(true); });
+  test("defaults additional fields to reject and compat types declare unknown", () => { expect(TypeDefinitionSchema.parse({kind:"type",name:"Closed",version:"1.0.0"}).additionalFields).toBe("reject"); const r=loadModel(compat); if(!r.ok) throw new Error("compat failed"); expect(r.value.definitions.filter(d=>d.kind==="type").every(d=>d.kind==="type" && d.additionalFields==="unknown")).toBe(true); });
 });

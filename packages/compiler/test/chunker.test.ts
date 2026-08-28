@@ -3,7 +3,7 @@
  */
 
 import { describe, test, expect } from "bun:test";
-import { parse } from "../../parser/src/index";
+import { parseLegacy as parse } from "../../parser/src/index";
 import { chunk, estimateTokens } from "../src/chunker";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
