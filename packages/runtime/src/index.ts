@@ -1,26 +1,21 @@
 /**
  * @module @skill-wiki/runtime
- * Runtime for loading, executing, and evaluating compiled Primes.
+ * Runtime for loading and querying compiled Prime corpora.
  *
  * Components:
  * - IndexManager  — maintains Prime index, matching, formatting
  * - PrimeLoader   — four-level progressive loading
- * - PrimeExecutor — seven-phase execution engine
- * - EvaluationEngine — criteria evaluation and reporting
+ * - CorpusGraph / CorpusIndex — corpus-level graph and search
+ * - corpus-snapshot / atom-loader — immutable bundle loading and projection
+ *
+ * Execution and evaluation are NOT part of this package. `packages/action-runtime`
+ * owns them via its authorization/policy/idempotency provider system; the former
+ * experimental `PrimeExecutor` / `EvaluationEngine` here were removed rather than
+ * shimmed, per plan §2.3, §9.7 and §18.4.
  */
 
 export { IndexManager } from "./index-manager";
 export { PrimeLoader } from "./loader";
-export { PrimeExecutor } from "./executor";
-export { EvaluationEngine } from "./evaluator";
-export { MethodLoader } from "./method-loader";
-export type { CriterionEvaluator } from "./evaluator";
-export {
-  createAIStepExecutor,
-  createMockStepExecutor,
-  type AIStepExecutorOptions,
-  type AIProvider,
-} from "./ai-step-executor";
 export * from "./types";
 export {
   CorpusGraph,

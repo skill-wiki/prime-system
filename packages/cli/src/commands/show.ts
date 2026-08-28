@@ -6,8 +6,9 @@
  *   --json         Output raw JSON
  */
 
-import { header, bold, cyan, green, yellow, magenta, gray, red } from '../utils/display';
+import { header, bold, cyan, green, gray, red } from '../utils/display';
 import { loadAtom, DEFAULT_SOURCES_DIR, AtomMeta } from './registry';
+import { colorKind } from '../utils/kind-color';
 
 export async function showCommand(args: string[]): Promise<void> {
   let id: string | undefined;
@@ -63,8 +64,8 @@ function printAtom(a: AtomMeta) {
     console.log(`\n  ${bold('must-avoid')}    (${a.mustAvoid.length})`);
     for (const ref of a.mustAvoid) console.log(`    ${red('✕')} ${ref}`);
   }
-  // Domain-specific composition extras (e.g. motion-prescriptions for
-  // frontend atoms, or domain-specific constraint fields for other corpora).
+  // Domain-specific composition extras (any constraint fields a corpus
+  // declares beyond the universal must-include / must-avoid pair).
   // Rendered generically so any domain's extras appear without hardcoding.
   const extras = Object.entries(a.compositionExtras);
   if (extras.length > 0) {
@@ -92,22 +93,6 @@ function printAtom(a: AtomMeta) {
 }
 
 // ─── helpers ────────────────────────────────────────────
-
-const KIND_COLOR: Record<string, (s: string) => string> = {
-  persona:       magenta,
-  pattern:       cyan,
-  template:      green,
-  check:         yellow,
-  rule:          yellow,
-  constraint:    yellow,
-  principle:     cyan,
-  fact:          green,
-};
-
-function colorKind(kind: string): string {
-  const fn = KIND_COLOR[kind];
-  return fn ? fn(kind) : gray(kind);
-}
 
 function wordWrap(text: string, width: number): string[] {
   const words = text.split(' ');

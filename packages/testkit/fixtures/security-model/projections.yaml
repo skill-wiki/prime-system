@@ -1,0 +1,56 @@
+kind: definitions
+version: 1.0.0
+definitions:
+  # Every selector below names a field that types.yaml actually declares, which
+  # is what makes projection completeness verifiable rather than nominal.
+  - kind: projection
+    name: summary
+    version: 1.0.0
+    targetTokens: 60
+    include: [name]
+    typeGroups: &groups
+      surface: [Asset, Threat]
+      mitigation: [Control]
+      attestation: [Evidence, Assessment]
+    rules:
+      - { layer: summary, typeRef: "Asset", include: [classification] }
+      - { layer: summary, typeRef: "Threat", include: [severity] }
+      - { layer: summary, typeRef: "group:mitigation", include: [statement] }
+      - { layer: summary, typeRef: "Evidence", include: [collectionMethod] }
+      - { layer: summary, typeRef: "Assessment", include: [verdict] }
+
+  - kind: projection
+    name: core
+    version: 1.0.0
+    targetTokens: 220
+    include: [name]
+    typeGroups: *groups
+    rules:
+      - { layer: core, typeRef: "Asset", include: [classification, custodian, exposedToInternet] }
+      - { layer: core, typeRef: "Threat", include: [vector, severity] }
+      - { layer: core, typeRef: "Control", include: [statement, automated, strength, guardedAsset] }
+      - { layer: core, typeRef: "Evidence", include: [collectedAt, collectionMethod] }
+      - { layer: core, typeRef: "Assessment", include: [verdict, score, assessedControl] }
+
+  - kind: projection
+    name: full
+    version: 1.0.0
+    targetTokens: 700
+    include: ["*"]
+    typeGroups: *groups
+    rules:
+      - { layer: full, typeRef: "group:surface", include: ["*"] }
+      - { layer: full, typeRef: "group:mitigation", include: ["*"] }
+      - { layer: full, typeRef: "group:attestation", include: ["*"] }
+
+  - kind: retrieval-profile
+    name: audit-default
+    version: 1.0.0
+    projection: core
+    candidateGenerators:
+      - { name: lexical, weight: 0.5 }
+      - { name: graph-neighbors, weight: 0.3 }
+      - { name: severity-ordered, weight: 0.2 }
+    features: { lexicalScore: 0.5, graphAffinity: 0.2, severityWeight: 0.3 }
+    constraints: [respect-incompatibility, close-dependencies]
+    reranker: stable-linear-v1

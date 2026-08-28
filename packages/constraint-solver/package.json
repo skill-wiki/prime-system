@@ -1,0 +1,10 @@
+{
+  "name": "@skill-wiki/constraint-solver",
+  "version": "0.1.0",
+  "description": "Semantics-driven constraint solver: closure, exclusion, load order and minimal unsat cores",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": { "test": "bun test", "typecheck": "tsc --noEmit -p tsconfig.json" },
+  "license": "Apache-2.0",
+  "dependencies": { "@skill-wiki/ir": "workspace:*" }
+}

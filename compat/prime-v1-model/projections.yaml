@@ -6,12 +6,38 @@ definitions:
     version: 1.0.0
     targetTokens: 50
     include: [name, kind, version, description, kind-specific-one-liner, tags, domain]
-    exclude: [facts, definitions, categories, checks, steps, sources, examples, relations, notes, rationale, provenance, lifecycle]
+    exclude: [facts, definitions, categories, checks, steps, source, examples, notes, rationale, provenance, lifecycle]
     typeGroups: &groups
       data: [fact, term, value, category, example, counter-example, source, metric]
       behaviour: [step, check, transform, tool]
       composition: [method, rule, taxonomy, pattern, anti-pattern, type]
       style-meta: [persona, voice, constraint, template, provocation, collection, scope, tradeoff, principle, feedback]
+    # `kind-specific-one-liner` is not a field selector — it names an extraction
+    # strategy. The v1 chunker hard-coded `if (kind === "fact") … else if (kind
+    # === "term") …`; that switch lives here now. `extractors` is an ordered
+    # list: the first one that yields a non-empty string wins.
+    #
+    # Strategy vocabulary (implemented by the engine, domain-free):
+    #   field:<name>                     — a top-level string field
+    #   array-object-field:<arr>.<key>   — first object in <arr> having <key>
+    #   step-array:<arr>                 — first Step node in <arr>, rendered
+    #                                      as "Step 1: <name> — <description>"
+    # `fallback` runs for every type after its own extractors are exhausted.
+    extensions:
+      oneLiner:
+        byType:
+          fact: [array-object-field:facts.statement, field:statement]
+          term: [field:meaning]
+          rule: [array-object-field:checks.description]
+          check: [array-object-field:checks.description]
+          method: [step-array:steps]
+          collection: [field:description]
+        fallback: [field:statement, array-object-field:facts.statement]
+      # A unit whose type belongs to no group above (e.g. a legacy
+      # `prime X extends SomethingNobodyDeclared`) is projected with this
+      # group's rules. Naming it here keeps the engine from having to know
+      # that "style-meta" is the lenient one.
+      defaultGroup: style-meta
     rules:
       - { layer: summary, typeRef: "group:data", include: [name, kind, version, description, kind-specific-one-liner, tags, domain] }
       - { layer: summary, typeRef: "group:behaviour", include: [name, kind, version, description, kind-specific-one-liner, tags, domain] }
@@ -24,17 +50,24 @@ definitions:
     include: [name, kind, version, description, kind-specific-one-liner, tags, domain]
     exclude: [sources, examples, relations, provenance, notes, rationale, lifecycle]
     typeGroups: *groups
+    extensions:
+      defaultGroup: style-meta
+    # `rules[].include` is an ORDERED section list, not a set: the v1 chunker
+    # emitted these appenders in exactly this order per type group, and the
+    # markdown is byte-compared against it.
     rules:
-      - { layer: core, typeRef: "group:data", include: [facts, definitions, categories, checks, steps] }
-      - { layer: core, typeRef: "group:behaviour", include: [checks, steps, signature, predicate, effect] }
-      - { layer: core, typeRef: "group:composition", include: [checks, steps, facts, categories, includes, severity_combination] }
-      - { layer: core, typeRef: "group:style-meta", include: [facts, checks, includes, steps, constraint-values] }
+      - { layer: core, typeRef: "group:data", include: [facts, definitions, categories, checks, steps, unprocessed-fields] }
+      - { layer: core, typeRef: "group:behaviour", include: [checks, steps, signature, predicate, effect, unprocessed-fields] }
+      - { layer: core, typeRef: "group:composition", include: [checks, steps, facts, categories, includes, severity_combination, unprocessed-fields] }
+      - { layer: core, typeRef: "group:style-meta", include: [facts, checks, includes, steps, constraint-values, unprocessed-fields] }
   - kind: projection
     name: full
     version: 1.0.0
     targetTokens: 800
     include: [name, kind, version, description, kind-specific-one-liner, tags, domain, facts, definitions, categories, checks, steps, signature, predicate, effect, includes, severity_combination, constraint-values, sources, examples, relations, notes, rationale, provenance, unprocessed-fields]
     typeGroups: *groups
+    extensions:
+      defaultGroup: style-meta
     rules:
       - { layer: full, typeRef: "group:data", include: [sources, examples, relations, notes, rationale, provenance, full-categories, unprocessed-fields] }
       - { layer: full, typeRef: "group:behaviour", include: [sources, examples, relations, notes, rationale, provenance, full-categories, unprocessed-fields] }

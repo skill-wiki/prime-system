@@ -18,7 +18,7 @@
  * // ast.type === "PrimeDeclaration"
  * ```
  *
- * @example — new 28-type atom syntax
+ * @example — kind form (the type name is not a keyword)
  * ```typescript
  * import { parse } from '@skill-wiki/parser';
  *
@@ -29,6 +29,10 @@
  *   }
  * `);
  * // ast.type === "AtomDeclaration"  ast.kind === "fact"
+ * //
+ * // `fact` is not a lexer keyword — any identifier works here, so a type the
+ * // engine has never seen parses the same way. Whether the kind names a real
+ * // type is resolved against a Model Package, not the grammar.
  * ```
  */
 
@@ -40,13 +44,13 @@ import { ParseError } from "./errors.ts";
 /**
  * Parse a .prime source string into an AST.
  *
- * Handles both the legacy `prime Name extends Base { ... }` form (→ PrimeAST)
- * and the new 28-type atom form `<kind> Name { ... }` (→ AtomDeclaration).
+ * Handles the legacy `prime Name extends Base { ... }` form (→ PrimeAST), the
+ * kind form `<type> Name { ... }` (→ AtomDeclaration), and the generic
+ * `unit Name : TypeRef { ... }` form (→ UnitDeclaration).
  *
  * @param source - The raw .prime source text
  * @param filename - Optional filename for error messages and source maps
- * @returns Object containing the AST (PrimeAST | AtomDeclaration) and any
- *          parse errors encountered
+ * @returns Object containing the AST and any parse errors encountered
  */
 export function parse(
   source: string,

@@ -1,0 +1,8 @@
+protocol: prime/model/v2
+name: security-controls
+version: 1.0.0
+files:
+  - types.yaml
+  - relations.yaml
+  - behaviour.yaml
+  - projections.yaml

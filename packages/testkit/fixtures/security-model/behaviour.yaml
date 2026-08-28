@@ -1,0 +1,62 @@
+kind: definitions
+version: 1.0.0
+definitions:
+  - kind: function
+    name: CoverageRatio
+    version: 1.0.0
+    purity: pure
+    deterministic: true
+    provider: declarative
+    inputs:
+      - { name: control, typeRef: Control, required: true }
+    output: number
+
+  - kind: function
+    name: ResidualSeverity
+    version: 1.0.0
+    purity: read-only
+    deterministic: true
+    provider: declarative
+    inputs:
+      - { name: threat, typeRef: Threat, required: true }
+    output: integer
+
+  # Read-only audit action: plan §16 Phase 4 names this as the first real use case.
+  - kind: action
+    name: AuditControl
+    version: 1.0.0
+    sideEffects: read
+    idempotency: idempotent
+    approval: never
+    provider: audit-runner
+    capabilities: [corpus.read]
+    inputs:
+      - { name: control, typeRef: Control, required: true }
+    output: Assessment
+
+  - kind: action
+    name: RecordEvidence
+    version: 1.0.0
+    sideEffects: write
+    idempotency: idempotent
+    approval: conditional
+    provider: evidence-writer
+    capabilities: [corpus.write, evidence.append]
+    preconditions: [control-exists]
+    inputs:
+      - { name: control, typeRef: Control, required: true }
+      - { name: collectionMethod, typeRef: string, required: true }
+    output: Evidence
+
+  - kind: action
+    name: RetireControl
+    version: 1.0.0
+    sideEffects: write
+    idempotency: non-idempotent
+    approval: always
+    provider: lifecycle-writer
+    capabilities: [corpus.write, lifecycle.retire]
+    inputs:
+      - { name: control, typeRef: Control, required: true }
+      - { name: replacement, typeRef: Control }
+    output: boolean

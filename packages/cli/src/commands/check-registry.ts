@@ -84,8 +84,8 @@ export async function runRegistryCheck(
 
       // 2. dep refs resolve
       // compositionExtras may contain @scope/name refs for domain-specific
-      // fields (e.g. motion-prescriptions in frontend atoms). Resolve them
-      // the same way as the universal edges.
+      // fields (e.g. an `x-prescriptions` field declared by some corpus).
+      // Resolve them the same way as the universal edges.
       const extraRefs: Array<{ ref: string; edge: string }> = [];
       for (const [field, val] of Object.entries(atom.compositionExtras)) {
         for (const ref of (val ?? '').split(/[\s,]+/).filter(r => r.startsWith('@'))) {

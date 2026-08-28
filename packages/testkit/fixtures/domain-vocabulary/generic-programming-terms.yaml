@@ -1,0 +1,99 @@
+# Terms that a model package legitimately declares AND that generic engine code
+# legitimately uses as English. A hit on one of these is reported but flagged
+# `ambiguous`, so it does not gate on its own.
+#
+# Membership rule: the word must be meaningful to the engine protocol itself
+# (`type`, `value`, `source`, `constraint`) or be an unavoidable programming noun
+# (`tool`, `template`, `collection`). Words that only mean something inside a
+# knowledge corpus (`fact`, `persona`, `taxonomy`) are NOT listed here.
+kind: domain-vocabulary
+name: generic-programming-terms
+terms: []
+ambiguous:
+  - type
+  - value
+  - source
+  - check
+  - step
+  - transform
+  - tool
+  - example
+  - metric
+  - template
+  - collection
+  - scope
+  - constraint
+  - pattern
+  # `rules` is a field of ProjectionDefinition in the protocol schema itself
+  # (model-schema ProjectionDefinitionSchema.rules), so `rule` in engine code is
+  # usually a projection rule, not the knowledge atom kind.
+  - rule
+  # `registry.register(...)` is a programming verb.
+  - register
+  # "vocabulary term", "search term": ordinary English.
+  - term
+  - includes
+  - extends
+  - requires
+  - related
+  - relationships
+  - compatible
+  - conflicts
+  - description
+  - version
+  - name
+  - id
+  - tags
+  - domain
+  - notes
+  - composition
+  - statement
+  - severity
+  - target
+  - body
+  - input
+  - output
+  - effect
+  - errors
+  - signature
+  - members
+  - fields
+  - label
+  - checks
+  - steps
+  - runs
+  - success
+  - decision
+  - axes
+  - platform
+  - detection
+  - solution
+  - problem
+  - meaning
+  - aliases
+  - confidence
+  - remediation
+  - orchestration
+
+# The exempted term below is declared by the *model* (`method` is a v1 type
+# name), not by this file. Exemptions are matched by term spelling after all
+# vocabularies merge, so they can carve out a model-derived word without this
+# file having to restate it as a term.
+exemptions:
+  # `method: "POST"` is the HTTP verb, unrelated to the v1 `method` atom kind.
+  # Shape-only (no path anchor) because the shape is unambiguous on its own: a
+  # quoted uppercase HTTP verb is never a knowledge-atom kind.
+  - name: http-request-method
+    term: method
+    reason: HTTP request verb in a fetch/request options object, not the v1 method atom kind
+    linePattern: "method:\\s*['\"](?:GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS)['\"]"
+  # `CriterionResult.method` is documented one line above as "Verification
+  # method used" — English for "how", not a reference to the atom kind.
+  - name: criterion-verification-method-field
+    term: method
+    reason: >-
+      ordinary English noun ("verification method used") on an evaluation result field;
+      site: packages/types/src/evaluation.ts:182
+    paths:
+      - packages/types/src/evaluation.ts
+    linePattern: "^\\s*method\\?:\\s*string;\\s*$"

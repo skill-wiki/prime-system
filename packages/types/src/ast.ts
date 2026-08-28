@@ -8,65 +8,21 @@
 
 import type { PrimeType, PrimeDecorator, Identifier, Version } from "./base";
 
-// ─── 28-type Atom Ontology ────────────────────────────────────────────────────
+// ─── Atom Kind (opaque) ───────────────────────────────────────────────────────
 
 /**
- * The 28 atom kinds from the Prime type ontology (§4 of PRIME.md).
+ * An atom/unit kind as written in the source: an **opaque string**.
  *
- * Grouped by layer:
- *   Data/Value:        fact, term, value, category, example, counter-example, source, metric
- *   Behaviour:         step, check, transform, tool
- *   Composition:       method, rule, taxonomy, pattern, anti-pattern, type
- *   Style/Parameter:   persona, voice, constraint, template, provocation
- *   Meta/Binding:      collection, scope, tradeoff, principle, feedback
+ * The engine deliberately does not know which kinds exist. Legality is decided
+ * by the Model Package that declares the TypeDefinitions (see ADR-1: atom types
+ * are external), never by a TypeScript union here — a union would make "the
+ * engine owns the domain ontology" true at the type level and would force a
+ * Core edit for every new domain.
  *
- * Note: "counter-example" and "anti-pattern" use hyphens in the source syntax
- * (because identifiers in .prime allow hyphens) and are normalised to
- * `counter-example` / `anti-pattern` as the canonical string form here.
+ * @deprecated Prefer plain `string`. This alias only exists so the remaining
+ * AST field keeps a name that says what it holds; it carries no constraint.
  */
-export type AtomKind =
-  // Data / Value layer (8)
-  | "fact"
-  | "term"
-  | "value"
-  | "category"
-  | "example"
-  | "counter-example"
-  | "source"
-  | "metric"
-  // Behaviour / Callable layer (4)
-  | "step"
-  | "check"
-  | "transform"
-  | "tool"
-  // Composition / Structure layer (6)
-  | "method"
-  | "rule"
-  | "taxonomy"
-  | "pattern"
-  | "anti-pattern"
-  | "type"
-  // Style / Parameter layer (5)
-  | "persona"
-  | "voice"
-  | "constraint"
-  | "template"
-  | "provocation"
-  // Meta / Binding layer (5)
-  | "collection"
-  | "scope"
-  | "tradeoff"
-  | "principle"
-  | "feedback";
-
-/** All 28 valid atom kinds as a readonly tuple for runtime checks. */
-export const ATOM_KINDS: ReadonlyArray<AtomKind> = [
-  "fact", "term", "value", "category", "example", "counter-example", "source", "metric",
-  "step", "check", "transform", "tool",
-  "method", "rule", "taxonomy", "pattern", "anti-pattern", "type",
-  "persona", "voice", "constraint", "template", "provocation",
-  "collection", "scope", "tradeoff", "principle", "feedback",
-] as const;
+export type AtomKind = string;
 
 // ─── Source Location ────────────────────────────────────────────────────────
 
@@ -135,7 +91,7 @@ export interface PrimeAST extends ASTNodeBase {
  */
 export interface AtomDeclaration extends ASTNodeBase {
   type: "AtomDeclaration";
-  /** Which of the 28 atom kinds this is. */
+  /** The kind token as written in the source; resolved against a Model Package. */
   kind: AtomKind;
   /** PascalCase or CamelCase name, e.g. "WcagFocusContrast". */
   name: string;

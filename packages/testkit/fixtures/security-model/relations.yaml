@@ -1,0 +1,79 @@
+kind: definitions
+version: 1.0.0
+definitions:
+  # Whether a dependency chain should be closed transitively is this model's
+  # decision, expressed as data. The engine only reads `semantics`.
+  - kind: relation
+    name: depends-on
+    version: 1.0.0
+    from: Control
+    to: Control
+    cardinality: many-to-many
+    directional: true
+    semantics: { traversal: transitive, selection: closure, loadOrder: before, cyclePolicy: reject, conflictSeverity: none }
+
+  - kind: relation
+    name: mitigates
+    version: 1.0.0
+    from: Control
+    to: Threat
+    cardinality: many-to-many
+    directional: true
+    inverse: mitigated-by
+    semantics: { traversal: one-hop, selection: expand, loadOrder: after, cyclePolicy: allow, conflictSeverity: none }
+
+  - kind: relation
+    name: mitigated-by
+    version: 1.0.0
+    from: Threat
+    to: Control
+    cardinality: many-to-many
+    directional: true
+    inverse: mitigates
+    semantics: { traversal: one-hop, selection: expand, loadOrder: after, cyclePolicy: allow, conflictSeverity: none }
+
+  - kind: relation
+    name: incompatible-with
+    version: 1.0.0
+    from: Control
+    to: Control
+    cardinality: many-to-many
+    directional: false
+    aliases: [incompatible_with]
+    semantics: { traversal: one-hop, selection: exclude, loadOrder: none, cyclePolicy: allow, conflictSeverity: error }
+
+  - kind: relation
+    name: evidenced-by
+    version: 1.0.0
+    from: Control
+    to: Evidence
+    cardinality: one-to-many
+    directional: true
+    semantics: { traversal: one-hop, selection: expand, loadOrder: after, cyclePolicy: allow, conflictSeverity: none }
+
+  - kind: relation
+    name: assesses
+    version: 1.0.0
+    from: Assessment
+    to: Control
+    cardinality: many-to-one
+    directional: true
+    semantics: { traversal: one-hop, selection: informational, loadOrder: none, cyclePolicy: allow, conflictSeverity: none }
+
+  - kind: relation
+    name: guards
+    version: 1.0.0
+    from: Control
+    to: Asset
+    cardinality: many-to-many
+    directional: true
+    semantics: { traversal: one-hop, selection: expand, loadOrder: before, cyclePolicy: allow, conflictSeverity: none }
+
+  - kind: relation
+    name: endangers
+    version: 1.0.0
+    from: Threat
+    to: Asset
+    cardinality: many-to-many
+    directional: true
+    semantics: { traversal: one-hop, selection: informational, loadOrder: none, cyclePolicy: allow, conflictSeverity: none }

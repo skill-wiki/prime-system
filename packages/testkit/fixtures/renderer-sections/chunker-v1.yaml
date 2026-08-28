@@ -1,0 +1,46 @@
+# Renderer section names, read out of `packages/compiler/src/chunker.ts`
+# `appendSection()`'s switch (chunker.ts:314-395). Data, not a src constant, for
+# the same reason the audit vocabulary is data: a checker that hardcoded a
+# domain-shaped list would violate §3.1 while measuring it.
+#
+# These names dispatch to an APPENDER FUNCTION. They are not field names being
+# validated: every appender does `findField(ast, X)` and returns early when the
+# field is absent, so a section list is deliberately loose across a whole type
+# group and most entries safely no-op. That looseness is what makes the
+# projection menu kind-independent, i.e. what makes de-kinding possible at all.
+kind: renderer-sections
+name: chunker-v1
+sections:
+  - facts
+  - definitions
+  - categories
+  - checks
+  - steps
+  - signature
+  - predicate
+  - effect
+  - includes
+  - severity_combination
+  - constraint-values
+  - sources
+  - examples
+  - relations
+  - notes
+  - rationale
+  - provenance
+  - full-categories
+  - unprocessed-fields
+  # Not an `appendSection` case: `extractOneLiner(ast, kind, rules)`
+  # (chunker.ts:288) runs the extraction strategies declared in this same
+  # projections.yaml under `extensions.oneLiner` (chunker.ts:85-89). Still a
+  # renderer instruction, still not a field declaration.
+  - kind-specific-one-liner
+# Spellings an appender accepts in addition to its own section name, so a
+# singular/plural mismatch is provably harmless at the rendering layer.
+# `appendSources()` looks up both `source` and `sources` (chunker.ts:754-755).
+fieldAliases:
+  sources: [source]
+  categories: [category]
+  examples: [example]
+  facts: [fact]
+  relations: [relation]

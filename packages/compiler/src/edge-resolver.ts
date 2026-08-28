@@ -3,8 +3,8 @@
  *
  * Source `.prime` files often reference other atoms by bare slug:
  *
- *   @community/persona-coinbase {
- *     conflicts: ["brutalist", "magazine-editorial"]
+ *   @example/widget-alpha {
+ *     conflicts: ["beta", "gamma-variant"]
  *   }
  *
  * The compiler emits these targets verbatim, so the resulting graph is full
@@ -14,9 +14,10 @@
  *
  * Resolution strategy (in order):
  *   1. Target already contains "/" → assumed full id, kept as-is.
- *   2. Target matches a known atom's tail (e.g. "persona-brutalist") → expand.
+ *   2. Target matches a known atom's tail (e.g. "widget-beta") → expand.
  *   3. Source atom kind is known and target matches `<kind>-<slug>` for some
- *      atom → expand (preferred so persona-conflicts resolve to other personas).
+ *      atom → expand (preferred so a conflicts edge declared by one kind
+ *      resolves to another atom of that same kind).
  *   4. Target matches a slug-only key uniquely → expand.
  *   5. Otherwise: leave dangling, record in unresolved list for caller to
  *      surface as a warning.
@@ -25,11 +26,11 @@
 import type { AtomMeta } from "./global-index-emitter.ts";
 
 export interface SlugIndex {
-  /** "persona-brutalist" → "@impeccable/persona-brutalist" */
+  /** "widget-beta" → "@example/widget-beta" */
   byTail: Map<string, string>;
-  /** "brutalist" + kind="persona" → "@impeccable/persona-brutalist" */
+  /** "beta" + kind="widget" → "@example/widget-beta" */
   bySlugAndKind: Map<string, Map<string, string>>;
-  /** "brutalist" → unique full id when only one atom has that slug-suffix */
+  /** "beta" → unique full id when only one atom has that slug-suffix */
   bySlugUnique: Map<string, string>;
   /** Slugs that map ambiguously to multiple full ids (skip auto-resolution). */
   ambiguous: Set<string>;
@@ -42,9 +43,9 @@ export function buildSlugIndex(metas: AtomMeta[]): SlugIndex {
 
   for (const m of metas) {
     if (m.deprecated_at) continue;
-    // m.id like "@impeccable/persona-brutalist"
+    // m.id like "@example/widget-beta"
     const slash = m.id.lastIndexOf("/");
-    const tail = slash >= 0 ? m.id.slice(slash + 1) : m.id; // persona-brutalist
+    const tail = slash >= 0 ? m.id.slice(slash + 1) : m.id; // widget-beta
     byTail.set(tail, m.id);
 
     // Split kind prefix (everything up to first dash) from slug
@@ -93,7 +94,7 @@ export function resolveEdgeTarget(
   if (target.includes("/")) return { resolved: target, changed: false };
   if (target.startsWith("@")) return { resolved: target, changed: false };
 
-  // Step 2: tail match (e.g. target = "persona-brutalist")
+  // Step 2: tail match (e.g. target = "widget-beta")
   const tailHit = index.byTail.get(target);
   if (tailHit) return { resolved: tailHit, changed: tailHit !== target, reason: "tail-match" };
 

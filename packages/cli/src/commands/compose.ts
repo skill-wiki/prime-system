@@ -1,11 +1,24 @@
 /**
- * prime compose --name <name> — Compose Primes into a new Skill.
+ * prime compose --name <name> — Compose units into a new Skill document.
+ *
+ * Two domain assertions were removed here, both named by architecture §3.1:
+ *
+ *  1. A hardcoded verb regex decided which statements count as a dependency.
+ *     Relations are now read from the AST, so a verb the CLI has never seen is
+ *     composed exactly like `requires`.
+ *  2. The generated document was structured as Context/Execution/Validation by
+ *     bucketing units into knowledge/method/rule, and a `rule` was auto-linked
+ *     to every `method` as a VALIDATES edge. That is a relation the model never
+ *     declared — the CLI invented it from a pair of type names. Sections are now
+ *     one-per-declared-kind, in a stable order, and no edge is synthesised.
  */
 
 import { resolve, join } from 'path';
-import { header, success, info, bold, green, gray, cyan, yellow } from '../utils/display';
-import { writeFile, findPrimesDir } from '../utils/fs';
+import { header, success, info, bold, gray, cyan } from '../utils/display';
+import { writeFile } from '../utils/fs';
 import { readdirSync, readFileSync, existsSync } from 'fs';
+import { extractRelations, extractKind, extractStringField } from '../utils/relations';
+import { paintFor } from '../utils/kind-color';
 
 export async function composeCommand(args: string[]) {
   let name = '';
@@ -20,28 +33,28 @@ export async function composeCommand(args: string[]) {
 
   header(`Compose Skill: ${bold(name)}`);
 
-  // Find available primes
   const available = findAvailablePrimes();
 
   if (available.length === 0) {
-    info('No Primes available. Install some first: prime install <name>');
+    info('No units available. Install some first: prime install <name>');
     process.exit(0);
   }
 
-  console.log('  Available Primes:\n');
+  console.log('  Available units:\n');
   for (const p of available) {
-    const typeColor = p.type === 'knowledge' ? cyan : p.type === 'method' ? green : yellow;
-    console.log(`  ${typeColor(`[${p.type[0].toUpperCase()}]`)} ${bold(p.name)} — ${gray(p.description)}`);
+    const paint = paintFor(p.kind);
+    console.log(`  ${paint(`[${p.kind || '?'}]`)} ${bold(p.name)} — ${gray(p.description)}`);
   }
 
-  // Auto-detect relationships
-  console.log(`\n  ${bold('Auto-detected relationships:')}`);
-  const relationships = detectRelationships(available);
+  console.log(`\n  ${bold('Declared relations between available units:')}`);
+  const relationships = collectRelationships(available);
+  if (relationships.length === 0) {
+    console.log(gray('    (none — every relation target is outside this set)'));
+  }
   for (const rel of relationships) {
-    console.log(gray(`    ${rel.from} --${rel.type}--> ${rel.to}`));
+    console.log(gray(`    ${rel.from} --${rel.verb}--> ${rel.to}`));
   }
 
-  // Generate SKILL.md
   const skillContent = generateSkill(name, available, relationships);
   const outputDir = resolve(name);
   const outputPath = join(outputDir, 'SKILL.md');
@@ -54,7 +67,6 @@ export async function composeCommand(args: string[]) {
   console.log(cyan('  Generated SKILL.md preview:'));
   console.log(gray('  ─'.repeat(30)));
 
-  // Print preview (first 30 lines)
   const preview = skillContent.split('\n').slice(0, 30);
   for (const line of preview) {
     console.log(`  ${gray(line)}`);
@@ -65,46 +77,34 @@ export async function composeCommand(args: string[]) {
 
   console.log();
   info(`Edit ${outputPath} to customize the workflow`);
-  info(`Run ${bold('prime install')} in ${name}/ to install the Primes`);
+  info(`Run ${bold('prime install')} in ${name}/ to install the units`);
 }
 
-interface AvailablePrime {
-  name: string;
-  type: string;
-  description: string;
-  version: string;
-  links: string[];
+export interface AvailablePrime {
+  readonly name: string;
+  /** The kind as declared. Opaque: the CLI never branches on its value. */
+  readonly kind: string;
+  readonly description: string;
+  readonly version: string;
+  readonly links: readonly { readonly verb: string; readonly target: string }[];
 }
 
 function findAvailablePrimes(): AvailablePrime[] {
-  const dirs = [
-    resolve('primes'),
-    resolve('.primes/source'),
-  ];
-
+  const dirs = [resolve('primes'), resolve('.primes/source')];
   const primes: AvailablePrime[] = [];
 
   for (const dir of dirs) {
     if (!existsSync(dir)) continue;
-    const files = readdirSync(dir).filter(f => f.endsWith('.prime'));
-
-    for (const file of files) {
+    for (const file of readdirSync(dir).filter((f) => f.endsWith('.prime'))) {
       const content = readFileSync(join(dir, file), 'utf-8');
       const name = file.replace('.prime', '');
-      const typeMatch = content.match(/extends\s+(\w+)/);
-      const descMatch = content.match(/description:\s*"([^"]+)"/);
-      const versionMatch = content.match(/version:\s*"([^"]+)"/);
-
-      const links: string[] = [];
-      const linkMatches = content.matchAll(/(?:requires|validates_with|enhances|contradicts|supplies_to)\s+"([^"]+)"/g);
-      for (const m of linkMatches) links.push(m[1]);
-
+      const { relations } = extractRelations(content, file);
       primes.push({
         name,
-        type: typeMatch?.[1]?.toLowerCase() || 'unknown',
-        description: descMatch?.[1] || '',
-        version: versionMatch?.[1] || '0.1.0',
-        links,
+        kind: extractKind(content, file) ?? '',
+        description: extractStringField(content, 'description', file) ?? '',
+        version: extractStringField(content, 'version', file) ?? '0.1.0',
+        links: relations.map((r) => ({ verb: r.verb, target: r.target })),
       });
     }
   }
@@ -112,91 +112,67 @@ function findAvailablePrimes(): AvailablePrime[] {
   return primes;
 }
 
-interface Relationship {
-  from: string;
-  to: string;
-  type: string;
+export interface Relationship {
+  readonly from: string;
+  readonly to: string;
+  readonly verb: string;
 }
 
-function detectRelationships(primes: AvailablePrime[]): Relationship[] {
+/** Reports the relations the sources declare. Synthesises nothing. */
+export function collectRelationships(primes: readonly AvailablePrime[]): Relationship[] {
+  const nameSet = new Set(primes.map((p) => p.name));
   const relationships: Relationship[] = [];
-  const nameSet = new Set(primes.map(p => p.name));
-
   for (const p of primes) {
     for (const link of p.links) {
-      if (nameSet.has(link)) {
-        relationships.push({
-          from: p.name,
-          to: link,
-          type: 'REQUIRES',
-        });
-      }
-    }
-
-    // Auto-detect VALIDATES relationships (Rule → Method)
-    if (p.type === 'rule') {
-      for (const other of primes) {
-        if (other.type === 'method') {
-          relationships.push({
-            from: other.name,
-            to: p.name,
-            type: 'VALIDATES',
-          });
-        }
-      }
+      const bare = link.target.replace(/^@[^/]+\//, '');
+      if (nameSet.has(link.target)) relationships.push({ from: p.name, to: link.target, verb: link.verb });
+      else if (nameSet.has(bare)) relationships.push({ from: p.name, to: bare, verb: link.verb });
     }
   }
-
   return relationships;
 }
 
-function generateSkill(name: string, primes: AvailablePrime[], relationships: Relationship[]): string {
-  const knowledge = primes.filter(p => p.type === 'knowledge');
-  const methods = primes.filter(p => p.type === 'method');
-  const rules = primes.filter(p => p.type === 'rule');
+/**
+ * One section per declared kind, kinds in first-appearance order so the output is
+ * stable without ranking them. Numbering stays continuous across sections so the
+ * document still reads as a sequence.
+ */
+export function generateSkill(
+  name: string,
+  primes: readonly AvailablePrime[],
+  relationships: readonly Relationship[],
+): string {
+  const byKind = new Map<string, AvailablePrime[]>();
+  for (const p of primes) {
+    const key = p.kind || 'unit';
+    const bucket = byKind.get(key);
+    if (bucket === undefined) byKind.set(key, [p]);
+    else bucket.push(p);
+  }
 
   let md = `---\n`;
   md += `name: ${name}\n`;
-  md += `description: Composed from ${primes.length} Primes\n`;
+  md += `description: Composed from ${primes.length} units\n`;
   md += `primes:\n`;
-  for (const p of primes) {
-    md += `  - ${p.name}@${p.version}\n`;
-  }
+  for (const p of primes) md += `  - ${p.name}@${p.version}\n`;
   md += `---\n\n`;
-  md += `# ${name.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')}\n\n`;
+  md += `# ${name.split('-').map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')}\n\n`;
 
   let step = 1;
-
-  if (knowledge.length > 0) {
-    md += `## Context\n\n`;
-    for (const k of knowledge) {
-      md += `${step}. Load **${k.name}** for domain context\n`;
+  for (const [kind, units] of byKind) {
+    md += `## ${kind}\n\n`;
+    for (const u of units) {
+      md += `${step}. **${u.name}**${u.description ? ` — ${u.description}` : ''}\n`;
       step++;
     }
     md += `\n`;
   }
 
-  if (methods.length > 0) {
-    md += `## Execution\n\n`;
-    for (const m of methods) {
-      md += `${step}. Execute **${m.name}** — ${m.description}\n`;
-      step++;
-    }
+  if (relationships.length > 0) {
+    md += `## Declared relations\n\n`;
+    for (const rel of relationships) md += `- ${rel.from} \`${rel.verb}\` ${rel.to}\n`;
     md += `\n`;
   }
-
-  if (rules.length > 0) {
-    md += `## Validation\n\n`;
-    for (const r of rules) {
-      md += `${step}. Validate with **${r.name}** — ${r.description}\n`;
-      step++;
-    }
-    md += `\n`;
-  }
-
-  md += `## Decision\n\n`;
-  md += `${step}. Combine all findings and validation results\n`;
-  md += `${step + 1}. Output final verdict\n`;
 
   return md;
 }

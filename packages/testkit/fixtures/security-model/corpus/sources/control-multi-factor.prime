@@ -1,0 +1,26 @@
+unit MultiFactorVerification : Control {
+  id: "@sec/control-multi-factor"
+  version: "1.0.0"
+
+  name: "Multi Factor Verification"
+  statement: "A second verification factor is required for every restricted-asset session."
+  automated: true
+  strength: 5
+  guardedAsset: @sec/asset-customer-database
+
+  depends-on: [
+    @sec/control-identity-provider,
+  ]
+
+  mitigates: [
+    @sec/threat-credential-stuffing,
+  ]
+
+  guards: [
+    @sec/asset-customer-database,
+  ]
+
+  evidenced-by: [
+    @sec/evidence-factor-enrolment-export,
+  ]
+}

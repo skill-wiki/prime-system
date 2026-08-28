@@ -1,0 +1,136 @@
+kind: corpus
+name: security-controls-min
+version: 1.0.0
+model: security-controls
+units:
+  - id: "@sec/asset-customer-database"
+    version: 1.0.0
+    typeRef: Asset
+    license: Apache-2.0
+    tokens: { summary: 18, core: 44, full: 96 }
+    fields: { name: Customer Database, classification: restricted, custodian: platform-data, exposedToInternet: false }
+    relations: []
+
+  - id: "@sec/asset-public-website"
+    version: 1.0.0
+    typeRef: Asset
+    license: Apache-2.0
+    tokens: { summary: 16, core: 40, full: 88 }
+    fields: { name: Public Website, classification: public, custodian: web-platform, exposedToInternet: true }
+    relations: []
+
+  - id: "@sec/threat-credential-stuffing"
+    version: 1.0.0
+    typeRef: Threat
+    license: Apache-2.0
+    tokens: { summary: 20, core: 52, full: 120 }
+    fields:
+      name: Credential Stuffing
+      vector: authentication endpoint
+      severity: 4
+      narrative: Reused passwords from unrelated breaches are replayed against the login endpoint.
+    relations:
+      - { relation: endangers, to: "@sec/asset-customer-database" }
+      - { relation: mitigated-by, to: "@sec/control-multi-factor" }
+
+  - id: "@sec/threat-injected-query"
+    version: 1.0.0
+    typeRef: Threat
+    license: Apache-2.0
+    tokens: { summary: 19, core: 48, full: 110 }
+    fields:
+      name: Injected Query
+      vector: unvalidated request parameter
+      severity: 5
+      narrative: Attacker-controlled input reaches the data layer without parameterisation.
+    relations:
+      - { relation: endangers, to: "@sec/asset-public-website" }
+
+  - id: "@sec/control-identity-provider"
+    version: 1.0.0
+    typeRef: Control
+    license: Apache-2.0
+    tokens: { summary: 22, core: 58, full: 130 }
+    fields:
+      name: Central Identity Provider
+      statement: All authentication flows terminate at the central identity provider.
+      automated: true
+      strength: 4
+      guardedAsset: "@sec/asset-customer-database"
+    relations:
+      - { relation: guards, to: "@sec/asset-customer-database" }
+
+  - id: "@sec/control-multi-factor"
+    version: 1.0.0
+    typeRef: Control
+    license: Apache-2.0
+    tokens: { summary: 24, core: 62, full: 140 }
+    fields:
+      name: Multi Factor Verification
+      statement: A second verification factor is required for every restricted-asset session.
+      automated: true
+      strength: 5
+      guardedAsset: "@sec/asset-customer-database"
+    relations:
+      - { relation: depends-on, to: "@sec/control-identity-provider" }
+      - { relation: mitigates, to: "@sec/threat-credential-stuffing", attributes: { residualSeverity: 1 } }
+      - { relation: guards, to: "@sec/asset-customer-database" }
+      - { relation: evidenced-by, to: "@sec/evidence-factor-enrolment-export" }
+
+  - id: "@sec/control-request-filter"
+    version: 1.0.0
+    typeRef: Control
+    license: Apache-2.0
+    tokens: { summary: 21, core: 55, full: 126 }
+    fields:
+      name: Request Filter
+      statement: Inbound requests are filtered before reaching application handlers.
+      automated: true
+      strength: 3
+      guardedAsset: "@sec/asset-public-website"
+    relations:
+      - { relation: mitigates, to: "@sec/threat-injected-query" }
+      - { relation: guards, to: "@sec/asset-public-website" }
+      - { relation: incompatible-with, to: "@sec/control-inline-proxy" }
+
+  - id: "@sec/control-inline-proxy"
+    version: 1.0.0
+    typeRef: Control
+    lifecycle: deprecated
+    supersededBy: "@sec/control-request-filter"
+    license: Apache-2.0
+    tokens: { summary: 20, core: 50, full: 112 }
+    fields:
+      name: Inline Proxy
+      statement: A blocking proxy rewrites inbound requests in front of the application.
+      automated: false
+      strength: 2
+    relations:
+      - { relation: incompatible-with, to: "@sec/control-request-filter" }
+
+  - id: "@sec/evidence-factor-enrolment-export"
+    version: 1.0.0
+    typeRef: Evidence
+    license: Apache-2.0
+    citations: ["identity-provider export 2026-07-01, report id IDP-4412"]
+    tokens: { summary: 17, core: 42, full: 94 }
+    fields:
+      name: Factor Enrolment Export
+      collectedAt: "2026-07-01T00:00:00Z"
+      collectionMethod: identity-provider export
+      payloadDigest: "sha256:6ad0e1a4bf1a3f4a9d3d2f0bd6b0f4b60c0e7a8f1f2c3d4e5a6b7c8d9e0f1a2b"
+    relations: []
+
+  - id: "@sec/assessment-multi-factor-q3"
+    version: 1.0.0
+    typeRef: Assessment
+    license: Apache-2.0
+    citations: ["@sec/evidence-factor-enrolment-export"]
+    tokens: { summary: 18, core: 46, full: 100 }
+    fields:
+      name: Multi Factor Q3 Assessment
+      verdict: satisfied
+      score: 92
+      assessedControl: "@sec/control-multi-factor"
+    relations:
+      - { relation: assesses, to: "@sec/control-multi-factor" }

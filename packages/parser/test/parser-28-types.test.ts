@@ -1,19 +1,19 @@
 /**
- * Tests for the 28-type atom ontology parser extension.
+ * Tests for kind-form atom declarations.
  *
  * Covers:
- *   - All 28 atom kinds produce an AtomDeclaration with the correct .kind
+ *   - Every legacy v1 kind produces an AtomDeclaration with the correct .kind
+ *     WITHOUT the lexer or parser holding a list of kinds
+ *   - A kind the engine has never heard of parses exactly the same way
  *   - Body fields parse correctly (string, number, array, object)
  *   - @-prefixed strings (cross-atom references) parse as plain StringNode
  *   - Legacy `prime … extends …` syntax is still backwards-compatible
- *   - Unknown top-level keyword produces an error (falls through to legacy path)
  */
 
 import { describe, test, expect } from "bun:test";
 import { parse, TokenType, tokenize } from "../src/index";
 import type {
   AtomDeclaration,
-  AtomKind,
   PrimeAST,
   FieldNode,
   StringNode,
@@ -22,7 +22,6 @@ import type {
   ArrayNode,
   ObjectNode,
 } from "@skill-wiki/types";
-import { ATOM_KINDS } from "@skill-wiki/types";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -41,12 +40,12 @@ function asAtom(src: string): AtomDeclaration {
   return ast as AtomDeclaration;
 }
 
-// ─── 1. All 28 kinds parse without error ─────────────────────────────────────
+// ─── 1. Every v1 kind parses via the generic production ──────────────────────
 
-describe("All 28 atom kinds — basic shape", () => {
-  // Minimal fixture for every kind: `<kind> Demo { label: "ok" }`
-  // For hyphenated kinds (counter-example, anti-pattern) identifier stays PascalCase.
-  const ALL_28: Array<[AtomKind, string]> = [
+describe("kind-form declarations — basic shape", () => {
+  // Minimal fixture for every legacy v1 kind: `<kind> Demo { label: "ok" }`.
+  // Hyphenated kinds work because the lexer reads hyphens as part of an IDENT.
+  const ALL_28: Array<[string, string]> = [
     // Data / Value (8)
     ["fact",            "fact Demo { label: \"ok\" }"],
     ["term",            "term Demo { label: \"ok\" }"],
@@ -82,11 +81,19 @@ describe("All 28 atom kinds — basic shape", () => {
     ["feedback",   "feedback Demo { label: \"ok\" }"],
   ];
 
-  test("ATOM_KINDS has exactly 28 entries", () => {
-    expect(ATOM_KINDS.length).toBe(28);
-  });
+  // The engine no longer owns a kind list, so the meaningful assertion is not
+  // "there are 28" but "the count does not matter": a kind nobody declared in
+  // Core parses exactly like a legacy one. This is the ADR-1 architecture proof
+  // at the grammar level.
+  const NEVER_SEEN_BY_CORE: Array<[string, string]> = [
+    ["Widget",        `Widget Demo { label: "ok" }`],
+    ["Ticket",        `Ticket Demo { label: "ok" }`],
+    ["Owner",         `Owner Demo { label: "ok" }`],
+    ["service-mesh",  `service-mesh Demo { label: "ok" }`],
+    ["knowledge",     `knowledge Demo { label: "ok" }`],
+  ];
 
-  for (const [kind, src] of ALL_28) {
+  for (const [kind, src] of [...ALL_28, ...NEVER_SEEN_BY_CORE]) {
     test(`${kind} → AtomDeclaration with kind="${kind}"`, () => {
       const atom = asAtom(src);
       expect(atom.type).toBe("AtomDeclaration");
@@ -505,46 +512,49 @@ fact Foo {
   });
 });
 
-// ─── 8. Lexer recognises all 28 keywords ─────────────────────────────────────
+// ─── 8. Lexer knows NO atom kind ─────────────────────────────────────────────
 
-describe("Lexer: all 28 atom keywords are tokenized", () => {
-  const keywords = [
-    ["fact",            TokenType.FACT],
-    ["term",            TokenType.TERM],
-    ["value",           TokenType.VALUE],
-    ["category",        TokenType.CATEGORY],
-    ["example",         TokenType.EXAMPLE],
-    ["counter-example", TokenType.COUNTER_EXAMPLE],
-    ["source",          TokenType.SOURCE],
-    ["metric",          TokenType.METRIC],
-    ["step",            TokenType.STEP],
-    ["check",           TokenType.CHECK],
-    ["transform",       TokenType.TRANSFORM],
-    ["tool",            TokenType.TOOL],
-    ["method",          TokenType.METHOD],
-    ["rule",            TokenType.RULE],
-    ["taxonomy",        TokenType.TAXONOMY],
-    ["pattern",         TokenType.PATTERN],
-    ["anti-pattern",    TokenType.ANTI_PATTERN],
-    ["type",            TokenType.TYPE],
-    ["persona",         TokenType.PERSONA],
-    ["voice",           TokenType.VOICE],
-    ["constraint",      TokenType.CONSTRAINT],
-    ["template",        TokenType.TEMPLATE],
-    ["provocation",     TokenType.PROVOCATION],
-    ["collection",      TokenType.COLLECTION],
-    ["scope",           TokenType.SCOPE],
-    ["tradeoff",        TokenType.TRADEOFF],
-    ["principle",       TokenType.PRINCIPLE],
-    ["feedback",        TokenType.FEEDBACK],
+describe("Lexer: kind names are ordinary identifiers", () => {
+  const v1Kinds = [
+    "fact", "term", "value", "category", "example", "counter-example", "source", "metric",
+    "step", "check", "transform", "tool",
+    "method", "rule", "taxonomy", "pattern", "anti-pattern", "type",
+    "persona", "voice", "constraint", "template", "provocation",
+    "collection", "scope", "tradeoff", "principle", "feedback",
   ] as const;
 
-  test("tokenizes all 28 keyword strings to correct token types", () => {
-    for (const [word, expectedType] of keywords) {
+  test("every v1 kind name lexes as a plain IDENT, not a keyword", () => {
+    for (const word of v1Kinds) {
       const tokens = tokenize(word).filter((t) => t.type !== TokenType.EOF && t.type !== TokenType.NEWLINE);
       expect(tokens).toHaveLength(1);
-      expect(tokens[0].type).toBe(expectedType);
+      expect(tokens[0].type).toBe(TokenType.IDENT);
       expect(tokens[0].value).toBe(word);
+    }
+  });
+
+  test("TokenType exposes no atom-kind members", () => {
+    // If a kind ever becomes a token again, the engine has taken the domain
+    // ontology back and ADR-1 is broken. Guard it by name.
+    const members = Object.keys(TokenType);
+    for (const word of v1Kinds) {
+      const asMember = word.toUpperCase().replace(/-/g, "_");
+      expect(members).not.toContain(asMember);
+    }
+  });
+
+  test("structural keywords are still keywords", () => {
+    const structural: Array<[string, TokenType]> = [
+      ["prime", TokenType.PRIME],
+      ["unit", TokenType.UNIT],
+      ["extends", TokenType.EXTENDS],
+      ["override", TokenType.OVERRIDE],
+      ["append", TokenType.APPEND],
+      ["extend", TokenType.EXTEND],
+      ["as", TokenType.AS],
+    ];
+    for (const [word, expected] of structural) {
+      const tokens = tokenize(word).filter((t) => t.type !== TokenType.EOF && t.type !== TokenType.NEWLINE);
+      expect(tokens[0]!.type).toBe(expected);
     }
   });
 });

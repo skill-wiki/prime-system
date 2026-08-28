@@ -1,0 +1,9 @@
+unit FactorEnrolmentExport : Evidence {
+  id: "@sec/evidence-factor-enrolment-export"
+  version: "1.0.0"
+
+  name: "Factor Enrolment Export"
+  collectedAt: "2026-07-01T00:00:00Z"
+  collectionMethod: "identity-provider export"
+  payloadDigest: "sha256:6ad0e1a4bf1a3f4a9d3d2f0bd6b0f4b60c0e7a8f1f2c3d4e5a6b7c8d9e0f1a2b"
+}

@@ -1,10 +1,21 @@
 /**
- * prime graph <file.prime> [--format ascii|svg] — Visualize relationship graph.
+ * prime graph <file.prime> — Visualize the relation graph a unit declares.
+ *
+ * Every relation verb is rendered the same way. The previous version carried six
+ * hardcoded verb regexes plus, per verb, a `required: true|false` flag and a
+ * special ✕/red rendering for one of them. Architecture §3.1 names exactly those
+ * judgements as things the engine must not hold: whether a relation is mandatory
+ * and whether it blocks a composition are declared in the Model Package's
+ * relation semantics (traversal/selection/conflictSeverity), so a CLI that paints
+ * them from a local table is asserting a domain fact it has no authority over —
+ * and gets it wrong for every corpus that is not prime-v1.
  */
 
 import { resolve, basename } from 'path';
-import { header, bold, cyan, green, yellow, red, gray } from '../utils/display';
+import { header, bold, gray, yellow } from '../utils/display';
 import { readFile, fileExists } from '../utils/fs';
+import { extractRelations, extractKind } from '../utils/relations';
+import { paintFor } from '../utils/kind-color';
 
 export async function graphCommand(args: string[]) {
   const file = args[0];
@@ -19,62 +30,37 @@ export async function graphCommand(args: string[]) {
     process.exit(1);
   }
 
-  header(`Relationship Graph: ${basename(filePath)}`);
+  header(`Relation Graph: ${basename(filePath)}`);
 
   const source = await readFile(filePath);
+  const { relations, parseErrors } = extractRelations(source, basename(filePath));
+  const kind = extractKind(source, basename(filePath)) ?? '';
   const name = source.match(/name:\s*"([^"]+)"/)?.[1] || basename(file, '.prime');
-  const type = source.match(/extends\s+(\w+)/)?.[1]?.toLowerCase() || 'prime';
 
-  // Extract all relationships
-  const links: { type: string; to: string; required: boolean }[] = [];
-
-  const patterns = [
-    { regex: /requires\s+"([^"]+)"/g, type: 'REQUIRES', required: true },
-    { regex: /validates_with\s+"([^"]+)"/g, type: 'VALIDATES', required: true },
-    { regex: /enhances\s+"([^"]+)"/g, type: 'ENHANCES', required: false },
-    { regex: /contradicts\s+"([^"]+)"/g, type: 'CONTRADICTS', required: true },
-    { regex: /specializes\s+"([^"]+)"/g, type: 'SPECIALIZES', required: false },
-    { regex: /supplies_to\s+"([^"]+)"/g, type: 'SUPPLIES', required: true },
-  ];
-
-  for (const p of patterns) {
-    let m;
-    while ((m = p.regex.exec(source)) !== null) {
-      links.push({ type: p.type, to: m[1], required: p.required });
-    }
+  if (parseErrors.length > 0) {
+    // Surfaced rather than swallowed: an empty graph caused by a syntax error is
+    // indistinguishable from a unit that declares no relations otherwise.
+    for (const message of parseErrors) console.log(`  ${yellow('⚠️')} ${message}`);
+    console.log();
   }
-
-  // Also extract use references
-  const useMatches = source.matchAll(/(?:^|\s)(\w[\w-]+)\s+as\s+\w+/gm);
-  for (const m of useMatches) {
-    if (!links.some(l => l.to === m[1].toLowerCase())) {
-      links.push({ type: 'USE', to: m[1], required: true });
-    }
-  }
-
-  // Render ASCII graph
-  const typeColor = type === 'knowledge' ? cyan : type === 'method' ? green : yellow;
 
   console.log();
-  console.log(`  ${drawBox(name, typeColor)}`);
+  console.log(`  ${drawBox(name, paintFor(kind))}`);
 
-  if (links.length === 0) {
-    console.log(gray('  (no relationships declared)'));
+  if (relations.length === 0) {
+    console.log(gray('  (no relations declared)'));
     return;
   }
 
-  for (let i = 0; i < links.length; i++) {
-    const link = links[i];
-    const isLast = i === links.length - 1;
-    const connector = isLast ? '└' : '├';
-    const arrow = link.type === 'CONTRADICTS' ? '──✕' : link.required ? '──→' : '- -→';
-    const linkColor = link.type === 'CONTRADICTS' ? red : link.required ? bold : gray;
-
-    console.log(`  ${connector}── ${linkColor(link.type)} ${arrow} ${bold(link.to)}`);
+  const verbWidth = Math.max(...relations.map((r) => r.verb.length));
+  for (let i = 0; i < relations.length; i++) {
+    const rel = relations[i]!;
+    const connector = i === relations.length - 1 ? '└' : '├';
+    console.log(`  ${connector}── ${bold(rel.verb.padEnd(verbWidth))} ──→ ${bold(rel.target)}`);
   }
 
   console.log();
-  console.log(gray('  Legend: ──→ required  - -→ optional  ──✕ contradicts'));
+  console.log(gray(`  ${relations.length} relation(s). Traversal and conflict semantics are declared by the model package, not shown here.`));
 }
 
 function drawBox(text: string, colorFn: (s: string) => string): string {

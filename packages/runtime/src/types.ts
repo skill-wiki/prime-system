@@ -2,8 +2,14 @@
  * @module types
  * Runtime-specific types for the Prime Language runtime system.
  *
- * These types are used by IndexManager, PrimeLoader, PrimeExecutor,
- * and EvaluationEngine during the load-execute-evaluate lifecycle.
+ * These types are used by IndexManager and PrimeLoader.
+ *
+ * NOTE: the execution/evaluation half of this file (Step, ExecutionContext,
+ * RuntimeCriterion and friends) described the deleted PrimeExecutor /
+ * EvaluationEngine lifecycle. Those types are still on this package's public
+ * export surface (`index.ts` does `export * from "./types"`) but no longer have
+ * any implementation behind them. Whether to drop them needs a cross-package
+ * consumer measurement — see `docs/lanes/W3-1-RUNTIME-VERTICAL.md` §3.
  */
 
 import type { Identifier, PrimeType, Link } from "@skill-wiki/types";
@@ -264,9 +270,9 @@ export interface EvaluationReport {
 
 /**
  * A criterion definition passed to the evaluation engine.
- * This is the runtime representation used by EvaluationEngine,
- * slightly different from the @skill-wiki/types Criterion which is
- * the AST/compiler representation.
+ * Kept as the runtime-side shape, slightly different from the
+ * @skill-wiki/types Criterion which is the AST/compiler representation.
+ * Its former consumer (EvaluationEngine) was deleted; see the module note above.
  */
 export interface RuntimeCriterion {
   /** Unique identifier */

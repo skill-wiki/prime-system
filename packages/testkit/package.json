@@ -1,0 +1,22 @@
+{
+  "name": "@skill-wiki/testkit",
+  "version": "0.1.0",
+  "description": "Domain-agnosticism conformance suites: model, corpus, engine invariants, and a zero-domain-semantics scanner",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": { "test": "bun test", "typecheck": "tsc --noEmit -p tsconfig.json" },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@skill-wiki/ir": "workspace:*",
+    "@skill-wiki/model-schema": "workspace:*",
+    "@skill-wiki/parser": "workspace:*",
+    "@skill-wiki/types": "workspace:*",
+    "yaml": "^2.8.3",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@skill-wiki/constraint-solver": "workspace:*",
+    "@skill-wiki/event-store": "workspace:*",
+    "@skill-wiki/projection-engine": "workspace:*"
+  }
+}

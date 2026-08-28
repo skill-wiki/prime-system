@@ -1,16 +1,21 @@
 /**
  * @module chunker
  *
- * Splits a parsed PrimeAST into 3 projection levels:
+ * Splits a parsed PrimeAST into the projection levels **the Model Package
+ * declares** — for the v1 compatibility model that is summary/core/full.
  *
- *   Level 1 — summary  (~30 tok):  description + tags + 1-line claim/statement
- *   Level 2 — core     (~150 tok): + body fields (facts/checks/steps/etc.)
- *   Level 3 — full     (~380 tok): + sources + examples + relations + notes
+ * The chunker knows how to *render* a section (facts, checks, steps, …) but not
+ * which sections a given kind gets, nor which kinds exist: that is read from
+ * the model's ProjectionDefinitions (ADR-1). Adding a domain type is a YAML
+ * edit, not a `switch (kind)` edit.
  *
- * Works with both the legacy `prime X extends Base {}` form and the new
- * typed keyword form (fact/method/rule/…). The `kind` is derived from
- * the `extends` value or from the atom kind field.
+ * Works with both the legacy `prime X extends Base {}` form and the kind form
+ * (`fact X {}`). The `kind` is derived from the `extends` value or the atom
+ * kind field and is an opaque string throughout.
  */
+
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
 
 import type {
   PrimeAST,
@@ -27,7 +32,8 @@ import type {
   ThresholdNode,
   ValueNode,
 } from "@skill-wiki/types";
-import type { AtomKind } from "@skill-wiki/types";
+import type { ProjectionDefinition } from "@skill-wiki/model-schema";
+import { loadModelOrThrow } from "@skill-wiki/model-schema";
 
 type AnyAST = PrimeAST | AtomDeclaration;
 
@@ -44,6 +50,101 @@ export interface ChunkLevels {
   core: string;
   /** Level 3 — ~380 tok: + sources + examples + relations + notes */
   full: string;
+}
+
+// ─── Model-driven projection rules ─────────────────────────────────────────
+
+/** Ordered extraction strategies for the one-line claim, keyed by type. */
+interface OneLinerRules {
+  readonly byType: Readonly<Record<string, readonly string[]>>;
+  readonly fallback: readonly string[];
+}
+
+/**
+ * Everything the chunker needs to know that is NOT in its own code: which
+ * types belong to which group, which sections each group gets per layer, and
+ * how to extract the one-line claim. All of it comes from the model's
+ * ProjectionDefinitions.
+ */
+export interface ChunkProjectionRules {
+  /** typeRef (lowercased kind) → group name. */
+  readonly groupOfType: Readonly<Record<string, string>>;
+  /** Group used when a kind belongs to no declared group. */
+  readonly defaultGroup: string;
+  /** layer name → group name → ordered section selectors. */
+  readonly sections: Readonly<Record<string, Readonly<Record<string, readonly string[]>>>>;
+  readonly oneLiner: OneLinerRules;
+}
+
+const GROUP_PREFIX = "group:";
+
+function readStringList(value: unknown): readonly string[] {
+  return Array.isArray(value) ? value.filter((x): x is string => typeof x === "string") : [];
+}
+
+function readOneLiner(definitions: readonly ProjectionDefinition[]): OneLinerRules {
+  const byType: Record<string, readonly string[]> = {};
+  let fallback: readonly string[] = [];
+  for (const definition of definitions) {
+    const spec = definition.extensions?.["oneLiner"];
+    if (spec === null || typeof spec !== "object") continue;
+    const record = spec as Record<string, unknown>;
+    const declared = record["byType"];
+    if (declared !== null && typeof declared === "object") {
+      for (const [type, strategies] of Object.entries(declared as Record<string, unknown>)) {
+        byType[type.toLowerCase()] = readStringList(strategies);
+      }
+    }
+    const declaredFallback = readStringList(record["fallback"]);
+    if (declaredFallback.length > 0) fallback = declaredFallback;
+  }
+  return { byType, fallback };
+}
+
+/** Fold a model's ProjectionDefinitions into the rules the chunker consumes. */
+export function buildChunkProjectionRules(
+  definitions: readonly ProjectionDefinition[],
+): ChunkProjectionRules {
+  const groupOfType: Record<string, string> = {};
+  const sections: Record<string, Record<string, readonly string[]>> = {};
+  let defaultGroup = "";
+
+  for (const definition of definitions) {
+    for (const [group, types] of Object.entries(definition.typeGroups)) {
+      for (const type of types) groupOfType[type.toLowerCase()] = group;
+    }
+    const declaredDefault = definition.extensions?.["defaultGroup"];
+    if (typeof declaredDefault === "string" && declaredDefault.length > 0) defaultGroup = declaredDefault;
+
+    const perGroup: Record<string, readonly string[]> = sections[definition.name] ?? {};
+    for (const rule of definition.rules) {
+      if (!rule.typeRef?.startsWith(GROUP_PREFIX)) continue;
+      perGroup[rule.typeRef.slice(GROUP_PREFIX.length)] = rule.include ?? [];
+    }
+    sections[definition.name] = perGroup;
+  }
+
+  return { groupOfType, defaultGroup, sections, oneLiner: readOneLiner(definitions) };
+}
+
+/**
+ * The v1 compatibility model, loaded once.
+ *
+ * Reading it from disk rather than embedding it is the point: the 28 kinds are
+ * data in `compat/prime-v1-model/`, not a constant in the engine.
+ */
+let cachedDefaultRules: ChunkProjectionRules | undefined;
+
+function defaultProjectionRules(): ChunkProjectionRules {
+  if (!cachedDefaultRules) {
+    const here = dirname(fileURLToPath(import.meta.url));
+    const model = loadModelOrThrow(resolve(here, "../../../compat/prime-v1-model"));
+    const projections = model.definitions.filter(
+      (definition): definition is ProjectionDefinition => definition.kind === "projection",
+    );
+    cachedDefaultRules = buildChunkProjectionRules(projections);
+  }
+  return cachedDefaultRules;
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -76,9 +177,9 @@ function objStrField(obj: ObjectNode, key: string): string {
   return "";
 }
 
-/** Derive atom kind from AST — supports new kind field or legacy extends */
-function deriveKind(ast: AnyAST): AtomKind | string {
-  // New 28-type form: parser returns an AtomDeclaration with `kind` directly.
+/** Derive the unit kind from the AST — kind form, explicit field, or legacy extends */
+function deriveKind(ast: AnyAST): string {
+  // Kind form: parser returns an AtomDeclaration with `kind` directly.
   if (!isPrimeAST(ast)) {
     return ast.kind.toLowerCase();
   }
@@ -89,6 +190,16 @@ function deriveKind(ast: AnyAST): AtomKind | string {
   return (ast.extends ?? "knowledge").toLowerCase();
 }
 
+/** Resolve a kind to its declared group, or the model's declared default. */
+function groupOf(kind: string, rules: ChunkProjectionRules): string {
+  return rules.groupOfType[kind] ?? rules.defaultGroup;
+}
+
+/** Ordered section selectors for one layer and one kind. */
+function sectionsFor(layer: string, kind: string, rules: ChunkProjectionRules): readonly string[] {
+  return rules.sections[layer]?.[groupOf(kind, rules)] ?? [];
+}
+
 /** Estimate token count (chars / 4) */
 export function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
@@ -96,7 +207,7 @@ export function estimateTokens(text: string): number {
 
 // ─── Level 1 — Summary ────────────────────────────────────────────────────
 
-function buildSummary(ast: AnyAST, kind: string): string {
+function buildSummary(ast: AnyAST, kind: string, rules: ChunkProjectionRules): string {
   const name = str(ast, "name") || ast.name;
   const description = str(ast, "description");
   const tags = strArr(ast, "tags");
@@ -113,7 +224,7 @@ function buildSummary(ast: AnyAST, kind: string): string {
   }
 
   // 1-line claim / statement
-  const claim = extractOneLiner(ast, kind);
+  const claim = extractOneLiner(ast, kind, rules);
   if (claim && claim !== description) {
     lines.push(`> ${claim}`);
   }
@@ -129,128 +240,165 @@ function buildSummary(ast: AnyAST, kind: string): string {
   return lines.join("\n");
 }
 
-function extractOneLiner(ast: AnyAST, kind: string): string {
-  // fact / term: statement or meaning
-  if (kind === "fact") {
-    const facts = findField(ast, "facts");
-    if (facts && facts.value.type === "Array") {
-      for (const item of (facts.value as ArrayNode).items) {
-        if (item.type === "Object") {
-          const s = objStrField(item as ObjectNode, "statement");
-          if (s) return s;
-        }
-      }
+/**
+ * Run one declared one-liner extraction strategy.
+ *
+ * The strategy vocabulary is domain-free — it names a *shape* in the body, never
+ * a kind. Which strategies a kind uses is the model's business.
+ */
+function runOneLinerStrategy(ast: AnyAST, strategy: string): string {
+  const separator = strategy.indexOf(":");
+  if (separator < 0) return "";
+  const verb = strategy.slice(0, separator);
+  const argument = strategy.slice(separator + 1);
+
+  if (verb === "field") {
+    return str(ast, argument);
+  }
+
+  if (verb === "array-object-field") {
+    const dot = argument.indexOf(".");
+    if (dot < 0) return "";
+    const field = findField(ast, argument.slice(0, dot));
+    if (!field || field.value.type !== "Array") return "";
+    const key = argument.slice(dot + 1);
+    for (const item of (field.value as ArrayNode).items) {
+      if (item.type !== "Object") continue;
+      const found = objStrField(item as ObjectNode, key);
+      if (found) return found;
     }
-    const stmt = str(ast, "statement");
-    if (stmt) return stmt;
+    return "";
   }
-  if (kind === "term") {
-    const meaning = str(ast, "meaning");
-    if (meaning) return meaning;
-  }
-  // rule / check: first check description
-  if (kind === "rule" || kind === "check") {
-    const checks = findField(ast, "checks");
-    if (checks && checks.value.type === "Array") {
-      for (const item of (checks.value as ArrayNode).items) {
-        if (item.type === "Object") {
-          const d = objStrField(item as ObjectNode, "description");
-          if (d) return d;
-        }
-      }
+
+  if (verb === "step-array") {
+    const field = findField(ast, argument);
+    if (!field || field.value.type !== "Array") return "";
+    for (const item of (field.value as ArrayNode).items) {
+      if (item.type !== "Step") continue;
+      const step = item as StepNode;
+      const desc = step.body.find((e): e is StringNode => e.type === "String");
+      if (desc) return `Step 1: ${step.name} — ${desc.value}`;
     }
+    return "";
   }
-  // method: first step
-  if (kind === "method") {
-    const steps = findField(ast, "steps");
-    if (steps && steps.value.type === "Array") {
-      for (const item of (steps.value as ArrayNode).items) {
-        if (item.type === "Step") {
-          const step = item as StepNode;
-          const desc = step.body.find((e): e is StringNode => e.type === "String");
-          if (desc) return `Step 1: ${step.name} — ${desc.value}`;
-        }
-      }
-    }
-  }
-  // collection: description
-  if (kind === "collection") {
-    const desc = str(ast, "description");
-    if (desc) return desc;
-  }
-  // principle/tradeoff: statement
-  const stmtField = str(ast, "statement");
-  if (stmtField) return stmtField;
-  // fallback: first fact in facts array for knowledge-type atoms
-  const facts = findField(ast, "facts");
-  if (facts && facts.value.type === "Array") {
-    for (const item of (facts.value as ArrayNode).items) {
-      if (item.type === "Object") {
-        const s = objStrField(item as ObjectNode, "statement");
-        if (s) return s;
-      }
-    }
+
+  return "";
+}
+
+function extractOneLiner(ast: AnyAST, kind: string, rules: ChunkProjectionRules): string {
+  const strategies = [...(rules.oneLiner.byType[kind] ?? []), ...rules.oneLiner.fallback];
+  for (const strategy of strategies) {
+    const found = runOneLinerStrategy(ast, strategy);
+    if (found) return found;
   }
   return "";
 }
 
 // ─── Level 2 — Core ───────────────────────────────────────────────────────
 
-function buildCore(ast: AnyAST, kind: string, summary: string): string {
-  const lines: string[] = [summary];
-
-  // Core body depends on atom kind
-  const isDataAtom = ["fact", "term", "value", "category", "example", "counter-example", "source", "metric"].includes(kind);
-  const isBehaviourAtom = ["step", "check", "transform", "tool"].includes(kind);
-  const isCompositionAtom = ["method", "rule", "taxonomy", "pattern", "anti-pattern", "type"].includes(kind);
-
-  if (isDataAtom) {
-    // Data atoms: emit full content (they tend to be small)
-    appendFacts(ast, lines);
-    appendDefinitions(ast, lines);
-    appendCategories(ast, lines, false);
-    appendChecks(ast, lines);
-    appendSteps(ast, lines, false);
-  } else if (isBehaviourAtom) {
-    appendChecks(ast, lines);
-    appendSteps(ast, lines, false);
-    // signature
-    const sig = buildSignature(ast);
-    if (sig) lines.push(`\nsignature: ${sig}`);
-    const predicate = str(ast, "predicate");
-    if (predicate) lines.push(`predicate: ${predicate}`);
-    const effect = str(ast, "effect");
-    if (effect) lines.push(`effect: ${effect}`);
-  } else if (isCompositionAtom) {
-    appendChecks(ast, lines);
-    appendSteps(ast, lines, false);
-    appendFacts(ast, lines);
-    appendCategories(ast, lines, false);
-    // collection: includes
-    appendIncludes(ast, lines);
-    // rule: severity combination
-    const sevCombo = str(ast, "severity_combination");
-    if (sevCombo) lines.push(`\nseverity: ${sevCombo}`);
-  } else {
-    // Style / Parameter / Meta / Binding atoms (persona, voice, template,
-    // constraint, principle, tradeoff, provocation, scope, taxonomy, …).
-    appendFacts(ast, lines);
-    appendChecks(ast, lines);
-    appendIncludes(ast, lines);
-    appendSteps(ast, lines, false);
-    appendConstraintValues(ast, lines);
+/**
+ * Emit one named section.
+ *
+ * This is the whole kind-dispatch surface of the chunker: a section name in
+ * from the model, markdown out. There is no `switch (kind)` — the switch is on
+ * the *section*, which is engine vocabulary, and the kind→sections mapping is
+ * the model's.
+ */
+function appendSection(
+  section: string,
+  ast: AnyAST,
+  lines: string[],
+  layer: "core" | "full",
+  rules: ChunkProjectionRules,
+): void {
+  switch (section) {
+    case "facts":
+      return appendFacts(ast, lines);
+    case "definitions":
+      return appendDefinitions(ast, lines);
+    case "categories":
+      return appendCategories(ast, lines, false);
+    case "checks":
+      return appendChecks(ast, lines);
+    case "steps":
+      return appendSteps(ast, lines, false);
+    case "signature": {
+      const sig = buildSignature(ast);
+      if (sig) lines.push(`\nsignature: ${sig}`);
+      return;
+    }
+    case "predicate": {
+      const predicate = str(ast, "predicate");
+      if (predicate) lines.push(`predicate: ${predicate}`);
+      return;
+    }
+    case "effect": {
+      const effect = str(ast, "effect");
+      if (effect) lines.push(`effect: ${effect}`);
+      return;
+    }
+    case "includes":
+      return appendIncludes(ast, lines);
+    case "severity_combination": {
+      const sevCombo = str(ast, "severity_combination");
+      if (sevCombo) lines.push(`\nseverity: ${sevCombo}`);
+      return;
+    }
+    case "constraint-values":
+      return appendConstraintValues(ast, lines);
+    case "sources":
+      return appendSources(ast, lines);
+    case "examples":
+      return appendExamples(ast, lines);
+    case "relations":
+      return appendRelations(ast, lines);
+    case "notes": {
+      const notes = str(ast, "notes");
+      if (notes) {
+        lines.push("\n## Notes");
+        lines.push(notes);
+      }
+      return;
+    }
+    case "rationale": {
+      const rationale = str(ast, "rationale");
+      if (rationale) {
+        lines.push("\n## Rationale");
+        lines.push(rationale);
+      }
+      return;
+    }
+    case "provenance":
+      return appendProvenance(ast, lines);
+    case "full-categories": {
+      const catsField = findField(ast, "categories");
+      if (!catsField || catsField.value.type !== "Array") return;
+      // `core` already emitted a truncated list; add the complete one here.
+      const fullCats = buildCategoriesFull(ast);
+      if (fullCats.length > 0) {
+        lines.push("\n## Categories (full)");
+        lines.push(...fullCats);
+      }
+      return;
+    }
+    case "unprocessed-fields":
+      return layer === "core"
+        ? appendCoreUnprocessedFields(ast, lines)
+        : appendUnprocessedFields(ast, lines, rules);
+    default:
+      // An unknown section name means the model asked for a projection this
+      // engine build cannot render. Silence is correct: the model may target a
+      // newer engine, and a hard failure here would make models un-forward-
+      // compatible. Renderer coverage is a model-conformance concern (§17.1).
+      return;
   }
+}
 
-  // Universal catch-all: emit body fields that the structured appenders above
-  // didn't already cover, EXCEPT meta-level fields (sources/examples/relations/
-  // notes/rationale/provenance) which belong only in `full`.
-  //
-  // Without this, ~60% of the corpus on 2026-05-07 had core ≡ summary —
-  // pattern/persona/template atoms keep their semantic value in kind-specific
-  // body fields (implies, palette, prohibitions, body, font.*, …) that the
-  // structured appenders don't touch.
-  appendCoreUnprocessedFields(ast, lines);
-
+function buildCore(ast: AnyAST, kind: string, summary: string, rules: ChunkProjectionRules): string {
+  const lines: string[] = [summary];
+  for (const section of sectionsFor("core", kind, rules)) {
+    appendSection(section, ast, lines, "core", rules);
+  }
   return lines.join("\n");
 }
 
@@ -285,46 +433,11 @@ function appendCoreUnprocessedFields(ast: AnyAST, lines: string[]): void {
 
 // ─── Level 3 — Full ───────────────────────────────────────────────────────
 
-function buildFull(ast: AnyAST, kind: string, core: string): string {
+function buildFull(ast: AnyAST, kind: string, core: string, rules: ChunkProjectionRules): string {
   const lines: string[] = [core];
-
-  // Sources
-  appendSources(ast, lines);
-  // Examples
-  appendExamples(ast, lines);
-  // Relations (link fields)
-  appendRelations(ast, lines);
-  // Notes / rationale
-  const notes = str(ast, "notes");
-  if (notes) {
-    lines.push("\n## Notes");
-    lines.push(notes);
+  for (const section of sectionsFor("full", kind, rules)) {
+    appendSection(section, ast, lines, "full", rules);
   }
-  const rationale = str(ast, "rationale");
-  if (rationale) {
-    lines.push("\n## Rationale");
-    lines.push(rationale);
-  }
-  // Provenance
-  appendProvenance(ast, lines);
-  // Full categories (with all subitems)
-  const catsField = findField(ast, "categories");
-  if (catsField && catsField.value.type === "Array") {
-    // If core already has truncated categories, add full version here
-    const fullCats = buildCategoriesFull(ast);
-    if (fullCats.length > 0) {
-      lines.push("\n## Categories (full)");
-      lines.push(...fullCats);
-    }
-  }
-
-  // Catch-all: emit every top-level field not already projected. Persona/
-  // voice/template/constraint atoms keep most of their semantic value in
-  // kind-specific fields (implies, palette, prohibitions, values, body…)
-  // that the structured projections above don't touch — without this the
-  // agent gets a 3-line stub instead of the actual design language.
-  appendUnprocessedFields(ast, lines);
-
   return lines.join("\n");
 }
 
@@ -352,24 +465,19 @@ function humanize(key: string): string {
 
 /**
  * In `full`, emit ALL unprocessed fields — including the meta keys that
- * `core` skipped (sources/examples/relations/notes/etc.). Style-atom body
- * fields (implies/palette/prohibitions/...) were already emitted by
- * `appendCoreUnprocessedFields` if the atom went through the style branch
- * of `buildCore`; this function uses a "seen" set passed by `buildFull` to
- * avoid double-emission.
+ * `core` skipped (sources/examples/notes/etc.).
+ *
+ * Whether a type's `core` already emitted its non-meta body fields depends on
+ * whether that type's core section list ends in `unprocessed-fields`; for the
+ * v1 model that is true of every group, so the discriminator is which group
+ * the type is in. Types in the model's default group (and types in no group at
+ * all) went through the lenient branch, so only the meta keys are new here.
  */
-function appendUnprocessedFields(ast: AnyAST, lines: string[]): void {
-  // Track which fields are already in `core` so we don't duplicate them.
-  // For atoms whose `core` ran through the style branch, body fields that
-  // aren't in PROCESSED_KEYS or CORE_EXCLUDED_KEYS were already emitted —
-  // we emit only the meta keys here. For atoms that went through the data
-  // /behaviour/composition branches, all unprocessed fields end up here.
-  const isStyleish = !["fact", "term", "value", "category", "example", "counter-example", "source", "metric",
-                       "step", "check", "transform", "tool",
-                       "method", "rule", "taxonomy", "pattern", "anti-pattern", "type"].includes(deriveKind(ast));
+function appendUnprocessedFields(ast: AnyAST, lines: string[], rules: ChunkProjectionRules): void {
+  const usedLenientBranch = groupOf(deriveKind(ast), rules) === rules.defaultGroup;
   const unprocessed = ast.body.filter((f) => {
     if (PROCESSED_KEYS.has(f.key)) return false;
-    if (isStyleish) {
+    if (usedLenientBranch) {
       // Already emitted in core. Only emit the meta keys (CORE_EXCLUDED_KEYS)
       // here, which weren't in core.
       return CORE_EXCLUDED_KEYS.has(f.key);
@@ -774,15 +882,18 @@ function buildSignature(ast: AnyAST): string {
 // ─── Public API ────────────────────────────────────────────────────────────
 
 /**
- * Split a parsed AST into 3 projection levels.
+ * Split a parsed AST into the projection levels the model declares.
  *
- * @param ast - The parsed PrimeAST
+ * @param ast - The parsed PrimeAST or AtomDeclaration
+ * @param rules - Projection rules folded from a model's ProjectionDefinitions.
+ *                Defaults to the v1 compatibility model in `compat/`, so legacy
+ *                callers keep working while the kind knowledge stays in data.
  * @returns { summary, core, full } — each a Markdown string
  */
-export function chunk(ast: AnyAST): ChunkLevels {
+export function chunk(ast: AnyAST, rules: ChunkProjectionRules = defaultProjectionRules()): ChunkLevels {
   const kind = deriveKind(ast);
-  const summary = buildSummary(ast, kind);
-  const core = buildCore(ast, kind, summary);
-  const full = buildFull(ast, kind, core);
+  const summary = buildSummary(ast, kind, rules);
+  const core = buildCore(ast, kind, summary, rules);
+  const full = buildFull(ast, kind, core, rules);
   return { summary, core, full };
 }

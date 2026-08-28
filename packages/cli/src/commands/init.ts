@@ -1,46 +1,64 @@
 /**
- * prime init — Create a new .prime file interactively.
+ * prime init — Create a new unit source file.
+ *
+ * The scaffold is deliberately type-agnostic. It used to carry three full field
+ * skeletons (one per prime-v1 base type) listing that a Method has
+ * `input/output/steps/success_criteria`, a Rule has `checks/thresholds`, and so
+ * on. That is the engine shipping a domain ontology, which architecture §3.1
+ * forbids: the CLI may know "a unit declares a type", never which types exist or
+ * what fields each one requires. A per-type skeleton is a Model Package
+ * artefact and belongs behind `prime sdk generate` (§11.4).
  */
 
 import { writeFile, fileExists } from '../utils/fs';
-import { header, success, info, bold, cyan } from '../utils/display';
+import { header, success, info, bold, cyan, gray } from '../utils/display';
 
 export async function initCommand(args: string[]) {
-  header('Create a new Prime');
+  header('Create a new Prime unit');
 
-  const name = args[0] || await prompt('Prime name (kebab-case): ');
-  const typeChoice = await prompt('Type — (K)nowledge, (M)ethod, or (R)ule? [M]: ');
-  const baseClass = typeChoice.toLowerCase().startsWith('k') ? 'Knowledge'
-    : typeChoice.toLowerCase().startsWith('r') ? 'Rule'
-    : 'Method';
+  const positional = args.filter((a) => !a.startsWith('-'));
+  const name = positional[0] || (await prompt('Unit name (kebab-case): '));
+  const typeFlagIndex = args.indexOf('--type');
+  const typeName =
+    typeFlagIndex !== -1 && args[typeFlagIndex + 1]
+      ? args[typeFlagIndex + 1]!
+      : positional[1] || (await prompt('Type name (as declared by your model package): '));
+
+  if (!name || !typeName) {
+    console.error('Usage: prime init <unit-name> --type <TypeName>');
+    process.exit(1);
+  }
+
   const description = await prompt('Description: ');
-  const tags = (await prompt('Tags (comma-separated): ')).split(',').map(t => t.trim()).filter(Boolean);
+  const tags = (await prompt('Tags (comma-separated): ')).split(',').map((t) => t.trim()).filter(Boolean);
 
   const fileName = `${name}.prime`;
-
   if (fileExists(fileName)) {
     console.error(`File ${fileName} already exists.`);
     process.exit(1);
   }
 
-  const content = generateTemplate(name, baseClass, description, tags);
-  await writeFile(fileName, content);
+  await writeFile(fileName, generateTemplate(name, typeName, description, tags));
 
   console.log();
   success(`Created ${bold(fileName)}`);
   console.log();
+  info(`Fields for type ${bold(typeName)} come from your model package, not from this CLI.`);
   console.log(cyan('  Next steps:'));
-  console.log(`  1. Edit ${fileName} to fill in content`);
+  console.log(`  1. Add the fields ${typeName} declares (see your model package, or run prime sdk generate)`);
   console.log(`  2. Run ${bold('prime compile ' + fileName)} to check and compile`);
-  console.log(`  3. Run ${bold('prime publish')} to share on prime.dev`);
+  console.log(`  ${gray('Relations are written as  <verb> "@scope/target"  — any verb your model declares.')}`);
 }
 
-function generateTemplate(name: string, baseClass: string, description: string, tags: string[]): string {
-  const className = name.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('');
-  const tagsStr = tags.map(t => `"${t}"`).join(', ');
+/**
+ * Emits only fields that are universal to every unit regardless of type, plus
+ * the declaration header. Anything type-specific is left to the model package.
+ */
+export function generateTemplate(name: string, typeName: string, description: string, tags: string[]): string {
+  const className = name.split('-').map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join('');
+  const tagsStr = tags.map((t) => `"${t}"`).join(', ');
 
-  if (baseClass === 'Knowledge') {
-    return `prime ${className} extends Knowledge {
+  return `${typeName} ${className} {
 
   name: "${name}"
   version: "0.1.0"
@@ -49,157 +67,16 @@ function generateTemplate(name: string, baseClass: string, description: string, 
   author: { name: "${process.env.USER || 'author'}" }
   license: "MIT"
 
-  // Define at least one of: definitions, categories, facts
-  categories: [
-    // CategoryName  "description"
-  ]
+  // Type-specific fields: see the definition of ${typeName} in your model package.
 
-  // Optional
-  definitions: [
-    // { term: "X", meaning: "Y" }
-  ]
-
-  relationships: [
-    // { from: "A", relation: "causes", to: "B" }
-  ]
-
-  sources: [
-    // { title: "Source", url: "https://..." }
-  ]
-
-  links: [
-    // supplies_to "other-prime"
-  ]
-
-  evaluation: {
-    completeness: ""
-    accuracy: ""
-  }
-}
-`;
-  }
-
-  if (baseClass === 'Rule') {
-    return `prime ${className} extends Rule {
-
-  name: "${name}"
-  version: "0.1.0"
-  description: "${description}"
-  tags: [${tagsStr}]
-  author: { name: "${process.env.USER || 'author'}" }
-  license: "MIT"
-
-  checks: [
-    // { description: "Check description", pass: "condition", weight: 0.25 }
-  ]
-
-  thresholds: [
-    // metric_name  block: < 60%  warn: < 80%  pass: >= 80%
-  ]
-
-  severity: {
-    block: "Must fix before proceeding"
-    warn: "May proceed with noted issues"
-    pass: "Approved"
-  }
-
-  exemptions: [
-    // "condition" → "reason"
-  ]
-
-  applies_to: {
-    prime_types: ["Method"]
-  }
-
-  evaluation: {
-    decidability: ""
-    completeness: ""
-    consistency: ""
-  }
-}
-`;
-  }
-
-  // Default: Method
-  return `prime ${className} extends Method {
-
-  name: "${name}"
-  version: "0.1.0"
-  description: "${description}"
-  tags: [${tagsStr}]
-  author: { name: "${process.env.USER || 'author'}" }
-  license: "MIT"
-
-  input: [
-    // param(type)  "description"
-  ]
-
-  output: [
-    // result(type)  "description"
-  ]
-
-  require: [
-    // "precondition"
-    //   error: "message if not met"
-  ]
-
-  use: [
-    // OtherPrime as alias
-  ]
-
-  steps: [
-    // STEP_NAME {
-    //   "Natural language description of what to do"
-    //   expect: pass
-    //   error: "What to do if it fails"
-    // }
-  ]
-
-  loop: until "completion condition" max: 10
-
-  warnings: [
-    // "common mistake" → "correction"
-  ]
-
-  branches: [
-    // "exception condition" → "how to handle"
-  ]
-
-  links: [
-    // validates_with "some-rule"
-    // requires "some-knowledge"
-  ]
-
-  success_criteria: {
-    mode: "weighted"
-    min_score: 0.8
-    criteria: [
-      // { id: "x", description: "X", decidability: @decidable,
-      //   verify: { type: "check", condition: "..." }, weight: 0.25 }
-    ]
-  }
-
-  failure_criteria: {
-    mode: "any"
-    criteria: [
-      // { id: "x", description: "X", decidability: @decidable,
-      //   verify: { type: "check", condition: "..." } }
-    ]
-  }
-
-  evaluation: {
-    determinism: ""
-    error_coverage: ""
-    testability: ""
-    scope: ""
-  }
+  // Relations use the verbs your model package declares, e.g.
+  //   some_verb "@scope/other-unit"
 }
 `;
 }
 
 async function prompt(message: string): Promise<string> {
   process.stdout.write(message);
-  const buf = new Uint8Array(1024);
   const n = await Bun.stdin.stream().getReader().read();
   return new TextDecoder().decode(n.value).trim();
 }

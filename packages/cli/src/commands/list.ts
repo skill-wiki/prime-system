@@ -7,34 +7,9 @@
  *   --json             Output JSON instead of formatted table
  */
 
-import { header, bold, cyan, green, yellow, magenta, gray } from '../utils/display';
-import { listAllScopes, DEFAULT_SOURCES_DIR } from './registry';
-
-// Kind → colour mapping
-const KIND_COLOR: Record<string, (s: string) => string> = {
-  persona:       magenta,
-  pattern:       cyan,
-  template:      green,
-  check:         yellow,
-  rule:          yellow,
-  constraint:    yellow,
-  principle:     cyan,
-  fact:          green,
-  'anti-pattern': (s) => `\x1b[31m${s}\x1b[0m`, // red
-};
-
-function colorKind(kind: string): string {
-  const fn = KIND_COLOR[kind];
-  return fn ? fn(kind) : gray(kind);
-}
-
-/** Infer kind from atom name when kind detection from source would be costly */
-function inferKindFromName(name: string): string {
-  for (const k of Object.keys(KIND_COLOR)) {
-    if (name.startsWith(k)) return k;
-  }
-  return 'atom';
-}
+import { header, bold, gray } from '../utils/display';
+import { listAllScopes, loadAtom, DEFAULT_SOURCES_DIR } from './registry';
+import { kindPadding } from '../utils/kind-color';
 
 export async function listCommand(args: string[]): Promise<void> {
   let filterScope: string | undefined;
@@ -83,9 +58,11 @@ export async function listCommand(args: string[]): Promise<void> {
     console.log(`  ${'─'.repeat(50)}`);
 
     for (const name of atoms) {
-      const kind = inferKindFromName(name);
-      const kindStr = colorKind(kind).padEnd(18 + (colorKind(kind).length - kind.length));
-      console.log(`  ${gray('·')} ${kindStr}  ${scope}/${name}`);
+      // Read the kind the atom actually declares. The previous version guessed
+      // it from a name prefix against a fixed kind list, which both hardcoded
+      // the ontology and silently mislabelled any atom not named after its kind.
+      const kind = loadAtom(`${scope}/${name}`, sourcesDir)?.kind ?? '';
+      console.log(`  ${gray('·')} ${kindPadding(kind, 18)}  ${scope}/${name}`);
     }
   }
 

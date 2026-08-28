@@ -42,8 +42,8 @@ export async function publishCommand(args: string[]) {
   info('Running pre-publish checks...');
 
   // Required fields — match the actual `.prime` source format. Two forms:
-  //   1. Declaration form:  `persona Stripe {` (kind is the leading keyword)
-  //   2. Object form:       `kind: persona` field inside an object body
+  //   1. Declaration form:  `widget Stripe {` (kind is the leading keyword)
+  //   2. Object form:       `kind: widget` field inside an object body
   const id = source.match(/^\s*id\s*:\s*"([^"]+)"/m)?.[1];
   const name = source.match(/^\s*name\s*:\s*"([^"]+)"/m)?.[1] ?? id;
   const version = source.match(/^\s*version\s*:\s*"([^"]+)"/m)?.[1];

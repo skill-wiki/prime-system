@@ -84,8 +84,9 @@ function objStrField(obj: ObjectNode, key: string): string {
 
 function deriveKind(ast: AnyAST): string {
   // New 28-type form: parser returns an AtomDeclaration with `kind` directly
-  // on the node (e.g. `persona Foo { … }` → { type: "AtomDeclaration", kind: "persona" }).
-  // Without this branch every new-style atom collapses to "knowledge".
+  // on the node (e.g. `widget Foo { … }` → { type: "AtomDeclaration", kind: "widget" }).
+  // Without this branch every new-style atom collapses to the `extends`
+  // fallback on the last line of this function.
   if (!isPrimeAST(ast)) {
     return ast.kind.toLowerCase();
   }

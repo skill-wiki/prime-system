@@ -38,46 +38,6 @@ import type {
 import { type Token, TokenType } from "./lexer.ts";
 import { ParseError } from "./errors.ts";
 
-// ─── Atom keyword → AtomKind mapping ────────────────────────────────────────
-
-/**
- * Maps each atom-kind TokenType to its canonical AtomKind string.
- * Used to dispatch the correct parse path for new-style atom declarations.
- */
-const ATOM_TOKEN_TO_KIND = new Map<TokenType, AtomKind>([
-  [TokenType.FACT,            "fact"],
-  [TokenType.TERM,            "term"],
-  [TokenType.VALUE,           "value"],
-  [TokenType.CATEGORY,        "category"],
-  [TokenType.EXAMPLE,         "example"],
-  [TokenType.COUNTER_EXAMPLE, "counter-example"],
-  [TokenType.SOURCE,          "source"],
-  [TokenType.METRIC,          "metric"],
-  [TokenType.STEP,            "step"],
-  [TokenType.CHECK,           "check"],
-  [TokenType.TRANSFORM,       "transform"],
-  [TokenType.TOOL,            "tool"],
-  [TokenType.METHOD,          "method"],
-  [TokenType.RULE,            "rule"],
-  [TokenType.TAXONOMY,        "taxonomy"],
-  [TokenType.PATTERN,         "pattern"],
-  [TokenType.ANTI_PATTERN,    "anti-pattern"],
-  [TokenType.TYPE,            "type"],
-  [TokenType.PERSONA,         "persona"],
-  [TokenType.VOICE,           "voice"],
-  [TokenType.CONSTRAINT,      "constraint"],
-  [TokenType.TEMPLATE,        "template"],
-  [TokenType.PROVOCATION,     "provocation"],
-  [TokenType.COLLECTION,      "collection"],
-  [TokenType.SCOPE,           "scope"],
-  [TokenType.TRADEOFF,        "tradeoff"],
-  [TokenType.PRINCIPLE,       "principle"],
-  [TokenType.FEEDBACK,        "feedback"],
-]);
-
-/** The complete set of atom-kind token types (for use in type checks). */
-const ATOM_KIND_TYPES = new Set(ATOM_TOKEN_TO_KIND.keys());
-
 // ─── Link verbs for shorthand detection ─────────────────────────────────────
 
 const LINK_VERBS = new Set([
@@ -223,9 +183,9 @@ export class Parser {
 
   /**
    * Returns true if the given token can appear as a field name (key) inside
-   * a body or object literal.  Includes plain IDENTs, structural keywords,
-   * and all 28 atom-kind keywords (which may legitimately appear as field
-   * keys inside nested objects, e.g. `{ type: "rule" }`).
+   * a body or object literal.  Includes plain IDENTs and the structural
+   * keywords.  Kind names (`fact`, `rule`, `type`, …) need no special case —
+   * they are ordinary IDENTs.
    */
   private isFieldNameToken(tok: Token): boolean {
     return (
@@ -233,8 +193,7 @@ export class Parser {
       tok.type === TokenType.PRIME ||
       tok.type === TokenType.UNIT ||
       tok.type === TokenType.EXTENDS ||
-      tok.type === TokenType.AS ||
-      ATOM_KIND_TYPES.has(tok.type)
+      tok.type === TokenType.AS
     );
   }
 
@@ -309,9 +268,13 @@ export class Parser {
    * Parse the entire .prime file.
    *
    * Supports three top-level forms:
-   *   1. Legacy:   `prime Name extends Base { ... }`  → PrimeAST
-   *   2. New-style: `<kind> Name { ... }`             → AtomDeclaration
-   *   3. Generic: `unit Name : TypeRef { ... }`        → UnitDeclaration
+   *   1. Legacy:    `prime Name extends Base { ... }`   → PrimeAST
+   *   2. Kind form: `<ident> Name { ... }`              → AtomDeclaration
+   *   3. Generic:   `unit Name : TypeRef { ... }`       → UnitDeclaration
+   *
+   * Form 2 is recognised purely structurally — `IDENT IDENT '{'` — so the
+   * parser never holds a list of legal kinds. Whether `fact` names a real type
+   * is a Model Resolver question, not a grammar question (plan §6.4).
    *
    * Returns a discriminated union so callers can narrow by `.type`.
    */
@@ -326,14 +289,13 @@ export class Parser {
     const keywordTok = this.current();
     if (keywordTok.type === TokenType.UNIT) return this.parseUnitDeclaration(decorators, keywordTok);
 
-    // ── New-style: one of the 28 atom-kind keywords ───────────────────
-    const atomKind = ATOM_TOKEN_TO_KIND.get(keywordTok.type);
-    if (atomKind !== undefined) {
-      return this.parseAtomDeclaration(decorators, keywordTok, atomKind);
+    // ── Kind form: `<ident> Name { … }` ───────────────────────────────
+    if (this.looksLikeKindDeclaration()) {
+      return this.parseAtomDeclaration(decorators, keywordTok, keywordTok.value);
     }
 
     // ── Legacy: `prime Name extends Base { ... }` ────────────────────
-    this.expect(TokenType.PRIME, "Expected 'prime', an atom-kind keyword, or 'unit' at top level");
+    this.expect(TokenType.PRIME, "Expected 'prime', a type name, or 'unit' at top level");
     this.skipTrivia();
 
     const nameTok = this.expect(TokenType.IDENT, "Expected prime name (PascalCase identifier)");
@@ -378,14 +340,34 @@ export class Parser {
     return { ast, errors: this.errors };
   }
 
+  /**
+   * Structural lookahead for the kind declaration form `<ident> Name { … }`.
+   *
+   * Two IDENTs followed by `{` is unambiguous against every other top-level
+   * form: the legacy form starts with the `prime` keyword and the generic form
+   * with `unit`, and neither of those lexes as IDENT. Deciding this without a
+   * kind table is what lets a new domain type parse with no Core edit.
+   */
+  private looksLikeKindDeclaration(): boolean {
+    if (this.current().type !== TokenType.IDENT) return false;
+    if (this.peekSignificant(1).type !== TokenType.IDENT) return false;
+    return this.peekSignificant(2).type === TokenType.LBRACE;
+  }
+
   private parseUnitDeclaration(decorators: DecoratorNode[], keywordTok: Token): { ast: UnitDeclaration; errors: ParseError[] } {
     this.advance(); this.skipTrivia();
     const nameTok = this.expect(TokenType.IDENT, "Expected unit name after 'unit'"); this.skipTrivia();
     this.expect(TokenType.COLON, "Expected ':' after unit name"); this.skipTrivia();
     const typeTok = this.current();
-    const validTypeRef = typeTok.type === TokenType.IDENT || ATOM_KIND_TYPES.has(typeTok.type);
-    if (!validTypeRef) {
-      this.addError("Expected type reference after ':'", typeTok, "Use an identifier or legacy atom-kind name");
+    // A type reference is either a bare identifier (`Ticket`) or a
+    // model-qualified reference (`@widget-shop/Widget`, plan §6.2). The lexer
+    // already reads `@scope/path` as one STRING token — that is the language's
+    // existing cross-reference spelling, so qualified refs need no new token
+    // type. A quoted string that is NOT a reference stays an error: `: "Ticket"`
+    // is a literal, and silently accepting it would make typos compile.
+    const isQualifiedRef = typeTok.type === TokenType.STRING && typeTok.value.startsWith("@");
+    if (typeTok.type !== TokenType.IDENT && !isQualifiedRef) {
+      this.addError("Expected type reference after ':'", typeTok, "Use a type name such as Ticket or @model/Type");
       if (!this.isAtEnd() && !this.check(TokenType.LBRACE)) this.advance();
     } else this.advance();
     this.skipTrivia(); this.expect(TokenType.LBRACE, "Expected '{' to open unit body"); this.skipTrivia();
@@ -814,11 +796,6 @@ export class Parser {
       }
 
       default: {
-        // Atom-kind keywords (fact, method, rule, etc.) can appear as plain
-        // identifier values inside field values, e.g.: `kind: method`
-        if (ATOM_KIND_TYPES.has(tok.type)) {
-          return this.parseIdentValue();
-        }
         this.addError(
           `Unexpected token ${tok.type} ("${tok.value}"), expected a value`,
           tok
@@ -1176,8 +1153,8 @@ export class Parser {
       const beforePos = this.pos;
       try {
         const tok = this.current();
-        // In nested objects, keywords can be field names (e.g. { type: "rule" })
-        // This includes all 28 atom-kind keywords.
+        // In nested objects, structural keywords can be field names too
+        // (e.g. `{ unit: "x" }`); kind names are plain IDENTs and need no case.
         if (this.isFieldNameToken(tok)) {
           const field = this.parseField();
           if (field) fields.push(field);
@@ -1337,8 +1314,7 @@ export class Parser {
     }
 
     // Identifier - many possible interpretations
-    // Also covers atom-kind keywords used as plain identifiers in arrays.
-    if (tok.type === TokenType.IDENT || ATOM_KIND_TYPES.has(tok.type)) {
+    if (tok.type === TokenType.IDENT) {
       return this.parseArrayIdentItem();
     }
 

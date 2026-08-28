@@ -3,8 +3,10 @@
  */
 
 import { resolve, join } from 'path';
-import { header, bold, cyan, green, yellow, gray, red } from '../utils/display';
+import { header, bold, cyan, green, yellow, gray } from '../utils/display';
 import { findPrimesDir, readFile, fileExists } from '../utils/fs';
+import { extractRelations, extractKind } from '../utils/relations';
+import { paintFor } from '../utils/kind-color';
 
 export async function infoCommand(args: string[]) {
   const name = args[0];
@@ -45,21 +47,20 @@ export async function infoCommand(args: string[]) {
   }
 
   // Parse and display
-  const typeMatch = source.match(/extends\s+(\w+)/);
   const versionMatch = source.match(/version:\s*"([^"]+)"/);
   const descMatch = source.match(/description:\s*"([^"]+)"/);
   const tagsMatch = source.match(/tags:\s*\[([^\]]+)\]/);
   const authorMatch = source.match(/author:\s*\{[^}]*name:\s*"([^"]+)"/);
   const licenseMatch = source.match(/license:\s*"([^"]+)"/);
 
-  const type = typeMatch?.[1]?.toLowerCase() || 'unknown';
+  const type = extractKind(source, name) ?? 'unknown';
   const version = versionMatch?.[1] || '?';
   const description = descMatch?.[1] || '';
   const tags = tagsMatch?.[1]?.replace(/"/g, '').split(',').map(t => t.trim()) || [];
   const author = authorMatch?.[1] || '?';
   const license = licenseMatch?.[1] || '?';
 
-  const typeColor = type === 'knowledge' ? cyan : type === 'method' ? green : yellow;
+  const typeColor = paintFor(type);
 
   header(name);
   console.log(`  ${typeColor(type)} | v${version} | ${license}`);
@@ -83,44 +84,21 @@ export async function infoCommand(args: string[]) {
     }
   }
 
-  // Extract links
-  const links: string[] = [];
-  const linkPatterns = [
-    { regex: /requires\s+"([^"]+)"/g, prefix: 'requires' },
-    { regex: /validates_with\s+"([^"]+)"/g, prefix: 'validates' },
-    { regex: /enhances\s+"([^"]+)"/g, prefix: 'enhances' },
-    { regex: /contradicts\s+"([^"]+)"/g, prefix: red('contradicts') },
-  ];
-  for (const p of linkPatterns) {
-    let m;
-    while ((m = p.regex.exec(source)) !== null) {
-      links.push(`${p.prefix} → ${m[1]}`);
-    }
-  }
-
-  if (links.length > 0) {
+  // Relations, rendered uniformly. The previous version listed four hardcoded
+  // verbs and painted one of them red, i.e. it decided locally that
+  // `contradicts` is the dangerous one. §3.1 puts that decision in the model.
+  const { relations, parseErrors } = extractRelations(source, name);
+  if (parseErrors.length > 0) {
     console.log();
-    console.log(`  ${bold('Links:')}`);
-    for (const l of links) {
-      console.log(`    ${l}`);
-    }
+    for (const message of parseErrors) console.log(`  ${yellow('⚠️')} ${message}`);
   }
 
-  // Show success criteria count for methods
-  if (type === 'method') {
-    const scCount = (source.match(/id:\s*"/g) || []).length;
-    if (scCount > 0) {
-      console.log();
-      console.log(`  ${bold('Evaluation:')} ${scCount} success criteria defined`);
-    }
-  }
-
-  // Show checks count for rules
-  if (type === 'rule') {
-    const checkCount = (source.match(/description:\s*"/g) || []).length;
-    if (checkCount > 0) {
-      console.log();
-      console.log(`  ${bold('Checks:')} ${checkCount} checks defined`);
+  if (relations.length > 0) {
+    console.log();
+    console.log(`  ${bold('Relations:')}`);
+    const verbWidth = Math.max(...relations.map((r) => r.verb.length));
+    for (const rel of relations) {
+      console.log(`    ${rel.verb.padEnd(verbWidth)} → ${rel.target}`);
     }
   }
 }

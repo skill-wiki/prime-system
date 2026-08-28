@@ -1,0 +1,57 @@
+# Second domain model. Nothing here overlaps the knowledge or frontend
+# vocabulary: the engine must load it without a single source change.
+kind: definitions
+version: 1.0.0
+definitions:
+  - kind: type
+    name: Asset
+    version: 1.0.0
+    additionalFields: reject
+    fields:
+      - { name: name, typeRef: string, required: true }
+      - { name: classification, typeRef: string, required: true, description: public | internal | restricted }
+      - { name: custodian, typeRef: string }
+      - { name: exposedToInternet, typeRef: boolean }
+
+  - kind: type
+    name: Threat
+    version: 1.0.0
+    additionalFields: reject
+    fields:
+      - { name: name, typeRef: string, required: true }
+      - { name: vector, typeRef: string, required: true }
+      - { name: severity, typeRef: integer, required: true, description: 1 (low) to 5 (critical) }
+      - { name: narrative, typeRef: string }
+
+  - kind: type
+    name: Control
+    version: 1.0.0
+    additionalFields: reject
+    fields:
+      - { name: name, typeRef: string, required: true }
+      - { name: statement, typeRef: string, required: true }
+      - { name: automated, typeRef: boolean, required: true }
+      - { name: strength, typeRef: integer }
+      - { name: guardedAsset, typeRef: Asset }
+
+  - kind: type
+    name: Evidence
+    version: 1.0.0
+    additionalFields: reject
+    extensions: { requiresCitation: true }
+    fields:
+      - { name: name, typeRef: string, required: true }
+      - { name: collectedAt, typeRef: string, required: true }
+      - { name: collectionMethod, typeRef: string, required: true }
+      - { name: payloadDigest, typeRef: string }
+
+  - kind: type
+    name: Assessment
+    version: 1.0.0
+    additionalFields: reject
+    extensions: { requiresCitation: true }
+    fields:
+      - { name: name, typeRef: string, required: true }
+      - { name: verdict, typeRef: string, required: true, description: satisfied | partial | unsatisfied }
+      - { name: score, typeRef: integer }
+      - { name: assessedControl, typeRef: Control, required: true }

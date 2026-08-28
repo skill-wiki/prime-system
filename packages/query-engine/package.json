@@ -1,0 +1,17 @@
+{
+  "name": "@skill-wiki/query-engine",
+  "version": "0.1.0",
+  "description": "Domain-agnostic candidate generation, feature scoring and budgeted selection planning",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": { "test": "bun test", "typecheck": "tsc --noEmit -p tsconfig.json" },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@skill-wiki/constraint-solver": "workspace:*",
+    "@skill-wiki/ir": "workspace:*",
+    "@skill-wiki/model-schema": "workspace:*"
+  },
+  "devDependencies": {
+    "@skill-wiki/testkit": "workspace:*"
+  }
+}

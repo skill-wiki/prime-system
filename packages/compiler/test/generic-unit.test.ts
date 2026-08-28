@@ -4,7 +4,6 @@ import { mkdtempSync, realpathSync, rmSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { loadModelOrThrow } from "@skill-wiki/model-schema";
 import type { LoadedModel, ProjectionDefinition } from "@skill-wiki/model-schema";
-import { ATOM_KINDS } from "@skill-wiki/types";
 import { compileUnit, computeCompiledUnitContentDigest, emitCompiledUnit } from "../src/generic-unit";
 
 const model = loadModelOrThrow(join(import.meta.dir, "../../model-schema/test/fixtures/ticket-model"));
@@ -25,7 +24,13 @@ test("projection selectors support the complete UnitIR meta envelope and rule pr
   expect(content).not.toContain("meta.digest:"); expect(content).toContain('title: "A\\nB"'); expect(content).toContain("priority: 2"); expect(content).toContain("active: true"); expect(content).not.toContain("owner:");
 });
 test("Ticket is a non-legacy external model type and default selection is model order", () => {
-  expect(ATOM_KINDS.includes("Ticket" as never)).toBe(false);
+  // The engine has no kind list to check against any more, so the meaningful
+  // assertion is against data: Ticket is absent from the v1 compatibility
+  // model, i.e. it really does come from an external model package.
+  const compat = loadModelOrThrow(join(import.meta.dir, "../../../compat/prime-v1-model"));
+  const compatTypeNames = compat.definitions.filter(d => d.kind === "type").map(d => d.name);
+  expect(compatTypeNames).not.toContain("Ticket");
+  expect(compatTypeNames).toContain("fact");
   const result = compileUnit('unit T3 : Ticket { title: "A" }', model, context);
   expect(result.ok).toBe(true); if (result.ok) expect(Object.keys(result.value.projections)).toEqual(["summary", "core", "full"]);
 });
@@ -58,4 +63,53 @@ test("emitter rejects lexical symlink ancestors before creating a child", () => 
   const base = mkdtempSync(join(realpathSync(tmpdir()), "generic-ancestor-")); const link = join(base, "link"); const outside = mkdtempSync(join(realpathSync(tmpdir()), "generic-outside-"));
   try { const result = compileUnit('unit T8 : Ticket { title: "A" }', model, context); if (!result.ok) throw new Error("compile"); symlinkSync(outside, link); expect(() => emitCompiledUnit(result.value, join(link, "new-child"))).toThrow("symlink ancestor"); expect(require("node:fs").existsSync(join(outside, "new-child"))).toBe(false); const final = join(outside, "existing"); require("node:fs").mkdirSync(final); expect(() => emitCompiledUnit(result.value, join(link, "existing"))).toThrow("symlink ancestor"); }
   finally { rmSync(base, { recursive: true, force: true }); rmSync(outside, { recursive: true, force: true }); }
+});
+
+// ─── ADR-1 architecture proof ──────────────────────────────────────────────
+//
+// A complete domain the engine has never seen, declared entirely in data and
+// never mentioned in any Core source file. If this test ever needs a Core edit
+// to pass, the refactor has regressed (plan §21's judgement criterion).
+
+test("a domain Core has never heard of parses, normalizes and compiles with no engine edit", () => {
+  const widgetModel: LoadedModel = {
+    root: "/virtual/widget-model",
+    manifest: { protocol: "prime/model/v2", name: "widget-shop", version: "1.0.0", files: ["types.yaml"] },
+    definitions: [
+      { kind: "type", name: "Widget", version: "1.0.0", additionalFields: "reject", fields: [
+        { name: "sku", typeRef: "string", required: true },
+        { name: "weightGrams", typeRef: "number" },
+        { name: "discontinued", typeRef: "boolean" },
+        { name: "supplier", typeRef: "Supplier" },
+      ] },
+      { kind: "type", name: "Supplier", version: "1.0.0", additionalFields: "reject", fields: [{ name: "sku", typeRef: "string" }] },
+      { kind: "projection", name: "tool-signature", version: "1.0.0", targetTokens: 40, include: ["meta.typeRef", "sku"], exclude: [], typeGroups: { catalogue: ["Widget"] }, rules: [{ typeRef: "group:catalogue", include: ["weightGrams"] }] },
+    ],
+  };
+
+  // Both spellings of the type reference: bare, and qualified by the model name.
+  for (const typeRef of ["Widget", "@widget-shop/Widget"]) {
+    const result = compileUnit(
+      `unit W1 : ${typeRef} { sku: "WID-1" weightGrams: 340 discontinued: false supplier: Supplier.acme }`,
+      widgetModel,
+      { corpus: "widgets", version: "1.0.0", digest: "sha256:" + "b".repeat(64) },
+      { projections: ["tool-signature"] },
+    );
+    expect(result.ok).toBe(true); if (!result.ok) return;
+    expect(result.value.unit.typeRef).toBe("Widget");
+    const content = result.value.projections["tool-signature"]!.content;
+    // The projection the model declared is honoured: included fields present,
+    // undeclared ones absent — no engine-side knowledge of "Widget" involved.
+    expect(content).toContain('sku: "WID-1"');
+    expect(content).toContain("weightGrams: 340");
+    expect(content).not.toContain("discontinued");
+  }
+
+  // The closed schema is the model's, so the model's own errors surface.
+  const bad = compileUnit('unit W2 : @widget-shop/Widget { colour: "red" }', widgetModel, { corpus: "widgets", version: "1.0.0", digest: "sha256:" + "c".repeat(64) }, { projections: ["tool-signature"] });
+  expect(bad.ok).toBe(false); if (!bad.ok) expect(bad.diagnostics.map(x => x.code)).toEqual(expect.arrayContaining(["UNKNOWN_FIELD", "MISSING_REQUIRED_FIELD"]));
+
+  // A reference into a model that is not loaded is refused rather than guessed.
+  const foreign = compileUnit('unit W3 : @some-other-shop/Widget { sku: "WID-3" }', widgetModel, { corpus: "widgets", version: "1.0.0", digest: "sha256:" + "d".repeat(64) }, { projections: ["tool-signature"] });
+  expect(foreign.ok).toBe(false); if (!foreign.ok) expect(foreign.diagnostics.map(x => x.code)).toContain("FOREIGN_MODEL_TYPE_REF");
 });

@@ -18,41 +18,6 @@ export enum TokenType {
   AS = "AS",
   UNIT = "UNIT",
 
-  // 28 atom-kind keywords (§4 of PRIME.md)
-  // Data / Value layer (8)
-  FACT = "FACT",
-  TERM = "TERM",
-  VALUE = "VALUE",
-  CATEGORY = "CATEGORY",
-  EXAMPLE = "EXAMPLE",
-  COUNTER_EXAMPLE = "COUNTER_EXAMPLE",   // source: "counter-example"
-  SOURCE = "SOURCE",
-  METRIC = "METRIC",
-  // Behaviour / Callable layer (4)
-  STEP = "STEP",
-  CHECK = "CHECK",
-  TRANSFORM = "TRANSFORM",
-  TOOL = "TOOL",
-  // Composition / Structure layer (6)
-  METHOD = "METHOD",
-  RULE = "RULE",
-  TAXONOMY = "TAXONOMY",
-  PATTERN = "PATTERN",
-  ANTI_PATTERN = "ANTI_PATTERN",         // source: "anti-pattern"
-  TYPE = "TYPE",
-  // Style / Parameter layer (5)
-  PERSONA = "PERSONA",
-  VOICE = "VOICE",
-  CONSTRAINT = "CONSTRAINT",
-  TEMPLATE = "TEMPLATE",
-  PROVOCATION = "PROVOCATION",
-  // Meta / Binding layer (5)
-  COLLECTION = "COLLECTION",
-  SCOPE = "SCOPE",
-  TRADEOFF = "TRADEOFF",
-  PRINCIPLE = "PRINCIPLE",
-  FEEDBACK = "FEEDBACK",
-
   // Delimiters
   LBRACE = "LBRACE",       // {
   RBRACE = "RBRACE",       // }
@@ -92,9 +57,10 @@ export enum TokenType {
 /**
  * Keywords that are reserved in the .prime language.
  *
- * Includes both the legacy `prime` keyword and all 28 atom-kind keywords.
- * Hyphenated keywords (counter-example, anti-pattern) work because the lexer
- * already reads hyphens as part of identifiers.
+ * Only **structural** keywords live here. Atom/unit kinds deliberately do NOT:
+ * `fact Foo {}` lexes as `IDENT IDENT LBRACE` and is recognised by the generic
+ * declaration production, so adding a domain type never touches the lexer
+ * (ADR-1 — atom types are external).
  */
 const KEYWORDS: Record<string, TokenType> = {
   // Legacy keyword
@@ -109,35 +75,6 @@ const KEYWORDS: Record<string, TokenType> = {
   // Boolean literals
   true: TokenType.BOOLEAN,
   false: TokenType.BOOLEAN,
-  // 28 atom-kind keywords
-  fact: TokenType.FACT,
-  term: TokenType.TERM,
-  value: TokenType.VALUE,
-  category: TokenType.CATEGORY,
-  example: TokenType.EXAMPLE,
-  "counter-example": TokenType.COUNTER_EXAMPLE,
-  source: TokenType.SOURCE,
-  metric: TokenType.METRIC,
-  step: TokenType.STEP,
-  check: TokenType.CHECK,
-  transform: TokenType.TRANSFORM,
-  tool: TokenType.TOOL,
-  method: TokenType.METHOD,
-  rule: TokenType.RULE,
-  taxonomy: TokenType.TAXONOMY,
-  pattern: TokenType.PATTERN,
-  "anti-pattern": TokenType.ANTI_PATTERN,
-  type: TokenType.TYPE,
-  persona: TokenType.PERSONA,
-  voice: TokenType.VOICE,
-  constraint: TokenType.CONSTRAINT,
-  template: TokenType.TEMPLATE,
-  provocation: TokenType.PROVOCATION,
-  collection: TokenType.COLLECTION,
-  scope: TokenType.SCOPE,
-  tradeoff: TokenType.TRADEOFF,
-  principle: TokenType.PRINCIPLE,
-  feedback: TokenType.FEEDBACK,
 };
 
 // ─── Token ──────────────────────────────────────────────────────────────────

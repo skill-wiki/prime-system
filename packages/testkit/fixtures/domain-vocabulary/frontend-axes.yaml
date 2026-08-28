@@ -1,0 +1,44 @@
+# Audit vocabulary is DATA, never a constant in src/: the scanner would
+# otherwise violate the rule it measures.
+#
+# `terms` are the frontend v1 retrieval axes and output formats named in plan
+# §16 Phase 3 ("Core has no register/motion/typography/color/rules constants").
+# `ambiguous` lists terms that are also ordinary programming vocabulary; they are
+# still reported, with a flag, so the gate is not drowned by English.
+kind: domain-vocabulary
+name: frontend-v1-axes
+terms:
+  - register
+  - motion
+  - typography
+  - density
+  - color
+  - palette
+  - spacing
+  - html
+  - persona
+  - voice
+ambiguous:
+  - color
+  - spacing
+
+# `exemptions` clear one *spelling at one site*, unlike `ambiguous`, which
+# weakens a word everywhere. Each is anchored to a path AND a line shape, so if
+# the code drifts the hit returns as an error instead of staying suppressed; an
+# exemption that matches nothing is reported as stale.
+exemptions:
+  # W2-B (decision D-9) and W3-2 both measured these 6 sites: `density` here is
+  # the share of a cluster's atoms sharing >=1 tag — a graph metric the compiler
+  # computes — not the frontend v1 `density` retrieval axis. The line shape is
+  # what separates them: a measure is arithmetic over clusters/atoms, whereas an
+  # axis appears as a bare weight or an entry in an axis list, which this
+  # pattern does not match.
+  - name: generic-graph-density-metric
+    term: density
+    reason: >-
+      cluster tag-sharing ratio (a generic graph measure), not the frontend v1 density axis;
+      sites: runtime/src/atom-loader.ts:42,117,158 and compiler/src/global-index-emitter.ts:95,96,141
+    paths:
+      - packages/runtime/src/atom-loader.ts
+      - packages/compiler/src/global-index-emitter.ts
+    linePattern: "\\bnumber\\b|[Cc]luster|\\batoms\\b|Math\\.|computeDensity"

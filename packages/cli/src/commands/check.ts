@@ -1,11 +1,26 @@
 /**
- * prime check <file> — Check a .prime or .md file without emitting output.
- * Supports checking existing SKILL.md files too.
+ * prime check <file> — Check a source file without emitting output.
+ *
+ * This command used to run its *own* checker: regexes for `extends` and `name:`,
+ * a branch per prime-v1 base type asserting which fields each one requires, and a
+ * hardcoded relation-verb regex. Two rules were broken at once —
+ *
+ *  - §3.1: "a Method must declare input/output/steps" is a Model Package
+ *    statement, not something the CLI is allowed to believe.
+ *  - §8.1: "CLI, MCP and scripts may no longer each copy the parse/check/emit
+ *    stages" — that private checker was a second, diverging implementation of
+ *    Phase 2, so `prime check` and `prime compile` could disagree about the same
+ *    file.
+ *
+ * Both are fixed by the same move: call the one compiler pipeline.
  */
 
 import { resolve, basename } from 'path';
-import { header, success, error, diagnosticLine, createSpinner, green, red, yellow, gray } from '../utils/display';
+import { header, success, error, diagnosticLine, createSpinner, green, red, yellow } from '../utils/display';
 import { readFile, fileExists } from '../utils/fs';
+import { parseLegacy } from '@skill-wiki/parser';
+import { checkL1 } from '@skill-wiki/compiler';
+import type { Diagnostic } from '@skill-wiki/compiler';
 
 export async function checkCommand(args: string[]) {
   const file = args[0];
@@ -28,108 +43,73 @@ export async function checkCommand(args: string[]) {
   const source = await readFile(filePath);
 
   if (isPrime) {
-    await checkPrimeFile(source, filePath);
+    await checkPrimeFile(source, basename(filePath));
   } else {
-    await checkMarkdownFile(source, filePath, isSkill);
+    await checkMarkdownFile(source, isSkill);
   }
 }
 
-async function checkPrimeFile(source: string, filePath: string) {
-  const spinner = createSpinner('Running structural checks...');
+/** Runs Phase 1 + Phase 2 of the compiler pipeline. Emits nothing. */
+async function checkPrimeFile(source: string, filename: string) {
+  const spinner = createSpinner('Running pipeline checks...');
 
-  // Use the compile command's checker without emitting
-  const diagnostics: any[] = [];
-
-  // Basic checks
-  if (!source.includes('extends')) {
-    diagnostics.push({ level: 'error', message: 'Missing extends clause' });
-  }
-  if (!source.includes('name:')) {
-    diagnostics.push({ level: 'error', message: 'Missing name field' });
-  }
-
-  const baseMatch = source.match(/extends\s+(\w+)/);
-  const base = baseMatch?.[1];
-
-  if (base === 'Method') {
-    if (!source.includes('input:')) diagnostics.push({ level: 'error', message: 'Method missing input declaration' });
-    if (!source.includes('output:')) diagnostics.push({ level: 'error', message: 'Method missing output declaration' });
-    if (!source.includes('steps:')) diagnostics.push({ level: 'error', message: 'Method missing steps declaration' });
-    if (!source.includes('success_criteria:')) diagnostics.push({ level: 'warn', message: 'Method has no success_criteria — how will you know if execution succeeded?' });
-
-    // Check steps have error handlers
-    const stepBlocks = source.match(/\w+\s*\{[^}]*\}/g) || [];
-    for (const block of stepBlocks) {
-      const stepName = block.match(/^(\w+)/)?.[1];
-      if (stepName && stepName !== stepName.toLowerCase() && !block.includes('error:') && !block.includes('@safe')) {
-        diagnostics.push({ level: 'warn', message: `Step '${stepName}' has no error handler. Add error: or mark @safe` });
-      }
+  let diagnostics: Diagnostic[];
+  try {
+    const { ast, errors: parseErrors } = parseLegacy(source, filename);
+    if (parseErrors.length > 0) {
+      spinner.stop(`${red('❌')} ${parseErrors.length} syntax error(s)`);
+      for (const err of parseErrors) diagnosticLine('error', err.line, err.message, err.suggestion);
+      process.exit(1);
     }
+    // No installed-unit map: `check` is a single-file gate, so cross-unit
+    // reference resolution is deliberately out of scope here (that is `compile`).
+    diagnostics = checkL1(ast, new Map());
+  } catch (err) {
+    spinner.stop(`${red('❌')} Parse failed`);
+    error((err as Error).message);
+    process.exit(1);
   }
 
-  if (base === 'Knowledge') {
-    const hasContent = source.includes('definitions:') || source.includes('categories:') || source.includes('facts:');
-    if (!hasContent) diagnostics.push({ level: 'error', message: 'Knowledge must have at least one of: definitions, categories, facts' });
-  }
+  const errors = diagnostics.filter((d) => d.level === 'error');
+  const warnings = diagnostics.filter((d) => d.level === 'warn');
 
-  if (base === 'Rule') {
-    if (!source.includes('checks:')) diagnostics.push({ level: 'error', message: 'Rule missing checks declaration' });
-  }
-
-  // Check links references
-  const useRefs = [...source.matchAll(/(?:requires|validates_with|enhances|contradicts|specializes|supplies_to)\s+"([^"]+)"/g)];
-  for (const ref of useRefs) {
-    // In a full implementation, we'd check if the referenced Prime exists
-    diagnostics.push({ level: 'suggestion', message: `Reference '${ref[1]}' — ensure this Prime is installed` });
-  }
-
-  const errors = diagnostics.filter(d => d.level === 'error');
-  const warnings = diagnostics.filter(d => d.level === 'warn');
-
-  spinner.stop(errors.length > 0
-    ? `${red('❌')} ${errors.length} errors, ${warnings.length} warnings`
-    : warnings.length > 0
-      ? `${yellow('⚠️')} 0 errors, ${warnings.length} warnings`
-      : `${green('✅')} All checks passed`
+  spinner.stop(
+    errors.length > 0
+      ? `${red('❌')} ${errors.length} errors, ${warnings.length} warnings`
+      : warnings.length > 0
+        ? `${yellow('⚠️')} 0 errors, ${warnings.length} warnings`
+        : `${green('✅')} All checks passed`,
   );
 
-  for (const d of diagnostics) {
-    diagnosticLine(d.level, d.line, d.message, d.suggestion);
-  }
+  for (const d of diagnostics) diagnosticLine(d.level, d.line, d.message, d.suggestion);
 
   if (errors.length > 0) process.exit(1);
 }
 
-async function checkMarkdownFile(source: string, filePath: string, isSkill: boolean) {
+async function checkMarkdownFile(source: string, isSkill: boolean) {
   const spinner = createSpinner('Analyzing Markdown structure...');
-  const diagnostics: any[] = [];
+  const diagnostics: { level: 'error' | 'warn' | 'suggestion'; line?: number; message: string; suggestion?: string }[] = [];
 
   if (isSkill) {
-    // Check SKILL.md for Prime-related issues
     if (!source.includes('primes:') && !source.includes('prime:')) {
-      diagnostics.push({ level: 'suggestion', message: 'This Skill does not reference any Primes. Consider using `prime decompose` to extract reusable knowledge.' });
+      diagnostics.push({
+        level: 'suggestion',
+        message: 'This document references no units. Consider `prime decompose` to extract reusable knowledge.',
+      });
     }
 
-    // Check for common Skill quality issues
     const lines = source.split('\n');
     if (lines.length > 500) {
-      diagnostics.push({ level: 'warn', message: `This Skill is ${lines.length} lines. Consider breaking it into smaller Primes for reusability.` });
-    }
-
-    // Check for error handling in steps
-    const hasSteps = source.match(/^###?\s+\d+\./gm);
-    if (hasSteps && !source.toLowerCase().includes('error') && !source.toLowerCase().includes('fail')) {
-      diagnostics.push({ level: 'warn', message: 'Steps defined but no error handling found. What happens when a step fails?' });
+      diagnostics.push({
+        level: 'warn',
+        message: `This document is ${lines.length} lines. Consider splitting it into smaller units for reuse.`,
+      });
     }
   }
 
   spinner.stop(`${green('✅')} Analysis complete`);
 
-  for (const d of diagnostics) {
-    diagnosticLine(d.level, d.line, d.message, d.suggestion);
-  }
+  for (const d of diagnostics) diagnosticLine(d.level, d.line, d.message, d.suggestion);
 
-  if (diagnostics.length === 0) {
-    success('No issues found.');
-  }
+  if (diagnostics.length === 0) success('No issues found.');
 }
