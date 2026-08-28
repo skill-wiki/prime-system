@@ -15,7 +15,7 @@
   "scripts": {
     "build": "bun build src/index.ts --outdir dist --target node && node -e \"const f='dist/index.js';const fs=require('fs');let s=fs.readFileSync(f,'utf8');if(s.startsWith('#!'))s=s.replace(/^#![^\\n]*\\n/,'#!/usr/bin/env node\\n');else s='#!/usr/bin/env node\\n'+s;fs.writeFileSync(f,s);fs.chmodSync(f,0o755);\"",
     "prepublishOnly": "bun run build",
-    "test": "bun test",
+    "test": "bun test --pass-with-no-tests",
     "lint": "tsc --noEmit"
   },
   "dependencies": {

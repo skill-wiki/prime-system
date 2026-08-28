@@ -6,7 +6,7 @@
   "types": "src/index.ts",
   "scripts": {
     "build": "bun build src/index.ts --outdir dist --target node",
-    "test": "bun test",
+    "test": "bun test --pass-with-no-tests",
     "lint": "tsc --noEmit"
   },
   "license": "Apache-2.0"
