@@ -72,3 +72,19 @@ export {
   type ProjectionLevel,
   type CollectionResolution,
 } from "./atom-loader";
+export {
+  loadCorpusSnapshot,
+  validateCorpusManifest,
+  validateCorpusManifestCompatibility,
+  PrimeBundleError,
+  CORPUS_MANIFEST_FILE,
+  CORPUS_INDEX_FILE,
+  SUPPORTED_CORPUS_PROTOCOL_MAJOR,
+  SUPPORTED_CORPUS_IR_VERSION,
+  type PrimeBundleErrorCode,
+  type BundleDiagnostic,
+  type CorpusManifest,
+  type SnapshotRef,
+  type LoadCorpusSnapshotOptions,
+  type LoadedCorpusSnapshot,
+} from "./corpus-snapshot";
