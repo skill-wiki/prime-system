@@ -6,5 +6,5 @@
   "types": "src/index.ts",
   "scripts": { "test": "bun test", "typecheck": "tsc --noEmit -p tsconfig.json" },
   "license": "Apache-2.0",
-  "dependencies": { "@skill-wiki/model-schema": "workspace:*" }
+  "dependencies": { "@skill-wiki/ir": "workspace:*", "@skill-wiki/model-schema": "workspace:*" }
 }

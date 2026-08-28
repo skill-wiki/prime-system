@@ -26,6 +26,7 @@ import type { RetrievalProfile } from "@skill-wiki/model-schema";
 import { buildAdjacency, type Adjacency } from "./adjacency.ts";
 import { admit, type AdmissionResult } from "./admission.ts";
 import { planBudget, resolveProjectionChain } from "./budget.ts";
+import { detectCapabilityGaps } from "./capabilities.ts";
 import {
   canonicalStrings,
   compareByScoreThenId,
@@ -105,6 +106,13 @@ export interface RetrievalResult {
   /** Scored candidates, descending score then unit id. */
   readonly candidates: readonly SelectionCandidateIR[];
   readonly rationale: readonly DiagnosticIR[];
+  /**
+   * Stages `profile` declares that this engine cannot run. Kept out of
+   * `rationale` so the two plan-building entry points can route it into the
+   * plan's required `conflicts` slot exactly once, rather than each having to
+   * fish it back out of a merged diagnostic list.
+   */
+  readonly capabilityGaps: readonly DiagnosticIR[];
 }
 
 export function runRetrieval(
@@ -134,6 +142,11 @@ export function runRetrieval(
 
   const chain = resolveProjectionChain(profile.projection, request.fallbackProjections, ctx.projections);
   const rationale: DiagnosticIR[] = [];
+
+  // Detected here, at the one place the profile is resolved and validated, so a
+  // declared-but-absent stage cannot be reported by one entry point and dropped
+  // by the other.
+  const capabilityGaps = detectCapabilityGaps(profile);
 
   // 1. Admission. Runs before generation so denied units never enter corpus
   //    statistics, graph paths or reasons.
@@ -178,7 +191,15 @@ export function runRetrieval(
   const scoring = scoreCandidates(outputs, profile);
   rationale.push(...scoring.diagnostics);
 
-  return { profile, chain, admission, adjacency, candidates: scoring.candidates, rationale };
+  return {
+    profile,
+    chain,
+    admission,
+    adjacency,
+    candidates: scoring.candidates,
+    rationale,
+    capabilityGaps,
+  };
 }
 
 export function planSelection(
@@ -189,7 +210,11 @@ export function planSelection(
   const retrieval = runRetrieval(request, ctx, options);
   const { profile, chain, admission, adjacency } = retrieval;
   const rationale: DiagnosticIR[] = [...retrieval.rationale];
-  const conflicts: DiagnosticIR[] = [];
+  // Routed into `conflicts`, not `rationale`, on D-2's precedent and for one
+  // additional reason specific to this field pair: `SelectionPlanIR.conflicts` is
+  // required while `rationale` is optional (`ir/src/index.ts:118`), so a transport
+  // that omits the optional field would drop the marker and put the silence back.
+  const conflicts: DiagnosticIR[] = [...retrieval.capabilityGaps];
   const rejections: Rejection[] = admission.filtered.map(denial => ({
     candidate: placeholderCandidate(denial.unitId, "filtered before candidate generation"),
     reasons: denial.reasons,

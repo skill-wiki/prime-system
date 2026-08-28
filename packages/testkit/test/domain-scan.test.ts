@@ -350,3 +350,30 @@ test("the first-generation count is deduped per site, so an alias pair is not co
   const scan = scanSource("const map = { validates_with: 1 };\n", vocab(["validates-with", "validates_with"]));
   expect(Object.values(scan.distinctiveByPackage).reduce((a, b) => a + b, 0)).toBe(1);
 });
+
+test("a declaration wrapped in doc comments is still a code hit, and the comments are counted apart", () => {
+  // W5-D: the `types` first-generation contradiction, pinned so it cannot be
+  // reopened by a grep impression. This is the literal shape of
+  // packages/types/src/knowledge.ts:31-34 and :157-159 — every gating code hit
+  // in that package sits immediately below or above a doc-comment line that
+  // repeats the same term, so `grep -n <term>` reads as "all in comments" while
+  // the classifier reports only the declarations. Both are right; they count
+  // different sets, under different diagnostic codes, and only `code` gates.
+  const source = [
+    "/**",
+    " * Used to organize knowledge into hierarchical taxonomies.",
+    " */",
+    "export interface Persona {",
+    "  /** Persona name */",
+    "  name: string;",
+    "}",
+    "export interface Holder {",
+    "  /** Classification taxonomies */",
+    "  personas?: Persona[];",
+    "}",
+  ].join("\n") + "\n";
+  const scan = scanSource(source, vocab(["persona"]));
+  // The exported declaration and the field's type reference gate; the
+  // `/** Persona name */` between them does not.
+  expect(scan.hits.map(h => [h.line, h.context])).toEqual([[4, "code"], [5, "comment"], [10, "code"]]);
+});

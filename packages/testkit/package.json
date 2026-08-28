@@ -15,8 +15,10 @@
     "zod": "^4.0.0"
   },
   "devDependencies": {
+    "@skill-wiki/bundle": "workspace:*",
     "@skill-wiki/constraint-solver": "workspace:*",
     "@skill-wiki/event-store": "workspace:*",
-    "@skill-wiki/projection-engine": "workspace:*"
+    "@skill-wiki/projection-engine": "workspace:*",
+    "@skill-wiki/runtime": "workspace:*"
   }
 }

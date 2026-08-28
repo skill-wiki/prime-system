@@ -76,6 +76,31 @@ function renderProjection(unit: UnitIR, definition: ProjectionDefinition): { con
   return { content: lines.join("\n") + "\n", selectors: [...new Set(selectors)].sort(compare) };
 }
 
+/**
+ * Render projections for an already-normalized unit.
+ *
+ * Split out of `compileUnit` because normalization has more than one front end:
+ * the generic `unit` syntax goes through `normalizeUnit`, while an untouched v1
+ * `.prime` atom goes through `normalizePrimeV1Atom` (plan §6.3 syntax macro).
+ * Keeping the parse step welded to the render step forced every caller to hand
+ * over a source string, which is exactly why the v1 corpus had no way into this
+ * pipeline at all — `compileUnit` rejected it with EXPECTED_UNIT_DECLARATION.
+ */
+export function compileNormalizedUnit(unit: UnitIR, model: LoadedModel, options: CompileUnitOptions = {}): CompileUnitResult {
+  const selection = selectedProjections(model, options.projections);
+  if (!selection.ok) return selection;
+  const projections: Record<string, ProjectionArtifactIR> = {};
+  for (const definition of selection.value) {
+    const rendered = renderProjection(unit, definition);
+    const path = `chunks/${safeName(definition.name)}.md`;
+    projections[definition.name] = { name: definition.name, path, content: rendered.content, bytes: Buffer.byteLength(rendered.content, "utf8"), digest: sha256(rendered.content), tokens: tokenCount(rendered.content), selectors: rendered.selectors };
+  }
+  const description = (Object.entries(unit.fields).sort(([a], [b]) => compare(a, b)).map(([, value]) => firstString(value)).find((value): value is string => value !== undefined) ?? "").replace(/\s+/g, " ").trim() || unit.identity.id;
+  const tokens = Object.fromEntries(Object.entries(projections).map(([name, artifact]) => [name, artifact.tokens]));
+  const contentDigest = computeCompiledUnitContentDigest(unit, projections);
+  return { ok: true, value: { kind: "compiled-unit", unit, projections, meta: { id: unit.identity.id, kind: unit.typeRef, version: unit.identity.version, description, domain: unit.identity.corpus, tags: [unit.typeRef], tokens, projection: Object.fromEntries(Object.entries(projections).sort(([a], [b]) => compare(a, b)).map(([name, artifact]) => [name, artifact.path])), contentDigest } } };
+}
+
 /** Parse, normalize, and render a generic `unit` declaration without legacy compiler stages. */
 export function compileUnit(source: string, model: LoadedModel, context: NormalizeContext, options: CompileUnitOptions = {}): CompileUnitResult {
   const parsed = parse(source);
@@ -83,18 +108,7 @@ export function compileUnit(source: string, model: LoadedModel, context: Normali
   if (parsed.ast.type !== "UnitDeclaration") return { ok: false, diagnostics: [{ code: "EXPECTED_UNIT_DECLARATION", message: "Generic compilation requires a UnitDeclaration.", source: { filename: parsed.ast.filename, loc: parsed.ast.loc } }] };
   const normalized = normalizeUnit(parsed.ast, model, context);
   if (!normalized.ok) return normalized;
-  const selection = selectedProjections(model, options.projections);
-  if (!selection.ok) return selection;
-  const projections: Record<string, ProjectionArtifactIR> = {};
-  for (const definition of selection.value) {
-    const rendered = renderProjection(normalized.value, definition);
-    const path = `chunks/${safeName(definition.name)}.md`;
-    projections[definition.name] = { name: definition.name, path, content: rendered.content, bytes: Buffer.byteLength(rendered.content, "utf8"), digest: sha256(rendered.content), tokens: tokenCount(rendered.content), selectors: rendered.selectors };
-  }
-  const description = (Object.entries(normalized.value.fields).sort(([a], [b]) => compare(a, b)).map(([, value]) => firstString(value)).find((value): value is string => value !== undefined) ?? "").replace(/\s+/g, " ").trim() || normalized.value.identity.id;
-  const tokens = Object.fromEntries(Object.entries(projections).map(([name, artifact]) => [name, artifact.tokens]));
-  const contentDigest = computeCompiledUnitContentDigest(normalized.value, projections);
-  return { ok: true, value: { kind: "compiled-unit", unit: normalized.value, projections, meta: { id: normalized.value.identity.id, kind: normalized.value.typeRef, version: normalized.value.identity.version, description, domain: normalized.value.identity.corpus, tags: [normalized.value.typeRef], tokens, projection: Object.fromEntries(Object.entries(projections).sort(([a], [b]) => compare(a, b)).map(([name, artifact]) => [name, artifact.path])), contentDigest } } };
+  return compileNormalizedUnit(normalized.value, model, options);
 }
 
 function safeName(name: string): string {

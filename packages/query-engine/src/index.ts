@@ -19,6 +19,7 @@ export {
   type ProjectionAssignment,
 } from "./budget.ts";
 export { SCORE_PRECISION, quantize } from "./deterministic.ts";
+export { RERANKER_NOT_IMPLEMENTED, detectCapabilityGaps } from "./capabilities.ts";
 export {
   degradeToFit,
   type BudgetHandoff,

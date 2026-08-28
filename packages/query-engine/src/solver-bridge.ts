@@ -240,6 +240,9 @@ export function planWithConstraints(
         ...solved.plan,
         query: retrieval.candidates.length === 0 ? solved.plan.query : solved.plan.query,
         candidates: solved.plan.candidates.map(candidate => merge(candidate, scored)),
+        // A declared-but-absent stage is a property of the profile, so it holds on
+        // the unsat path too — the partial plan must not look more complete than it is.
+        conflicts: [...solved.plan.conflicts, ...retrieval.capabilityGaps],
         rationale: [...(solved.plan.rationale ?? []), ...retrieval.rationale],
       },
       unsatCore: solved.unsatCore,
@@ -268,8 +271,9 @@ export function planWithConstraints(
     })),
     // Over-budget is surfaced in `conflicts`, not only in `rationale`: D-2 requires
     // an explicit state a caller cannot skim past, and `conflicts` is where a plan
-    // consumer already looks for something that blocks.
-    conflicts: [...solved.plan.conflicts, ...blocking],
+    // consumer already looks for something that blocks. A declared pipeline stage
+    // this engine cannot run rides the same channel for the same reason.
+    conflicts: [...solved.plan.conflicts, ...retrieval.capabilityGaps, ...blocking],
     // D-8: the plan carries the budget verdict itself, so an over-budget plan still
     // says so after serialisation instead of only inside the in-process handoff.
     budget: {

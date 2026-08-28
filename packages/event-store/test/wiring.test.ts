@@ -6,15 +6,28 @@ import { join } from "node:path";
 
 /*
  * A pinned copy of the contracts this package must satisfy, transcribed from
- * `packages/action-runtime/src/index.ts` on 2026-08-28. Nothing is imported:
- * §15.4 forbids a store depending on its consumer, and a `workspace:*` edge
- * back to action-runtime would make the graph circular once the coordinator
- * wires the runtime to this package. The cost of that choice is drift, so this
- * file pays it down — if the runtime's contract changes, the assignability
- * assertions below stop compiling and this test fails instead of a wiring.
+ * `packages/action-runtime/src/index.ts` and, for the execution plan, from
+ * `packages/ir/src/index.ts` (which W5-B made authoritative — see D-1). Nothing
+ * is imported: §15.4 forbids a store depending on its consumer, and a
+ * `workspace:*` edge back to action-runtime would make the graph circular once
+ * the coordinator wires the runtime to this package.
+ *
+ * The cost of that choice is drift. The annotations below pay part of it down:
+ * a change to the `EventStore` or `IdempotencyLedger` surface stops compiling
+ * here. They do NOT catch a change confined to a shape the store only carries
+ * through, such as `ExecutionPlanIR` — a store stays assignable no matter what a
+ * run's `plan` field looks like. That class of drift is caught by review, and
+ * the transcription is dated so a reviewer can tell how stale it is.
  */
 
-// action-runtime/src/index.ts:2
+// ir/src/index.ts, SnapshotRef — the four §8.4 digests a snapshot id cannot carry.
+interface PinnedSnapshotRef {
+  readonly modelRelease: string;
+  readonly modelDigest: string;
+  readonly corpusRelease: string;
+  readonly corpusDigest: string;
+}
+// action-runtime/src/index.ts:9
 interface PinnedRequestContext {
   principal: string;
   roles: readonly string[];
@@ -25,6 +38,7 @@ interface PinnedRequestContext {
   tenant?: string;
   workspace?: string;
   policyRef?: string;
+  snapshotRef?: PinnedSnapshotRef;
 }
 // action-runtime/src/index.ts:3
 type PinnedRunStatus =
@@ -56,14 +70,48 @@ interface PinnedEffectPlan {
   trace: string;
   authorizationDecision?: PinnedPolicyDecision;
 }
-// action-runtime/src/index.ts:6
+// ir/src/index.ts, ExecutionPlanNodeIR / ExecutionPlanIR — action-runtime imports
+// these rather than shadowing them (D-1).
+type PinnedValueIR =
+  | null
+  | boolean
+  | number
+  | string
+  | readonly PinnedValueIR[]
+  | { readonly [key: string]: PinnedValueIR };
+interface PinnedDiagnosticIR {
+  readonly code: string;
+  readonly message: string;
+  readonly path?: readonly string[];
+  readonly severity: "error" | "warning" | "info";
+}
+interface PinnedExecutionPlanNodeIR {
+  readonly id: string;
+  readonly kind:
+    | "Query"
+    | "Materialize"
+    | "InvokeAction"
+    | "InvokeFunction"
+    | "InvokeModel"
+    | "Transform"
+    | "Validate"
+    | "Gate"
+    | "Emit"
+    | "AwaitApproval";
+  readonly target: string;
+  readonly inputs: Readonly<Record<string, PinnedValueIR>>;
+  readonly dependsOn: readonly string[];
+}
 interface PinnedExecutionPlanIR {
-  runId: string;
-  snapshot: string;
-  nodes: readonly string[];
-  requiredCapabilities: readonly string[];
-  approval: PinnedEffectPlan["approval"];
-  budget: PinnedRequestContext["budget"];
+  readonly snapshot: PinnedSnapshotRef;
+  readonly runId: string;
+  readonly nodes: readonly PinnedExecutionPlanNodeIR[];
+  readonly edges: readonly { readonly from: string; readonly to: string }[];
+  readonly capabilities: readonly string[];
+  readonly approvals: readonly string[];
+  readonly checkpoints: readonly string[];
+  readonly budget: { maxTokens?: number; maxDurationMs?: number };
+  readonly diagnostics?: readonly PinnedDiagnosticIR[];
 }
 // action-runtime/src/index.ts:7
 interface PinnedEventRecord {
@@ -95,6 +143,34 @@ interface PinnedEventStore {
   events(runId: string): readonly PinnedEventRecord[];
   save(run: PinnedActionRun): void;
   get(runId: string): PinnedActionRun | undefined;
+}
+
+// action-runtime/src/index.ts, IdempotencyLedger — the narrow surface the runtime
+// asks for so it can be handed a persistent store without importing one.
+interface PinnedRunScopeTuple {
+  readonly tenant: string;
+  readonly workspace: string;
+  readonly snapshot: string;
+}
+interface PinnedIdempotencyRecordRef {
+  readonly runId: string;
+  readonly fingerprint: string;
+}
+interface PinnedIdempotencyClaimRequest extends PinnedIdempotencyRecordRef {
+  readonly scope: PinnedRunScopeTuple;
+  readonly action: string;
+  readonly idempotencyKey: string;
+}
+interface PinnedIdempotencyLedger {
+  claimIdempotency(claim: PinnedIdempotencyClaimRequest): {
+    readonly status: "claimed" | "replayed";
+    readonly record: PinnedIdempotencyRecordRef;
+  };
+  lookupIdempotency(
+    scope: PinnedRunScopeTuple,
+    action: string,
+    idempotencyKey: string,
+  ): PinnedIdempotencyRecordRef | undefined;
 }
 
 // action-runtime/src/index.ts:11, verbatim, reformatted only.
@@ -147,11 +223,33 @@ function newRun(id: string): PinnedActionRun {
     effect,
     plan: {
       runId: id,
-      snapshot: CONTEXT.snapshot,
-      nodes: ["Validate", "Authorize", "Gate", "AwaitApproval", "InvokeAction", "Emit"],
-      requiredCapabilities: [],
-      approval: "none",
-      budget: CONTEXT.budget,
+      // Unbound on purpose: this fixture does not have a corpus release, and the
+      // runtime reports that as a diagnostic rather than inventing digests.
+      snapshot: { modelRelease: "", modelDigest: "", corpusRelease: "", corpusDigest: "" },
+      nodes: [
+        { id: "validate-input", kind: "Validate", target: "ResolveTicket", inputs: { typeRefs: ["Ticket"] }, dependsOn: [] },
+        { id: "gate-authorization", kind: "Gate", target: "principal", inputs: { principal: "tester", roles: ["agent"] }, dependsOn: ["validate-input"] },
+        { id: "invoke-action", kind: "InvokeAction", target: "ticket-resolver", inputs: { sideEffects: "none", idempotency: "idempotent", maxAttempts: 1 }, dependsOn: ["gate-authorization"] },
+        { id: "validate-output", kind: "Validate", target: "boolean", inputs: { typeRef: "boolean" }, dependsOn: ["invoke-action"] },
+        { id: "emit-audit", kind: "Emit", target: "audit", inputs: { trace: CONTEXT.trace }, dependsOn: ["validate-output"] },
+      ],
+      edges: [
+        { from: "validate-input", to: "gate-authorization" },
+        { from: "gate-authorization", to: "invoke-action" },
+        { from: "invoke-action", to: "validate-output" },
+        { from: "validate-output", to: "emit-audit" },
+      ],
+      capabilities: [],
+      approvals: [],
+      checkpoints: [],
+      budget: {},
+      diagnostics: [
+        {
+          code: "SNAPSHOT_REF_UNBOUND",
+          severity: "warning",
+          message: `Run ${id} carries no SnapshotRef, so the §8.4 digest checks cannot run for snapshot id ${CONTEXT.snapshot}`,
+        },
+      ],
     },
     status: "planned",
     evidence: [],
@@ -205,6 +303,62 @@ const EXPECTED_TYPES = [
 ];
 
 describe("wiring compatibility with action-runtime", () => {
+  test("all three stores are assignable to the pinned IdempotencyLedger contract", () => {
+    const directory = mkdtempSync(join(tmpdir(), "event-store-ledger-"));
+    try {
+      // The annotation is the assertion. The method names in action-runtime's
+      // `IdempotencyLedger` were chosen to match `PersistentEventStore` for
+      // exactly this reason: a rename on either side would need an adapter with
+      // nothing to adapt, and L6 §5.2's proposed `claim`/`lookup` names would
+      // have made this line fail to compile.
+      const stores: readonly PinnedIdempotencyLedger[] = [
+        new MemoryEventStore<PinnedActionRun>(),
+        new SqliteEventStore<PinnedActionRun>({ path: join(directory, "ledger.sqlite") }),
+        new JsonlEventStore<PinnedActionRun>({ path: join(directory, "ledger.jsonl") }),
+      ];
+      const scope = { tenant: "t-1", workspace: "w-1", snapshot: "snapshot-1" };
+      for (const ledger of stores) {
+        expect(ledger.lookupIdempotency(scope, "ResolveTicket", "k-1")).toBeUndefined();
+        const claimed = ledger.claimIdempotency({
+          scope,
+          action: "ResolveTicket",
+          idempotencyKey: "k-1",
+          fingerprint: "fp-1",
+          runId: "run-1",
+        });
+        expect(claimed.status).toBe("claimed");
+        expect(claimed.record).toMatchObject({ runId: "run-1", fingerprint: "fp-1" });
+        // The runtime's replay path reads the record back and refuses to run the
+        // provider again; the store must therefore return the *owner's* runId.
+        expect(ledger.lookupIdempotency(scope, "ResolveTicket", "k-1")).toMatchObject({
+          runId: "run-1",
+          fingerprint: "fp-1",
+        });
+        expect(
+          ledger.claimIdempotency({
+            scope,
+            action: "ResolveTicket",
+            idempotencyKey: "k-1",
+            fingerprint: "fp-1",
+            runId: "run-2",
+          }),
+        ).toMatchObject({ status: "replayed", record: { runId: "run-1" } });
+        expect(() =>
+          ledger.claimIdempotency({
+            scope,
+            action: "ResolveTicket",
+            idempotencyKey: "k-1",
+            fingerprint: "fp-different",
+            runId: "run-3",
+          }),
+        ).toThrow("Idempotency conflict: key reused with different input");
+        (ledger as unknown as MemoryEventStore<PinnedActionRun>).close();
+      }
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
   test("all three stores are assignable to the pinned EventStore contract", () => {
     const directory = mkdtempSync(join(tmpdir(), "event-store-wiring-"));
     try {
