@@ -5,7 +5,8 @@
  * Responsibilities:
  * - Build dependency graph from use[] and links[]
  * - Detect circular dependencies (DFS cycle detection)
- * - Detect CONTRADICTS conflicts in dependency tree
+ * - Detect exclusion conflicts in dependency tree (relations the model declares
+ *   with `semantics.selection: exclude`)
  * - Detect version conflicts
  * - Output: DependencyGraph with nodes, edges, and resolved load order
  */
@@ -27,6 +28,7 @@ import type {
   DependencyNode,
   DependencyEdge,
 } from "./types";
+import { defaultRelationIndex, type RelationIndex } from "./relation-semantics";
 
 type AnyAST = PrimeAST | AtomDeclaration;
 
@@ -54,69 +56,26 @@ interface RawDependency {
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
 /**
- * Default direction for a link verb.
- */
-function defaultDirection(verb: string): "before" | "after" | "during" | "any" {
-  switch (verb) {
-    case "requires":
-    case "REQUIRES":
-    case "supplies_to":
-    case "SUPPLIES":
-      return "before";
-    case "validates_with":
-    case "VALIDATES":
-      return "after";
-    default:
-      return "any";
-  }
-}
-
-/**
- * Default required flag for a link verb.
- */
-function defaultRequired(verb: string): boolean {
-  switch (verb) {
-    case "requires":
-    case "REQUIRES":
-    case "validates_with":
-    case "VALIDATES":
-    case "contradicts":
-    case "CONTRADICTS":
-    case "supplies_to":
-    case "SUPPLIES":
-      return true;
-    case "enhances":
-    case "ENHANCES":
-    case "specializes":
-    case "SPECIALIZES":
-      return false;
-    default:
-      return false;
-  }
-}
-
-/**
- * Normalize a link verb to its canonical LinkType form.
- */
-function normalizeLinkType(verb: string): string {
-  const map: Record<string, string> = {
-    requires: "REQUIRES",
-    enhances: "ENHANCES",
-    validates_with: "VALIDATES",
-    contradicts: "CONTRADICTS",
-    specializes: "SPECIALIZES",
-    supplies_to: "SUPPLIES",
-  };
-  return map[verb] || verb;
-}
-
-/**
  * Extract all dependencies (use[] + links[]) from an AST.
+ *
+ * Direction, the required flag and the canonical verb all come from
+ * `relations`, i.e. from the model package. The three `switch` tables that used
+ * to answer these questions here are what plan §3.1 forbids, and they had
+ * already drifted: they still returned `before` for `supplies_to` after the
+ * model declared `after` (D-7).
  */
-function extractDependencies(ast: AnyAST): RawDependency[] {
+function extractDependencies(ast: AnyAST, relations: RelationIndex): RawDependency[] {
   const deps: RawDependency[] = [];
 
   // Extract from use[]
+  //
+  // `use[]` is v1 shorthand for the dependency relation. Which relation that is
+  // cannot be read off the model today: nothing in `RelationDefinition` says
+  // "this is the relation the `use` field desugars to". So the NAME below is a
+  // residual hardcode (lane report §5), but its SEMANTICS are not — direction
+  // and the required flag go through `relations` like every other verb, so a
+  // model that declares `requires` differently is still obeyed here.
+  const useVerb = "requires";
   const useField = ast.body.find((f) => f.key === "use");
   if (useField && useField.value.type === "Array") {
     for (const item of (useField.value as ArrayNode).items) {
@@ -124,18 +83,18 @@ function extractDependencies(ast: AnyAST): RawDependency[] {
         const ref = item as ReferenceNode;
         deps.push({
           to: ref.path[0],
-          type: "REQUIRES",
-          required: true,
-          direction: "before",
+          type: relations.canonical(useVerb),
+          required: relations.required(useVerb),
+          direction: relations.direction(useVerb),
           line: item.loc.line,
           version: ref.path.length > 1 ? ref.path[1] : undefined,
         });
       } else if (item.type === "String") {
         deps.push({
           to: (item as StringNode).value,
-          type: "REQUIRES",
-          required: true,
-          direction: "before",
+          type: relations.canonical(useVerb),
+          required: relations.required(useVerb),
+          direction: relations.direction(useVerb),
           line: item.loc.line,
         });
       }
@@ -150,9 +109,9 @@ function extractDependencies(ast: AnyAST): RawDependency[] {
         const link = item as LinkShorthandNode;
         deps.push({
           to: link.target,
-          type: normalizeLinkType(link.verb),
-          required: defaultRequired(link.verb),
-          direction: defaultDirection(link.verb),
+          type: relations.canonical(link.verb),
+          required: relations.required(link.verb),
+          direction: relations.direction(link.verb),
           line: item.loc.line,
         });
       } else if (item.type === "Object") {
@@ -174,12 +133,12 @@ function extractDependencies(ast: AnyAST): RawDependency[] {
               ? (toField.value as StringNode).value
               : "";
 
-          let required = defaultRequired(verb);
+          let required = relations.required(verb);
           if (requiredField && requiredField.value.type === "Boolean") {
             required = requiredField.value.value;
           }
 
-          let direction = defaultDirection(verb);
+          let direction = relations.direction(verb);
           if (directionField && directionField.value.type === "Ident") {
             const d = directionField.value.value as "before" | "after" | "during" | "any";
             if (["before", "after", "during", "any"].includes(d)) {
@@ -189,7 +148,7 @@ function extractDependencies(ast: AnyAST): RawDependency[] {
 
           deps.push({
             to,
-            type: normalizeLinkType(verb),
+            type: relations.canonical(verb),
             required,
             direction,
             line: item.loc.line,
@@ -323,16 +282,20 @@ export interface ResolveResult {
  *
  * @param ast - The parsed Prime AST (root node to resolve)
  * @param installedPrimes - Map of all installed Primes
+ * @param relations - Relation semantics, read from the model package. Defaults
+ *   to the v1 compatibility model; pass a different index to resolve against a
+ *   different model. There is one semantics path either way — no fallback table.
  * @returns The resolved dependency graph and diagnostics
  */
 export function resolve(
   ast: AnyAST,
-  installedPrimes: Map<string, InstalledPrime> = new Map()
+  installedPrimes: Map<string, InstalledPrime> = new Map(),
+  relations: RelationIndex = defaultRelationIndex()
 ): ResolveResult {
   const diagnostics: Diagnostic[] = [];
   const nodes = new Map<string, DependencyNode>();
   const edges: DependencyEdge[] = [];
-  const allContradicts = new Set<string>(); // "A|B" pairs
+  const allContradicts = new Map<string, string>(); // "A|B" pair -> the exclusion relation that declared it
 
   // Get the root name
   const nameField = ast.body.find((f) => f.key === "name");
@@ -358,7 +321,7 @@ export function resolve(
   const versionMap = new Map<string, { version: string; requiredBy: string; line: number }>();
 
   // Extract direct dependencies from the root AST
-  const rootDeps = extractDependencies(ast);
+  const rootDeps = extractDependencies(ast, relations);
   queue.push({ name: rootName, deps: rootDeps });
   visited.add(rootName);
 
@@ -379,10 +342,15 @@ export function resolve(
         direction: dep.direction,
       });
 
-      // Track CONTRADICTS relationships
-      if (dep.type === "CONTRADICTS") {
+      // An exclusion relation states that two atoms may not coexist; it is not
+      // a dependency, so it neither orders the graph nor gets traversed. Which
+      // relations those are is `semantics.selection: exclude` in the model —
+      // testing `type === "CONTRADICTS"` here missed `conflicts`, which
+      // declares the same selection.
+      const excludes = relations.excludes(dep.type);
+      if (excludes) {
         const key = [currentName, dep.to].sort().join("|");
-        allContradicts.add(key);
+        allContradicts.set(key, dep.type);
       }
 
       // Add node for the dependency
@@ -417,7 +385,7 @@ export function resolve(
         }
 
         // Build adjacency for "before" direction deps (cycle detection)
-        if (dep.direction === "before" && dep.type !== "CONTRADICTS") {
+        if (dep.direction === "before" && !excludes) {
           if (!adjacency.has(currentName)) {
             adjacency.set(currentName, []);
           }
@@ -428,19 +396,19 @@ export function resolve(
         }
 
         // Recursively resolve transitive dependencies
-        if (!visited.has(dep.to) && dep.type !== "CONTRADICTS") {
+        if (!visited.has(dep.to) && !excludes) {
           visited.add(dep.to);
           // If the installed Prime has its own AST, extract its dependencies
           if (installed.ast) {
-            const transitiveDeps = extractDependencies(installed.ast as PrimeAST);
+            const transitiveDeps = extractDependencies(installed.ast as PrimeAST, relations);
             queue.push({ name: dep.to, deps: transitiveDeps });
           } else if (installed.links) {
             // Use the pre-extracted links if available
             const transitiveDeps: RawDependency[] = installed.links.map((l) => ({
               to: l.to,
-              type: normalizeLinkType(l.type),
-              required: defaultRequired(l.type),
-              direction: defaultDirection(l.type),
+              type: relations.canonical(l.type),
+              required: relations.required(l.type),
+              direction: relations.direction(l.type),
               line: 0,
             }));
             queue.push({ name: dep.to, deps: transitiveDeps });
@@ -451,27 +419,30 @@ export function resolve(
   }
 
   // ── Circular dependency detection ─────────────────────────────────────
+  // Which relations actually order loading is a model fact, so the suggestion
+  // names them from the model instead of naming two verbs in prose.
+  const orderingRelations = relations.names.filter(name => relations.direction(name) !== "any");
   const cycle = detectCycle(adjacency, rootName);
   if (cycle && cycle.length > 1) {
     diagnostics.push({
       level: "error",
       line: ast.loc.line,
       message: `Circular dependency detected: ${cycle.join(" -> ")}`,
-      suggestion: "Break the cycle by changing one dependency direction or using ENHANCES instead of REQUIRES",
+      suggestion: `Break the cycle by changing one dependency direction, or use a relation whose loadOrder is "none" instead of one that orders loading (${orderingRelations.join(", ")} order loading in this model)`,
       source: "resolver",
     });
   }
 
-  // ── CONTRADICTS conflict detection ────────────────────────────────────
+  // ── Exclusion conflict detection ──────────────────────────────────────
   const allNodeIds = new Set(nodes.keys());
-  for (const pair of allContradicts) {
+  for (const [pair, verb] of allContradicts) {
     const [a, b] = pair.split("|");
-    // Check if both sides of a CONTRADICTS are present in the dependency tree
+    // Both endpoints of an exclusion present in the tree is the conflict.
     if (allNodeIds.has(a) && allNodeIds.has(b)) {
       diagnostics.push({
         level: "error",
         line: ast.loc.line,
-        message: `CONTRADICTS conflict: "${a}" and "${b}" cannot coexist in the same dependency tree`,
+        message: `${verb} conflict: "${a}" and "${b}" cannot coexist in the same dependency tree`,
         suggestion: `Remove one of "${a}" or "${b}" from the dependency tree`,
         source: "resolver",
       });

@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -218,4 +218,135 @@ test("a path-anchored exemption whose file is outside the scan roots is out of s
     name: "elsewhere", term: "density", reason: "anchored to another package", paths: ["packages/other/src/a.ts"],
   }]), "probe.ts");
   expect(scan.staleExemptions).toEqual([]);
+});
+
+test("a shape-only exemption is unjudgeable on a scoped run but stale on a complete one", () => {
+  // `http-request-method` carries no path anchor, and treating "no anchor" as
+  // "nothing to rot" meant it could outlive both its sites while still looking
+  // like coverage. A complete scan is exactly the evidence that it matched nowhere.
+  const shapeOnly = [{ name: "http-verb", term: "method", reason: "HTTP verb", paths: [], linePattern: 'method:\\s*"POST"' }];
+  const root = mkdtempSync(join(tmpdir(), "prime-scan-"));
+  try {
+    writeFileSync(join(root, "probe.ts"), "const x = 1;\n", "utf8");
+    const scoped = scanDomainSemantics({ roots: [root], vocabulary: vocab(["method"], shapeOnly), reportRoot: root });
+    expect(scoped.staleExemptions).toEqual([]);
+    const complete = scanDomainSemantics({ roots: [root], vocabulary: vocab(["method"], shapeOnly), reportRoot: root, completeScan: true });
+    expect(complete.staleExemptions).toEqual(["http-verb"]);
+  } finally { removeTree(root); }
+});
+
+/**
+ * The ruler has to be usable as a completion criterion, which means it must reach
+ * zero on a repo that legitimately still contains fixtures naming `Control` and
+ * `Threat`, and must not count its own diagnostic messages as violations.
+ */
+
+test("a model name that is only a word inside a sentence is prose, not a closed-set literal", () => {
+  // Measured: `"Every type is covered by a projection rule"` in the testkit's own
+  // model-conformance messages produced 12 reported violations, and
+  // `"scope=related requires \`id\`."` produced 3 more in mcp-server-core. Both are
+  // English in which two v1 type names happen to co-occur.
+  const v = relationVocab(["requires", "related"], ["requires", "related"]);
+  const scan = scanSource('const e = "scope=related requires `id`.";\n', v);
+  expect(scan.closedSetHits).toHaveLength(0);
+});
+
+test("a distinctive model name inside a message is reported as prose, so the signal is not lost", () => {
+  const scan = scanSource('const hint = "add at least one contradicts link";\n', relationVocab(["contradicts"]));
+  expect(scan.closedSetHits).toHaveLength(0);
+  expect(scan.proseHits.map(h => h.term)).toEqual(["contradicts"]);
+  const prose = closedSetCheck(scan).findings.filter(f => f.code === "MODEL_NAME_IN_PROSE");
+  expect(prose).toHaveLength(1);
+  expect(prose[0]?.severity).toBe("warning");
+  // A message to reword must not gate a refactor that reads the model.
+  expect(closedSetCheck(scan).status).toBe("pass");
+});
+
+test("two ambiguous names are an enumeration only when nothing but delimiters separates them", () => {
+  const v = relationVocab(["requires", "extends"], ["requires", "extends"]);
+  const adjacent = scanSource('const verbs = ["requires", "extends"];\n', v);
+  expect(adjacent.closedSetHits).toHaveLength(2);
+
+  // Measured on `model-schema/src/index.ts:50`, a 1159-char one-liner where the
+  // two names sat 880 columns apart in unrelated statements.
+  const farApart = scanSource('if (a === "requires") { doWork(); log(x); } if (b === "extends") { other(); }\n', v);
+  expect(farApart.closedSetHits).toHaveLength(0);
+});
+
+test("an interpolated template fragment is never an exact name", () => {
+  const scan = scanSource('const id = `${owner}/requires`;\n', relationVocab(["requires"], ["requires"]));
+  expect(scan.closedSetHits).toHaveLength(0);
+});
+
+/** Writes a package whose entry is `src/index.ts`, importing only what it lists. */
+function scanPackage(files: Readonly<Record<string, string>>, vocabulary: Vocabulary): DomainScanReport {
+  const repo = mkdtempSync(join(tmpdir(), "prime-pkg-"));
+  const packageDir = join(repo, "packages", "probe");
+  try {
+    mkdirSync(join(packageDir, "src"), { recursive: true });
+    writeFileSync(join(packageDir, "package.json"), JSON.stringify({ name: "probe", main: "src/index.ts" }), "utf8");
+    for (const [name, body] of Object.entries(files)) writeFileSync(join(packageDir, name), body, "utf8");
+    return scanDomainSemantics({ roots: [join(packageDir, "src")], vocabulary, reportRoot: repo, skipDirectories: ["node_modules"] });
+  } finally { removeTree(repo); }
+}
+
+test("engine source is what the package entry reaches, so a fixture moved into src/ does not become engine source", () => {
+  // The path criterion (`test/`, `fixtures/`) is bypassed by exactly this move.
+  // Reachability is not: putting the file in src/ does not make anything load it.
+  const v = relationVocab(["contradicts"]);
+  const scan = scanPackage({
+    "src/index.ts": 'export const VERSION = "1";\n',
+    "src/security-fixture.ts": 'export const RELATIONS = ["contradicts"];\nimport { test } from "bun:test";\n',
+  }, v);
+  const hit = scan.closedSetHits.find(h => h.path.endsWith("security-fixture.ts"));
+  expect(hit?.tier).toBe("test");
+  expect(scan.closedSetByPackage).toEqual({});
+  expect(closedSetCheck(scan).status).toBe("pass");
+  const info = closedSetCheck(scan).findings.filter(f => f.code === "MODEL_NAME_IN_TEST_FIXTURE");
+  expect(info[0]?.severity).toBe("info");
+});
+
+test("importing that same fixture from the entry makes it engine source and it gates again", () => {
+  const scan = scanPackage({
+    "src/index.ts": 'export { RELATIONS } from "./security-fixture.ts";\n',
+    "src/security-fixture.ts": 'export const RELATIONS = ["contradicts"];\n',
+  }, relationVocab(["contradicts"]));
+  expect(scan.closedSetHits[0]?.tier).toBe("engine");
+  expect(closedSetCheck(scan).status).toBe("fail");
+});
+
+test("an unreachable module that is not test-shaped is a warning, never silence", () => {
+  // Fail closed: import resolution can under-approximate (dynamic import, an
+  // orphaned module), and a silent tier would convert that into a hidden violation.
+  // Measured on `compiler/src/chunked-emitter.ts` and `compiler/src/graph-builder.ts`,
+  // which have zero importers anywhere in the repo.
+  const scan = scanPackage({
+    "src/index.ts": 'export const VERSION = "1";\n',
+    "src/orphan.ts": 'export const verbs = ["contradicts"];\n',
+  }, relationVocab(["contradicts"]));
+  expect(scan.closedSetHits[0]?.tier).toBe("unreachable");
+  const outcome = closedSetCheck(scan);
+  expect(outcome.status).toBe("pass");
+  const warn = outcome.findings.filter(f => f.code === "MODEL_CLOSED_SET_IN_UNREACHABLE");
+  expect(warn).toHaveLength(1);
+  expect(warn[0]?.severity).toBe("warning");
+});
+
+test("a file with no resolvable package entry stays engine tier, because a failed lookup may not weaken the gate", () => {
+  const scan = scanSource('const verbs = ["contradicts"];\n', relationVocab(["contradicts"]));
+  expect(scan.closedSetHits[0]?.tier).toBe("engine");
+  expect(closedSetCheck(scan).status).toBe("fail");
+});
+
+test("a module specifier is not prose coupling, because it names a file not a model concept", () => {
+  const scan = scanSource('export * from "./contradicts";\n', relationVocab(["contradicts"]));
+  expect(scan.proseHits).toHaveLength(0);
+  expect(scan.closedSetHits).toHaveLength(0);
+});
+
+test("the first-generation count is deduped per site, so an alias pair is not counted twice", () => {
+  // `validates-with` and `validates_with` are two vocabulary terms whose variants
+  // match the same characters; undeduped, `validates_with: "VALIDATES"` counted 2.
+  const scan = scanSource("const map = { validates_with: 1 };\n", vocab(["validates-with", "validates_with"]));
+  expect(Object.values(scan.distinctiveByPackage).reduce((a, b) => a + b, 0)).toBe(1);
 });

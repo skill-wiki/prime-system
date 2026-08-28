@@ -19,7 +19,7 @@ const USAGE = `prime testkit
   bun packages/testkit/src/cli.ts corpus <model-root> <corpus.yaml> [--licenses=A,B] [--require-citations]
   bun packages/testkit/src/cli.ts corpus-v1 <model-root> <sources-dir> [--name=N] [--citation-fields=a,b] [--licenses=A,B]
   bun packages/testkit/src/cli.ts scan   [--roots=dir,dir] [--model=<model-root>] [--vocabulary=file.yaml]
-                                         [--markdown] [--max-rows=N] [--all-hits]
+                                         [--markdown] [--max-rows=N] [--all-hits] [--closed-sets]
 
 Exit code is 1 when any check fails.`;
 
@@ -90,12 +90,20 @@ function runScan(argv: readonly string[]): number {
     roots: explicitRoots.length > 0 ? explicitRoots : defaultScanRoots(),
     vocabulary,
     reportRoot: REPO_ROOT,
+    // Only a default-rooted run has looked at the whole workspace, and only then
+    // can "this exemption matched nothing" mean the exemption has rotted rather
+    // than that its sites are simply outside the roots.
+    completeScan: explicitRoots.length === 0,
   });
   const outcome = domainScanCheck(scan);
   const closedSets = closedSetCheck(scan);
-  if (flag(argv, "markdown")) {
+  if (flag(argv, "markdown") || flag(argv, "closed-sets")) {
     const maxRows = option(argv, "max-rows");
-    console.log(formatDomainScan(scan, { onlyDistinctive: !flag(argv, "all-hits"), maxRows: maxRows === undefined ? undefined : Number(maxRows) }));
+    console.log(formatDomainScan(scan, {
+      onlyDistinctive: !flag(argv, "all-hits"),
+      onlyClosedSets: flag(argv, "closed-sets"),
+      maxRows: maxRows === undefined ? undefined : Number(maxRows),
+    }));
     console.log("");
   }
   const checks = [outcome, closedSets];

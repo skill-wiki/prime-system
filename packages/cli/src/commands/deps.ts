@@ -66,12 +66,18 @@ export async function depsCommand(args: string[]): Promise<void> {
 
 // ─── Tree printer ────────────────────────────────────────
 
-// EdgeKind covers the protocol's 14 declared edge verbs (PRIME-PROTOCOL-v1 §2)
-// plus the two composition-contract special cases.
-type EdgeKind = 'root' | 'must-include' | 'must-avoid' | 'related' |
-  'compatible' | 'conflicts' | 'requires' | 'enhances' | 'extends' |
-  'derived-from' | 'validates-with' | 'supplies-to' | 'specializes' |
-  'contradicts' | 'see-also' | 'relationships' | 'includes';
+/**
+ * The display roles this printer distinguishes — not a relation vocabulary.
+ *
+ * This union used to also list 13 model-declared relation names. None of them
+ * was ever constructed: the only values reaching `printTree` come from
+ * `atom.mustInclude` / `atom.related` / `atom.mustAvoid` below, and `edgePrefix`
+ * sends everything except these four to one default marker. So the relation
+ * names were unreachable union members duplicating the model's closed set, and
+ * listing them here is what plan §3.1 forbids. `related` survives as the name
+ * of a *marker role*, keyed off `AtomMeta.related`, not off a relation verb.
+ */
+type EdgeKind = 'root' | 'must-include' | 'must-avoid' | 'related';
 
 function edgePrefix(kind: EdgeKind): string {
   switch (kind) {

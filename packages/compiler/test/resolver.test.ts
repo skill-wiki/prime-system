@@ -234,8 +234,8 @@ describe("resolver", () => {
     });
   });
 
-  describe("CONTRADICTS conflict detection", () => {
-    test("detects CONTRADICTS conflict when both sides are in dependency tree", () => {
+  describe("exclusion conflict detection", () => {
+    test("detects an exclusion conflict when both sides are in dependency tree", () => {
       const installed = new Map<string, InstalledPrime>();
 
       installed.set("tdd-method", {
@@ -263,12 +263,12 @@ describe("resolver", () => {
 
       const { diagnostics } = resolve(ast, installed);
       const contradictErrors = diagnostics.filter(
-        (d) => d.level === "error" && d.message.includes("CONTRADICTS")
+        (d) => d.level === "error" && d.message.includes("contradicts conflict")
       );
       expect(contradictErrors.length).toBeGreaterThanOrEqual(1);
     });
 
-    test("does not report CONTRADICTS when only one side is present", () => {
+    test("does not report an exclusion conflict when only one side is present", () => {
       const installed = new Map<string, InstalledPrime>();
 
       installed.set("tdd-method", {
@@ -287,7 +287,7 @@ describe("resolver", () => {
 
       const { diagnostics } = resolve(ast, installed);
       const contradictErrors = diagnostics.filter(
-        (d) => d.level === "error" && d.message.includes("CONTRADICTS")
+        (d) => d.level === "error" && d.message.includes("contradicts conflict")
       );
       // waterfall-testing is not in the tree, so no conflict
       expect(contradictErrors).toHaveLength(0);
@@ -408,17 +408,62 @@ describe("resolver", () => {
       expect(diagnostics.filter((d) => d.level === "error")).toHaveLength(0);
       expect(graph.nodes).toHaveLength(4); // root + 3 deps
 
-      // Check edge types
+      // Edge types are now the model's canonical relation names, not the v1
+      // upper-case wire forms the resolver used to invent. `validates_with` is
+      // a declared alias of `validates-with`, so the alias resolves to the
+      // canonical spelling.
       const requiresEdge = graph.edges.find((e) => e.to === "owasp-top-10");
-      expect(requiresEdge?.type).toBe("REQUIRES");
+      expect(requiresEdge?.type).toBe("requires");
+      // `requires` declares selection: closure — the target is mandatory.
       expect(requiresEdge?.required).toBe(true);
 
       const validatesEdge = graph.edges.find((e) => e.to === "security-checklist");
-      expect(validatesEdge?.type).toBe("VALIDATES");
+      expect(validatesEdge?.type).toBe("validates-with");
+      // selection: informational — the old switch table said `true` here, which
+      // no model field supports. See lane report W4-B §5.
+      expect(validatesEdge?.required).toBe(false);
+      // loadOrder: after
+      expect(validatesEdge?.direction).toBe("after");
 
       const enhancesEdge = graph.edges.find((e) => e.to === "dependency-audit");
-      expect(enhancesEdge?.type).toBe("ENHANCES");
+      expect(enhancesEdge?.type).toBe("enhances");
       expect(enhancesEdge?.required).toBe(false);
+    });
+
+    test("load direction comes from the model, not from a switch table", () => {
+      const installed = new Map<string, InstalledPrime>();
+      for (const name of ["upstream-fact", "downstream-method"]) {
+        installed.set(name, { name, version: "1.0.0", type: "Knowledge" });
+      }
+
+      const ast = makeAST("supplier", {
+        links: [{ verb: "supplies_to", target: "downstream-method" }],
+      });
+
+      const { graph } = resolve(ast, installed);
+      const edge = graph.edges.find((e) => e.to === "downstream-method");
+
+      // D-7: `supplies-to` declares loadOrder: after in the model
+      // (protocolSemantic: source-supplier-precedes-target). The switch table
+      // this replaced returned "before", i.e. the opposite.
+      expect(edge?.type).toBe("supplies-to");
+      expect(edge?.direction).toBe("after");
+    });
+
+    test("an undeclared verb is carried through without invented semantics", () => {
+      const installed = new Map<string, InstalledPrime>();
+      installed.set("some-target", { name: "some-target", version: "1.0.0", type: "Knowledge" });
+
+      const ast = makeAST("root", {
+        links: [{ verb: "x-model-never-declared-this", target: "some-target" }],
+      });
+
+      const { graph } = resolve(ast, installed);
+      const edge = graph.edges.find((e) => e.to === "some-target");
+
+      expect(edge?.type).toBe("x-model-never-declared-this");
+      expect(edge?.direction).toBe("any");
+      expect(edge?.required).toBe(false);
     });
   });
 });

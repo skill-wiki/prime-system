@@ -1,41 +1,26 @@
 /**
  * @module @skill-wiki/runtime
- * Runtime for loading and querying compiled Prime corpora.
+ * Immutable corpus-bundle loading and projection resolution.
  *
  * Components:
- * - IndexManager  — maintains Prime index, matching, formatting
- * - PrimeLoader   — four-level progressive loading
- * - CorpusGraph / CorpusIndex — corpus-level graph and search
- * - corpus-snapshot / atom-loader — immutable bundle loading and projection
+ * - corpus-snapshot — immutable bundle activation, manifest and digest validation
+ * - atom-loader     — global index / atom metadata reads and projection resolution
+ * - domain-plugin / domain-config — data-driven domain discovery and registration
  *
- * Execution and evaluation are NOT part of this package. `packages/action-runtime`
- * owns them via its authorization/policy/idempotency provider system; the former
- * experimental `PrimeExecutor` / `EvaluationEngine` here were removed rather than
- * shimmed, per plan §2.3, §9.7 and §18.4.
+ * What this package deliberately does NOT own:
+ * - Execution and evaluation belong to `packages/action-runtime` (plan §2.3, §9.7, §18.4).
+ * - Candidate generation, scoring and budget degradation belong to `packages/query-engine`.
+ * - Mutual exclusion, closure and load order belong to `packages/constraint-solver`.
+ * - Transport-level projection assembly belongs to `packages/projection-engine`.
+ *
+ * The former projection-era graph/search/bundle layer (`corpus-graph`, `corpus-index`,
+ * `skill-bundler`, `index-manager`, `loader` and their `types`) was the plan §2.2 "B."
+ * layer. It was removed rather than made semantics-driven, because doing the latter would
+ * have produced a fourth implementation of narrowing logic that the three generic engines
+ * above already own (D-3). It carried every one of this package's model-declared closed-set
+ * literals; nothing outside this package consumed it in production.
  */
 
-export { IndexManager } from "./index-manager";
-export { PrimeLoader } from "./loader";
-export * from "./types";
-export {
-  CorpusGraph,
-  LINK_VERBS,
-  type LinkVerb,
-  type CorpusNode,
-  type CorpusEdge,
-  type CorpusGraphStats,
-  type CorpusGraphOptions,
-} from "./corpus-graph";
-export {
-  CorpusIndex,
-  type SearchHit,
-  type SearchOptions,
-} from "./corpus-index";
-export {
-  bundleSkill,
-  type BundleOptions,
-  type BundleResult,
-} from "./skill-bundler";
 export {
   DomainRegistry,
   type DomainPlugin,

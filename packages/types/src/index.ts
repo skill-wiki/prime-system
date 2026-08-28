@@ -11,7 +11,6 @@
  * - Links (relationship graph between Primes)
  * - Evaluation (success/failure criteria, confidence, reports)
  * - AST (parser output before type checking)
- * - Compiled output (indexes, bundles, dependency graphs)
  */
 
 export * from "./base";
@@ -21,4 +20,3 @@ export * from "./rule";
 export * from "./links";
 export * from "./evaluation";
 export * from "./ast";
-export * from "./compiled";

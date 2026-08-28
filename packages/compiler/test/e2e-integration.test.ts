@@ -9,13 +9,17 @@
  *     → resolve           (dependency graph)
  *     → emitMarkdown      (compact L2 block)
  *     → emitYamlAtom      (MCP-compatible round-trip)
- *     → CorpusGraph       (edges preserved)
- *     → CorpusIndex       (searchable)
- *     → bundleSkill       (skill-ready .md)
  *
  * The test uses three hand-authored .prime sources — a Knowledge atom,
  * a Rule atom that requires it, and a second Rule that contradicts the
  * first — and asserts the expected behaviour at every pipeline stage.
+ *
+ * Stages 8-11 (CorpusGraph / CorpusIndex / bundleSkill) were removed with
+ * their subjects: W4-A deleted `runtime/src/{corpus-graph,corpus-index,
+ * skill-bundler}.ts` this round, so those four tests had no subject left to
+ * assert against. They were reaching across package boundaries by relative
+ * path (`../../runtime/src/...`) rather than through a dependency, which is
+ * why they broke the moment the other lane landed.
  */
 
 import { describe, test, expect } from "bun:test";
@@ -29,9 +33,6 @@ import {
   emitMarkdown,
   emitYamlAtom,
 } from "../src";
-import { CorpusGraph } from "../../runtime/src/corpus-graph";
-import { CorpusIndex } from "../../runtime/src/corpus-index";
-import { bundleSkill } from "../../runtime/src/skill-bundler";
 
 const KNOWLEDGE = `
 prime FocusRing extends Knowledge {
@@ -93,7 +94,7 @@ function parseOrThrow(src: string) {
   return ast;
 }
 
-describe("E2E: parse → L1 → L2 → L3 → resolve → emit → graph → search → bundle", () => {
+describe("E2E: parse → L1 → L2 → L3 → resolve → emit", () => {
   const astKnowledge = parseOrThrow(KNOWLEDGE);
   const astRule = parseOrThrow(RULE_REQ);
   const astBad = parseOrThrow(RULE_CONTRADICT);
@@ -148,54 +149,5 @@ describe("E2E: parse → L1 → L2 → L3 → resolve → emit → graph → sea
       "Tab through the page and confirm every button/link/input shows a visible focus outline"
     );
     expect(fm.requires).toBe("focus-ring");
-  });
-
-  test("8. CorpusGraph preserves requires + contradicts edges", () => {
-    const graph = new CorpusGraph([astKnowledge, astRule, astBad]);
-    expect(graph.atoms().sort()).toEqual(["focus-ring", "focus-ring-required", "no-focus-outlines"]);
-    expect(graph.outgoing("focus-ring-required", "requires").map((e) => e.to)).toEqual(["focus-ring"]);
-    expect(graph.contradicts("no-focus-outlines", "focus-ring-required")).toBe(true);
-  });
-
-  test("9. CorpusIndex returns on-topic hits and enriches with graph data", () => {
-    const graph = new CorpusGraph([astKnowledge, astRule, astBad]);
-    const index = new CorpusIndex(graph);
-    const hits = index.search("keyboard focus");
-    // Strictly on-topic atoms rank first; the unrelated-tag atom may still
-    // appear via description overlap but with a much lower score.
-    expect(hits.length).toBeGreaterThanOrEqual(2);
-    const topTwo = hits.slice(0, 2).map((h) => h.name).sort();
-    expect(topTwo).toContain("focus-ring-required");
-    const req = hits.find((h) => h.name === "focus-ring-required");
-    expect(req?.requires).toContain("focus-ring");
-  });
-
-  test("10. bundleSkill composes a Claude-Skills-compliant skill", () => {
-    const graph = new CorpusGraph([astKnowledge, astRule]);
-    const r = bundleSkill(graph, ["focus-ring-required"], {
-      skillName: "keyboard-accessibility",
-      description: "Apply when adding keyboard-operable UI. Ensures visible focus indication.",
-      license: "MIT",
-    });
-    // Dependency auto-expansion
-    expect(r.included).toContain("focus-ring");
-    expect(r.included).toContain("focus-ring-required");
-    // focus-ring should come before focus-ring-required (topological order).
-    expect(r.included.indexOf("focus-ring")).toBeLessThan(r.included.indexOf("focus-ring-required"));
-    // Claude-spec frontmatter present.
-    expect(r.markdown).toMatch(/^---\nname: keyboard-accessibility\n/);
-    expect(r.markdown).toContain("description:");
-    expect(r.markdown).toContain('license: "MIT"');
-    expect(r.markdown).toContain("x-prime-atoms:");
-    expect(r.conflicts).toEqual([]);
-  });
-
-  test("11. bundleSkill surfaces contradicts when both sides are selected", () => {
-    const graph = new CorpusGraph([astKnowledge, astRule, astBad]);
-    const r = bundleSkill(graph, ["focus-ring-required", "no-focus-outlines"]);
-    expect(r.conflicts.length).toBeGreaterThanOrEqual(1);
-    expect(r.markdown).toContain("## Conflicts");
-    expect(r.markdown).toContain("focus-ring-required");
-    expect(r.markdown).toContain("no-focus-outlines");
   });
 });

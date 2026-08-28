@@ -1,7 +1,7 @@
 {
   "name": "@skill-wiki/runtime",
   "version": "0.1.0",
-  "description": "Runtime for loading, executing, and evaluating compiled Primes",
+  "description": "Immutable corpus-bundle activation, atom metadata reads and projection resolution",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "scripts": {

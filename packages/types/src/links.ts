@@ -12,31 +12,6 @@ import type { Identifier } from "./base";
 // ─── Enums ──────────────────────────────────────────────────────────────────
 
 /**
- * The six relationship types between Primes.
- *
- * - `REQUIRES` — Hard dependency. A cannot execute without B.
- * - `ENHANCES` — Soft dependency. A works better with B, but B is optional.
- * - `VALIDATES` — Verification. B (Rule) validates A (Method) output.
- * - `CONTRADICTS` — Mutual exclusion. A and B cannot coexist.
- * - `SPECIALIZES` — Specialization. A is a domain-specific version of B.
- * - `SUPPLIES` — Knowledge supply. A (Knowledge) feeds data into B (Method).
- */
-export enum LinkType {
-  /** Hard dependency — target must be loaded first */
-  REQUIRES = "REQUIRES",
-  /** Soft dependency — recommended but not mandatory */
-  ENHANCES = "ENHANCES",
-  /** Verification — target Rule validates source Method output */
-  VALIDATES = "VALIDATES",
-  /** Mutual exclusion — cannot coexist in the same dependency tree */
-  CONTRADICTS = "CONTRADICTS",
-  /** Specialization — source is a domain-specific version of target */
-  SPECIALIZES = "SPECIALIZES",
-  /** Knowledge supply — source provides data consumed by target */
-  SUPPLIES = "SUPPLIES",
-}
-
-/**
  * Temporal direction of a relationship, indicating load/execution order.
  *
  * - `before` — Target Prime loads/executes before the source
@@ -55,18 +30,6 @@ export enum Direction {
   any = "any",
 }
 
-/**
- * Relationship verb keywords used in shorthand link declarations.
- * Kept for backward compatibility with the parser.
- */
-export type LinkVerb =
-  | "requires"
-  | "enhances"
-  | "validates_with"
-  | "contradicts"
-  | "specializes"
-  | "supplies_to";
-
 // ─── Link Type ──────────────────────────────────────────────────────────────
 
 /**
@@ -76,8 +39,13 @@ export type LinkVerb =
  * compiler for conflict detection, load-order resolution, and coverage checks.
  */
 export interface Link {
-  /** The type of relationship */
-  type: LinkType;
+  /**
+   * The relation this link instantiates, as the name a Model Package declared
+   * it under. The engine deliberately does not enumerate the legal values: what
+   * `requires` or `contradicts` mean for traversal, load order and conflict is
+   * declared in the model's relation semantics, never here.
+   */
+  type: string;
   /** The source Prime (the one declaring this link) */
   from?: Identifier;
   /** The target Prime */
@@ -93,35 +61,3 @@ export interface Link {
   /** Optional condition under which this link is active */
   condition?: string;
 }
-
-// ─── Shorthand Mapping ──────────────────────────────────────────────────────
-
-/**
- * Default values for shorthand link declarations in .prime files.
- *
- * | Shorthand         | LinkType      | direction | required |
- * |-------------------|---------------|-----------|----------|
- * | requires X        | REQUIRES      | before    | true     |
- * | enhances X        | ENHANCES      | any       | false    |
- * | validates_with X  | VALIDATES     | after     | true     |
- * | contradicts X     | CONTRADICTS   | any       | true     |
- * | specializes X     | SPECIALIZES   | any       | false    |
- * | supplies_to X     | SUPPLIES      | before    | true     |
- */
-export interface LinkShorthandDefaults {
-  type: LinkType;
-  direction: Direction;
-  required: boolean;
-}
-
-/**
- * Lookup table for shorthand link defaults, indexed by the shorthand keyword.
- */
-export const LINK_SHORTHAND_DEFAULTS: Record<string, LinkShorthandDefaults> = {
-  requires: { type: LinkType.REQUIRES, direction: Direction.before, required: true },
-  enhances: { type: LinkType.ENHANCES, direction: Direction.any, required: false },
-  validates_with: { type: LinkType.VALIDATES, direction: Direction.after, required: true },
-  contradicts: { type: LinkType.CONTRADICTS, direction: Direction.any, required: true },
-  specializes: { type: LinkType.SPECIALIZES, direction: Direction.any, required: false },
-  supplies_to: { type: LinkType.SUPPLIES, direction: Direction.before, required: true },
-};

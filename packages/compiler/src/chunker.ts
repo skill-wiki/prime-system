@@ -34,6 +34,7 @@ import type {
 } from "@skill-wiki/types";
 import type { ProjectionDefinition } from "@skill-wiki/model-schema";
 import { loadModelOrThrow } from "@skill-wiki/model-schema";
+import { defaultRelationIndex } from "./relation-semantics";
 
 type AnyAST = PrimeAST | AtomDeclaration;
 
@@ -406,23 +407,38 @@ function buildCore(ast: AnyAST, kind: string, summary: string, rules: ChunkProje
  * Field keys that belong in `full` but NOT in `core`. These are meta /
  * provenance / cross-reference fields — useful for forensics but not for
  * day-to-day "what does this atom prescribe?" reading.
+ *
+ * The relation field keys are not listed here: every spelling the model
+ * declares (canonical names plus `aliases`) is a cross-reference field by
+ * definition, so `relationFieldKeys()` supplies them. Enumerating them by hand
+ * is what let this list drift from `appendRelations` below — the two disagreed
+ * about `extends`, `related`, `compatible`, `see-also`, `derived-from` and
+ * `includes`.
  */
-const CORE_EXCLUDED_KEYS = new Set<string>([
+const CORE_EXCLUDED_NON_RELATION_KEYS: readonly string[] = [
   "sources", "source",
   "examples", "applies_to",
-  "related", "compatible", "conflicts", "see-also", "see_also",
-  "extends", "derived-from", "derived_from",
-  "requires", "enhances", "validates_with", "validates-with",
-  "supplies_to", "supplies-to", "specializes",
-  "contradicts", "relationships",
   "notes", "rationale", "provenance",
   "lifecycle",
   "attributed_to",
-]);
+];
+
+let cachedCoreExcludedKeys: Set<string> | undefined;
+
+function coreExcludedKeys(): Set<string> {
+  if (!cachedCoreExcludedKeys) {
+    cachedCoreExcludedKeys = new Set<string>([
+      ...CORE_EXCLUDED_NON_RELATION_KEYS,
+      ...defaultRelationIndex().keys,
+    ]);
+  }
+  return cachedCoreExcludedKeys;
+}
 
 function appendCoreUnprocessedFields(ast: AnyAST, lines: string[]): void {
+  const excluded = coreExcludedKeys();
   const unprocessed = ast.body.filter(
-    (f) => !PROCESSED_KEYS.has(f.key) && !CORE_EXCLUDED_KEYS.has(f.key),
+    (f) => !PROCESSED_KEYS.has(f.key) && !excluded.has(f.key),
   );
   if (unprocessed.length === 0) return;
   for (const f of unprocessed) {
@@ -478,9 +494,9 @@ function appendUnprocessedFields(ast: AnyAST, lines: string[], rules: ChunkProje
   const unprocessed = ast.body.filter((f) => {
     if (PROCESSED_KEYS.has(f.key)) return false;
     if (usedLenientBranch) {
-      // Already emitted in core. Only emit the meta keys (CORE_EXCLUDED_KEYS)
+      // Already emitted in core. Only emit the meta keys excluded from core
       // here, which weren't in core.
-      return CORE_EXCLUDED_KEYS.has(f.key);
+      return coreExcludedKeys().has(f.key);
     }
     return true;
   });
@@ -808,10 +824,12 @@ function appendExamples(ast: AnyAST, lines: string[]): void {
 }
 
 function appendRelations(ast: AnyAST, lines: string[]): void {
-  const RELATION_KEYS = [
-    "specializes", "enhances", "requires", "validates_with",
-    "supplies_to", "contradicts", "relationships",
-  ];
+  // Which field keys are relations is a model fact. The hand-written list this
+  // replaces held 7 of the model's 14 relations and only one of the two declared
+  // spellings for three of them, so `derived-from`, `extends`, `includes`,
+  // `see-also`, `compatible`, `conflicts` and every `-` alias were silently
+  // dropped from the emitted chunk.
+  const RELATION_KEYS = defaultRelationIndex().keys;
   const found: string[] = [];
   for (const key of RELATION_KEYS) {
     const f = findField(ast, key);
