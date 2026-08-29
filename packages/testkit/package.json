@@ -12,6 +12,7 @@
     "@skill-wiki/ir": "workspace:*",
     "@skill-wiki/model-schema": "workspace:*",
     "@skill-wiki/parser": "workspace:*",
+    "@skill-wiki/runtime": "workspace:*",
     "@skill-wiki/sdk-codegen": "workspace:*",
     "@skill-wiki/types": "workspace:*",
     "yaml": "^2.8.3",
@@ -21,7 +22,6 @@
     "@skill-wiki/bundle": "workspace:*",
     "@skill-wiki/constraint-solver": "workspace:*",
     "@skill-wiki/event-store": "workspace:*",
-    "@skill-wiki/projection-engine": "workspace:*",
-    "@skill-wiki/runtime": "workspace:*"
+    "@skill-wiki/projection-engine": "workspace:*"
   }
 }

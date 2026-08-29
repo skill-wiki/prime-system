@@ -8,6 +8,7 @@ import { formatReport } from "./diagnostics.ts";
 import { runModelConformance } from "./model-conformance.ts";
 import { loadCorpus } from "./corpus.ts";
 import { runCorpusConformance } from "./corpus-conformance.ts";
+import { runBundleConformance } from "./bundle-conformance.ts";
 import { runCorpusDeclarationConformance } from "./corpus-declaration-conformance.ts";
 import { corpusFromV1Sources } from "./corpus-adapter.ts";
 import { closedSetCheck, domainScanCheck, formatDomainScan, loadVocabulary, mergeVocabularies, scanDomainSemantics, vocabularyFromModel, type Vocabulary } from "./domain-scan.ts";
@@ -24,6 +25,8 @@ const USAGE = `prime testkit
                                          (a prime-corpus.yaml declaration runs the §4.3 declaration suite;
                                           a kind: corpus document runs the §17.2 content suite)
   bun packages/testkit/src/cli.ts corpus-v1 <model-root> <sources-dir> [--name=N] [--citation-fields=a,b] [--licenses=A,B]
+  bun packages/testkit/src/cli.ts bundle <bundle-dir> [--licenses=A,B] [--license-field=key]
+                                         (artifact-level: the COMPILED bundle, not its source)
   bun packages/testkit/src/cli.ts scan   [--roots=dir,dir] [--model=<model-root>] [--vocabulary=file.yaml]
                                          [--markdown] [--max-rows=N] [--all-hits] [--closed-sets]
   bun packages/testkit/src/cli.ts wiring [--packages=dir] [--markdown]
@@ -175,6 +178,27 @@ function runCorpusV1(argv: readonly string[]): number {
 }
 
 /**
+ * `bundle` audits the artifact, not the input. `corpus` and `corpus-v1` both
+ * read sources, so nothing checked the directory that actually ships — see
+ * `bundle-conformance.ts` for the three divergences only the artifact shows.
+ * It takes no model root on purpose: a compiled bundle records the model it was
+ * built against, and re-resolving one here would let the suite pass a bundle
+ * against a model it was never compiled with.
+ */
+function runBundle(argv: readonly string[]): number {
+  const [bundleDir] = argv;
+  if (bundleDir === undefined) { console.error(USAGE); return 2; }
+  const licenses = list(argv, "licenses");
+  const licenseField = option(argv, "license-field");
+  const result = runBundleConformance(resolve(bundleDir), {
+    ...(licenses.length > 0 ? { allowedLicenses: licenses } : {}),
+    ...(licenseField === undefined ? {} : { licenseField }),
+  });
+  console.log(formatReport(result));
+  return result.status === "fail" ? 1 : 0;
+}
+
+/**
  * Kept as its own suite rather than folded into `scan`: it answers a different
  * question (is this code reached?) from a different input (the manifests and the
  * package graph, not a vocabulary), and merging them would hide one behind the
@@ -204,6 +228,7 @@ export function main(argv: readonly string[]): number {
     case "model": return runModel(rest);
     case "corpus": return runCorpus(rest);
     case "corpus-v1": return runCorpusV1(rest);
+    case "bundle": return runBundle(rest);
     case "scan": return runScan(rest);
     case "wiring": return runWiring(rest);
     default: console.error(USAGE); return 2;

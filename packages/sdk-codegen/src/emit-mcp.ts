@@ -16,7 +16,7 @@
  */
 
 import { snakeCase, uniqueIdentifiers } from "./identifiers.ts";
-import { isBuiltinTypeRef, type CodegenSchema, type DeclaredField } from "./schema-ir.ts";
+import { isBuiltinTypeRef, parseTypeRef, type CodegenSchema, type DeclaredField } from "./schema-ir.ts";
 
 export type JsonSchema = { readonly [key: string]: JsonSchemaValue };
 type JsonSchemaValue = null | boolean | number | string | readonly JsonSchemaValue[] | JsonSchema;
@@ -65,8 +65,39 @@ function scalarSchema(ref: string): JsonSchema | undefined {
   }
 }
 
+/**
+ * A ref, array arity and all. `unknown[]` is deliberately *not* the same schema as
+ * `unknown`: the first says "a list, of unstated items" (`{"type":"array","items":{}}`)
+ * and the second says nothing at all, so a caller passing an object where a list is
+ * declared is now rejected by the schema rather than by a handler.
+ */
 function refSchema(ref: string): JsonSchema {
-  return scalarSchema(ref) ?? { $ref: `#/$defs/${ref}` };
+  const parsed = parseTypeRef(ref);
+  // `model-schema.validateLinks` rejects a malformed ref, so reaching here with one
+  // means the schema was assembled by something that skipped that check.
+  if (parsed === undefined) throw new Error(`Malformed type reference '${ref}'`);
+  let schema = scalarSchema(parsed.element) ?? { $ref: `#/$defs/${parsed.element}` };
+  for (let depth = 0; depth < parsed.arrayDepth; depth += 1) schema = { type: "array", items: schema };
+  return schema;
+}
+
+/**
+ * A field's schema: its ref, plus its declared value set when it has one.
+ *
+ * The `enum` lands on the *item* schema for an array field, because that is what the
+ * model declares — `severity: string[]` with three values means every element is one
+ * of the three, not that the array itself equals one of them.
+ */
+function fieldSchema(field: DeclaredField): JsonSchema {
+  const parsed = parseTypeRef(field.typeRef);
+  if (parsed === undefined) throw new Error(`Malformed type reference '${field.typeRef}'`);
+  const values = field.enumValues;
+  let schema: JsonSchema =
+    values === undefined || values.length === 0
+      ? (scalarSchema(parsed.element) ?? { $ref: `#/$defs/${parsed.element}` })
+      : { type: "string", enum: [...values] };
+  for (let depth = 0; depth < parsed.arrayDepth; depth += 1) schema = { type: "array", items: schema };
+  return schema;
 }
 
 function objectSchema(
@@ -77,7 +108,7 @@ function objectSchema(
   const properties: Record<string, JsonSchema> = {};
   const required: string[] = [];
   for (const field of fields) {
-    const schema = refSchema(field.typeRef);
+    const schema = fieldSchema(field);
     properties[field.name] = field.description === undefined ? schema : { ...schema, description: field.description };
     if (field.required) required.push(field.name);
   }

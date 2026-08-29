@@ -30,7 +30,7 @@
     "test": "bun run --filter '*' test",
     "lint": "tsc --noEmit -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "compile-examples": "bun scripts/build-atom-dirs.ts --src examples/hello-world/primes/sources --out examples/hello-world/primes/compiled && bun scripts/build-atom-dirs.ts --src examples/recipes/primes/sources --out examples/recipes/primes/compiled && bun scripts/build-atom-dirs.ts --src examples/coding-style/primes/sources --out examples/coding-style/primes/compiled",
+    "compile-examples": "bun scripts/build-atom-dirs.ts --src examples/hello-world/primes/sources --out examples/hello-world/primes/compiled --release 2026-08-29 && bun scripts/build-atom-dirs.ts --src examples/recipes/primes/sources --out examples/recipes/primes/compiled --release 2026-08-29 && bun scripts/build-atom-dirs.ts --src examples/coding-style/primes/sources --out examples/coding-style/primes/compiled --release 2026-08-29",
     "registry-server": "bun scripts/registry-server.ts",
     "test-roundtrip": "bash scripts/test-registry-roundtrip.sh"
   },

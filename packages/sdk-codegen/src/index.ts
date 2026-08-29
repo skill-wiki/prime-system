@@ -29,6 +29,7 @@ export {
   BUILTIN_TYPE_REFS,
   buildCodegenSchema,
   isBuiltinTypeRef,
+  parseTypeRef,
   recomputeModelDigest,
   type CodegenSchema,
   type DeclaredActionTraits,

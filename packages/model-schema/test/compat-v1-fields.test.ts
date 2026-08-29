@@ -22,7 +22,31 @@ describe("prime-v1 compat type fields", () => {
   // 100% of corpus instances AND n>=4. Universal metadata (domain/tags/notes/related) also hits
   // 100% on some kinds, but that corpus is single-authored, so 100% there is house style rather
   // than a protocol obligation -- claiming it would break the first atom that omits it.
-  test("required sets match the measured evidence and nothing more", () => { const req = (name: string) => { const t = types().find(x => x.name === name); if (!t) throw new Error(`missing type ${name}`); return t.fields.filter(f => f.required).map(f => f.name).sort(); }; expect(req("fact")).toEqual(["id", "statement", "version"]); expect(req("term")).toEqual(["id", "meaning", "version"]); expect(req("rule")).toEqual(["id", "label", "version"]); expect(req("pattern")).toEqual(["id", "label", "problem", "solution", "version"]); expect(req("anti-pattern")).toEqual(["id", "instead-do", "label", "version", "why-bad"]); for (const small of ["method", "collection", "principle", "tradeoff"]) expect(req(small)).toEqual(["id", "version"]); for (const t of types()) if (!ATTESTED.includes(t.name)) expect(t.fields.filter(f => f.required).map(f => f.name).sort()).toEqual(["id", "version"]); });
+  //
+  // The earlier version of this test pinned a LIST of kind-specific required fields, measured
+  // against a 32-atom sample. Re-measured against all 797 sources that build the bundle, every
+  // one of those claims fails its own 100% rule:
+  //
+  //     rule.label              12/167   7%     <- required, and absent from 93% of rules
+  //     anti-pattern.instead-do 20/53   38%
+  //     anti-pattern.why-bad    23/53   43%
+  //     pattern.label          103/133  77%
+  //     pattern.solution       107/133  80%
+  //     pattern.problem        109/133  82%
+  //     anti-pattern.label      49/53   92%
+  //     term.meaning              8/9   89%
+  //     fact.statement           78/83  94%
+  //
+  // That gap was 375 MISSING_REQUIRED_FIELD errors when the kernel path tried to compile the
+  // real corpus. So the assertion is now the RULE rather than a list: no kind may claim a
+  // required field beyond identity unless its coverage is actually total. Re-tightening one
+  // means re-measuring it, which is the property worth pinning -- a list only pinned a sample.
+  test("no kind claims a required field beyond identity, because none is universal", () => {
+    for (const t of types()) {
+      const required = t.fields.filter(f => f.required).map(f => f.name).sort();
+      expect(required).toEqual(["id", "version"]);
+    }
+  });
 
   test("kind-defining fields are declared where the corpus attests them", () => { const of = (name: string) => { const t = types().find(x => x.name === name); if (!t) throw new Error(`missing type ${name}`); return t.fields.map(f => f.name); }; expect(of("fact")).toEqual(expect.arrayContaining(["statement", "confidence", "source", "applies-to"])); expect(of("term")).toEqual(expect.arrayContaining(["meaning", "aliases"])); expect(of("rule")).toEqual(expect.arrayContaining(["label", "checks"])); expect(of("method")).toEqual(expect.arrayContaining(["steps", "success-criteria"])); expect(of("pattern")).toEqual(expect.arrayContaining(["label", "problem", "solution"])); expect(of("anti-pattern")).toEqual(expect.arrayContaining(["why-bad", "instead-do"])); expect(of("collection")).toEqual(expect.arrayContaining(["entry-point", "includes", "target"])); expect(of("tradeoff")).toEqual(expect.arrayContaining(["axes", "cost-of-strict", "cost-of-loose", "decision"])); });
 

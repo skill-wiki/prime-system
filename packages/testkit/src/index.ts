@@ -14,6 +14,8 @@ export {
 
 export { runCorpusConformance, type CorpusConformanceOptions, type GoldenQuery, type GoldenQueryObservation } from "./corpus-conformance.ts";
 
+export { runBundleConformance, type BundleConformanceOptions } from "./bundle-conformance.ts";
+
 export { corpusFromV1Sources, type V1CorpusOptions, type V1CorpusResult } from "./corpus-adapter.ts";
 
 export {

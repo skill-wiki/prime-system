@@ -9,7 +9,8 @@
   "dependencies": {
     "@skill-wiki/constraint-solver": "workspace:*",
     "@skill-wiki/ir": "workspace:*",
-    "@skill-wiki/model-schema": "workspace:*"
+    "@skill-wiki/model-schema": "workspace:*",
+    "@skill-wiki/observability": "workspace:*"
   },
   "devDependencies": {
     "@skill-wiki/testkit": "workspace:*"

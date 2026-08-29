@@ -33,6 +33,10 @@ export {
   type DegradationResult,
 } from "./degrade.ts";
 export {
+  SPAN_BUDGET,
+  SPAN_EXPANSION,
+  SPAN_PLAN,
+  SPAN_RETRIEVAL,
   planSelection,
   runRetrieval,
   type PlanSelectionOptions,

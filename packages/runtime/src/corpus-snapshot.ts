@@ -42,6 +42,16 @@ export type PrimeBundleErrorCode =
   | "IR_VERSION_UNSUPPORTED"
   | "EMITTER_VERSION_UNSUPPORTED"
   | "SCHEMA_DIGEST_MISMATCH"
+  /**
+   * Reserved, not yet raised by `loadCorpusSnapshot`: `manifest.corpus` flows
+   * into the public `prime://` URI, so a directory basename there publishes a
+   * machine-local name as corpus identity. Enforcing `NAMESPACE` at this entry
+   * was measured to reject 3 in-repo example bundles (`hello-world`,
+   * `coding-style`, `recipes`) and 13 audit/determinism fixtures, taking 53
+   * tests red across 4 packages. `testkit bundle` carries the check until those
+   * bundles are recompiled from declarations that state a formal namespace.
+   */
+  | "CORPUS_NAMESPACE_INVALID"
   | "INDEX_MISSING"
   | "INDEX_DIGEST_MISMATCH"
   | "CONTENT_DIGEST_MISMATCH"
@@ -204,6 +214,14 @@ export function validateCorpusManifest(value: unknown): CorpusManifest {
       manifestError(`Manifest field \"${field}\" must be a non-empty string.`);
     }
   }
+  // `corpus` is the one required string that is not merely recorded: it is the
+  // corpus segment of every §11.3 `prime://` URI this bundle is served under,
+  // and the registry key a mount is addressed by. It is NOT checked against
+  // `NAMESPACE` here, and that is a measured gap rather than an oversight —
+  // see `CORPUS_NAMESPACE_INVALID` on `PrimeBundleErrorCode`. `testkit bundle`
+  // enforces the grammar on a bundle directory today; making this entry fail
+  // closed needs the in-repo example bundles and audit fixtures regenerated
+  // with declared namespaces first.
   for (const field of DIGEST_FIELDS) {
     if (typeof raw[field] !== "string" || !DIGEST.test(raw[field])) {
       manifestError(`Manifest field \"${field}\" must be a canonical sha256 digest.`);

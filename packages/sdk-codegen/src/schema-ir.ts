@@ -22,6 +22,9 @@
  *  - `ActionDefIR` carries `capabilities` and `sideEffects` but not `idempotency`
  *    or `approval`, which are exactly what an MCP tool annotation reports to a
  *    client deciding whether a call is safe to retry or needs confirmation.
+ *  - a field's declared `enum` values have nowhere to live: `TypeDefIR.fields` is
+ *    `Record<string, TypeRef>` and `TypeRef` is an opaque string. The array arity
+ *    *does* survive (it is part of the ref: `string[]`), the value set does not.
  *
  * Guessing any of them is worse than not emitting them: `additionalProperties:
  * true` on a `reject` type turns a schema violation into an accepted call. So the
@@ -42,14 +45,24 @@ import type {
   ValueIR,
 } from "@skill-wiki/ir";
 import type { LoadedModel, ModelDefinition } from "@skill-wiki/model-schema";
+import { BUILTIN_TYPE_REFS as MODEL_BUILTIN_TYPE_REFS, isBuiltinTypeRef as modelIsBuiltinTypeRef, parseTypeRef } from "@skill-wiki/model-schema";
 import { canonicalJson, sha256 } from "./canonical.ts";
 
 /** A field as the Model Package declares it, before SchemaIR flattens it. */
 export interface DeclaredField {
   readonly name: string;
+  /** The declared ref verbatim, array suffix included (`string`, `string[]`, `Foo[][]`). */
   readonly typeRef: string;
   readonly required: boolean;
   readonly description?: string;
+  /**
+   * The declared value set, when the field declares one. SchemaIR's `TypeRef` is an
+   * opaque string, so the array *arity* survives inside the ref while the enum
+   * *values* cannot — they ride the sidecar next to `required` and
+   * `additionalFields`, for the same reason and with the same consequence: the
+   * digest is over the IR, so it does not move when a value set is corrected.
+   */
+  readonly enumValues?: readonly string[];
 }
 
 export interface DeclaredActionTraits {
@@ -70,12 +83,20 @@ export interface CodegenSchema {
   readonly actionTraits: Readonly<Record<string, DeclaredActionTraits>>;
 }
 
-/** The builtin refs `model-schema`'s own `builtin()` accepts. Kept in sync by test. */
-export const BUILTIN_TYPE_REFS = ["string", "number", "boolean", "integer", "unknown", "*", "generic"] as const;
+/**
+ * The builtin refs, re-exported from `model-schema` rather than re-listed: the two
+ * lists drifting apart is exactly how a generator ends up emitting a `$ref` to a
+ * `$defs` entry the loader considers a builtin.
+ */
+export const BUILTIN_TYPE_REFS = MODEL_BUILTIN_TYPE_REFS;
 
+/** True for a builtin *element* ref. Array arity is not part of this question — parse the ref first. */
 export function isBuiltinTypeRef(ref: string): boolean {
-  return (BUILTIN_TYPE_REFS as readonly string[]).includes(ref) || ref.startsWith("generic:");
+  return modelIsBuiltinTypeRef(ref);
 }
+
+/** `T[][]` -> `{ element: "T", arrayDepth: 2 }`. Re-exported so an emitter never re-implements the grammar. */
+export { parseTypeRef };
 
 function fieldsOf(fields: readonly DeclaredField[]): Readonly<Record<string, string>> {
   const out: Record<string, string> = {};
@@ -84,13 +105,15 @@ function fieldsOf(fields: readonly DeclaredField[]): Readonly<Record<string, str
 }
 
 function declared(
-  fields: readonly { readonly name: string; readonly typeRef: string; readonly required?: boolean; readonly description?: string }[],
+  fields: readonly { readonly name: string; readonly typeRef: string; readonly required?: boolean; readonly description?: string; readonly enum?: readonly string[] }[],
 ): readonly DeclaredField[] {
-  return fields.map(field =>
-    field.description === undefined
-      ? { name: field.name, typeRef: field.typeRef, required: field.required === true }
-      : { name: field.name, typeRef: field.typeRef, required: field.required === true, description: field.description },
-  );
+  return fields.map(field => ({
+    name: field.name,
+    typeRef: field.typeRef,
+    required: field.required === true,
+    ...(field.description === undefined ? {} : { description: field.description }),
+    ...(field.enum === undefined ? {} : { enumValues: [...field.enum] }),
+  }));
 }
 
 /** `ProjectionDefIR.rules` is `Record<string, ValueIR>[]`, so an absent optional rule key is dropped rather than nulled. */

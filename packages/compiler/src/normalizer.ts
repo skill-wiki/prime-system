@@ -55,6 +55,15 @@ function convertUnknown(value: ValueNode, filename?: string): ConvertResult {
   // the kind of change every consumer would need, not one this lane can make.
   if (value.type === "Ident") return { ok: true, value: { kind: "string", value: value.value, source, declaredTypeRef: "ident" } };
   if (value.type === "Number") return { ok: true, value: { kind: "number", value: value.value, source, declaredTypeRef: "unknown" } };
+  // `@example-framer-page-transition` lexes as AT_DECORATOR and parses to
+  // `EnumValue`, the node the language uses for `@decidable`-style markers. In
+  // the v1 corpus the same spelling is also how an unscoped unit id is written
+  // inside a relation array, and there is no lexical rule that separates the
+  // two. Rejecting the node made one whole source file uncompilable
+  // (`UNSUPPORTED_VALUE`) while the legacy stack accepted it, so it is read as
+  // the scalar string it spells; `declaredTypeRef: "enum"` keeps the provenance
+  // visible for a model that later declares a real enum typeRef.
+  if (value.type === "EnumValue") return { ok: true, value: { kind: "string", value: value.value, source, declaredTypeRef: "enum" } };
   if (value.type === "Boolean") return { ok: true, value: { kind: "boolean", value: value.value, source, declaredTypeRef: "unknown" } };
   if (value.type === "Reference") return { ok: true, value: { kind: "reference", path: value.path, target: value.path.join("."), alias: value.alias, source, declaredTypeRef: "unknown" } };
   if (value.type === "Array") { const items: TypedValueIR[] = []; for (const item of value.items) { const converted = convertUnknown(item, filename); if (!converted.ok) return converted; items.push(converted.value); } return { ok: true, value: { kind: "array", items, source, declaredTypeRef: "unknown" } }; }

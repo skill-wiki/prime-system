@@ -10,6 +10,7 @@
     "@skill-wiki/action-runtime": "workspace:*",
     "@skill-wiki/ir": "workspace:*",
     "@skill-wiki/model-schema": "workspace:*",
+    "@skill-wiki/observability": "workspace:*",
     "@skill-wiki/query-engine": "workspace:*"
   }
 }

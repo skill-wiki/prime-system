@@ -82,11 +82,16 @@ ambiguous:
 exemptions:
   # `method: "POST"` is the HTTP verb, unrelated to the v1 `method` atom kind.
   # Shape-only (no path anchor) because the shape is unambiguous on its own: a
-  # quoted uppercase HTTP verb is never a knowledge-atom kind.
+  # quoted uppercase HTTP verb is never a knowledge-atom kind, and neither is a
+  # `method` read off a request object. The second alternative was added when
+  # packages/http-server landed: `return request.method` is the same referent as
+  # `method: "POST"`, but the original pattern only matched the literal form. It
+  # stays anchored to the receiver name — a bare `.method` would exempt every
+  # property access in the engine and is deliberately NOT matched.
   - name: http-request-method
     term: method
-    reason: HTTP request verb in a fetch/request options object, not the v1 method atom kind
-    linePattern: "method:\\s*['\"](?:GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS)['\"]"
+    reason: HTTP request verb — either a literal in a request options object, or read off a request
+    linePattern: "method:\\s*['\"](?:GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS)['\"]|\\b(?:request|req)\\.method\\b"
   # `CriterionResult.method` is documented one line above as "Verification
   # method used" — English for "how", not a reference to the atom kind.
   - name: criterion-verification-method-field

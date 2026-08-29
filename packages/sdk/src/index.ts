@@ -12,7 +12,7 @@
  */
 
 export { PrimeClient } from "./client.ts";
-export { createEmbeddedTransport, type EmbeddedHost } from "./embedded.ts";
+export { SPAN_PROJECTION, createEmbeddedTransport, type EmbeddedHost } from "./embedded.ts";
 export {
   GENERATED_ARTIFACT_PROTOCOL,
   ModelDigestMismatchError,

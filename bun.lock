@@ -106,6 +106,20 @@
       "name": "@skill-wiki/event-store",
       "version": "0.1.0",
     },
+    "packages/http-server": {
+      "name": "@skill-wiki/http-server",
+      "version": "0.1.0",
+      "bin": {
+        "prime-http-server": "src/main.ts",
+      },
+      "dependencies": {
+        "@skill-wiki/ir": "workspace:*",
+        "@skill-wiki/observability": "workspace:*",
+        "@skill-wiki/query-engine": "workspace:*",
+        "@skill-wiki/runtime": "workspace:*",
+        "@skill-wiki/sdk": "workspace:*",
+      },
+    },
     "packages/ir": {
       "name": "@skill-wiki/ir",
       "version": "0.1.0",
@@ -143,6 +157,10 @@
         "yaml": "^2.8.3",
         "zod": "^4.0.0",
       },
+    },
+    "packages/observability": {
+      "name": "@skill-wiki/observability",
+      "version": "0.1.0",
     },
     "packages/parser": {
       "name": "@skill-wiki/parser",
@@ -183,6 +201,7 @@
         "@skill-wiki/constraint-solver": "workspace:*",
         "@skill-wiki/ir": "workspace:*",
         "@skill-wiki/model-schema": "workspace:*",
+        "@skill-wiki/observability": "workspace:*",
       },
       "devDependencies": {
         "@skill-wiki/testkit": "workspace:*",
@@ -214,6 +233,7 @@
         "@skill-wiki/action-runtime": "workspace:*",
         "@skill-wiki/ir": "workspace:*",
         "@skill-wiki/model-schema": "workspace:*",
+        "@skill-wiki/observability": "workspace:*",
         "@skill-wiki/query-engine": "workspace:*",
       },
     },
@@ -240,6 +260,7 @@
         "@skill-wiki/ir": "workspace:*",
         "@skill-wiki/model-schema": "workspace:*",
         "@skill-wiki/parser": "workspace:*",
+        "@skill-wiki/runtime": "workspace:*",
         "@skill-wiki/sdk-codegen": "workspace:*",
         "@skill-wiki/types": "workspace:*",
         "yaml": "^2.8.3",
@@ -250,7 +271,6 @@
         "@skill-wiki/constraint-solver": "workspace:*",
         "@skill-wiki/event-store": "workspace:*",
         "@skill-wiki/projection-engine": "workspace:*",
-        "@skill-wiki/runtime": "workspace:*",
       },
     },
     "packages/types": {
@@ -281,6 +301,8 @@
 
     "@skill-wiki/event-store": ["@skill-wiki/event-store@workspace:packages/event-store"],
 
+    "@skill-wiki/http-server": ["@skill-wiki/http-server@workspace:packages/http-server"],
+
     "@skill-wiki/ir": ["@skill-wiki/ir@workspace:packages/ir"],
 
     "@skill-wiki/language-server": ["@skill-wiki/language-server@workspace:packages/language-server"],
@@ -288,6 +310,8 @@
     "@skill-wiki/mcp-server-core": ["@skill-wiki/mcp-server-core@workspace:packages/mcp-server-core"],
 
     "@skill-wiki/model-schema": ["@skill-wiki/model-schema@workspace:packages/model-schema"],
+
+    "@skill-wiki/observability": ["@skill-wiki/observability@workspace:packages/observability"],
 
     "@skill-wiki/parser": ["@skill-wiki/parser@workspace:packages/parser"],
 

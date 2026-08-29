@@ -22,7 +22,8 @@
  *
  * Usage:
  *   bun scripts/build-atom-dirs.ts --src examples/hello-world/primes/sources \
- *                                  --out examples/hello-world/primes/compiled
+ *                                  --out examples/hello-world/primes/compiled \
+ *                                  --release 2026-08-29
  *
  * Options:
  *   --src <path>      Source directory containing *.prime files (recursive)
@@ -31,6 +32,9 @@
  *                     (default: compat/prime-v1-model)
  *   --corpus <name>   Corpus name recorded in the manifest and used as the
  *                     domain fallback (default: derived from --src)
+ *   --release <date>  YYYY-MM-DD release stamp. Required (or SOURCE_DATE_EPOCH):
+ *                     every timestamp in the bundle is derived from it, so two
+ *                     builds of the same sources are byte-identical.
  *   --limit <n>       Only compile the first N units (for testing)
  *   --verbose         Print each unit's file list and every L3 finding
  */
@@ -59,6 +63,7 @@ function parseArgs(argv: string[]) {
     out: "compiled-v3",
     model: DEFAULT_MODEL,
     corpus: "",
+    release: "",
     limit: Infinity,
     verbose: false,
   };
@@ -67,6 +72,7 @@ function parseArgs(argv: string[]) {
     else if (argv[i] === "--out" && argv[i + 1]) result.out = argv[++i]!;
     else if (argv[i] === "--model" && argv[i + 1]) result.model = argv[++i]!;
     else if (argv[i] === "--corpus" && argv[i + 1]) result.corpus = argv[++i]!;
+    else if (argv[i] === "--release" && argv[i + 1]) result.release = argv[++i]!;
     else if (argv[i] === "--limit" && argv[i + 1]) result.limit = parseInt(argv[++i]!, 10);
     else if (argv[i] === "--verbose") result.verbose = true;
   }
@@ -81,6 +87,35 @@ if (!existsSync(srcDir)) {
   console.error(`Source directory not found: ${srcDir}`);
   process.exit(1);
 }
+
+/**
+ * The release date this bundle is stamped with, and the sole source of its
+ * timestamps.
+ *
+ * A wall clock cannot appear anywhere in a build artifact: `corpus.manifest.json`
+ * carries a full ISO-8601 instant, so reading `new Date()` made the manifest —
+ * and therefore the bundle's byte image — differ on every run (plan §8.2
+ * acceptance). The release is a declared *input*: `--release`, or
+ * `SOURCE_DATE_EPOCH` for a build reproducing an earlier one. There is no
+ * fallback: guessing the release from the machine clock is what made the
+ * artifact unreproducible in the first place, and a build that cannot say which
+ * release it is producing should stop rather than invent one.
+ */
+function resolveRelease(explicit: string): string {
+  if (explicit) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(explicit)) { console.error(`--release must be a YYYY-MM-DD date, got: ${explicit}`); process.exit(1); }
+    return explicit;
+  }
+  const epoch = process.env.SOURCE_DATE_EPOCH;
+  const seconds = epoch === undefined ? undefined : Number.parseInt(epoch, 10);
+  if (seconds !== undefined && Number.isFinite(seconds)) return new Date(seconds * 1000).toISOString().slice(0, 10);
+  console.error("No release date: pass --release <YYYY-MM-DD> or set SOURCE_DATE_EPOCH. A build artifact may not be stamped from the wall clock.");
+  process.exit(1);
+}
+
+const releaseDate = resolveRelease(args.release);
+/** Midnight UTC of the release date — an instant derived from the release, never from the clock. */
+const releaseInstant = `${releaseDate}T00:00:00.000Z`;
 
 /**
  * The corpus name, which is also the domain fallback.
@@ -253,30 +288,14 @@ if (compiledUnits.length > 0) {
       compilerVersion: "2.1.0",
       emitterVersion: "3",
       corpus: corpusName,
-      release: buildTimestamp().slice(0, 10),
+      release: releaseDate,
       sourceRevision: "unversioned",
       models: { [model.manifest.name]: model.manifest.version },
       schemaDigest: modelSchemaDigest(),
-      createdAt: buildTimestamp(),
+      createdAt: releaseInstant,
     },
   });
   indexPath = finalized.indexPath;
-}
-
-/**
- * The build timestamp, honouring `SOURCE_DATE_EPOCH`.
- *
- * The manifest requires a full ISO-8601 UTC instant, so a wall clock makes
- * `corpus.manifest.json` differ on every run and the bundle is then not
- * byte-deterministic (plan §8.2 acceptance). Reading `SOURCE_DATE_EPOCH` is how
- * a build reproduces an earlier one; without it the current instant is used and
- * only the manifest timestamp varies.
- */
-function buildTimestamp(): string {
-  const epoch = process.env.SOURCE_DATE_EPOCH;
-  const seconds = epoch === undefined ? undefined : Number.parseInt(epoch, 10);
-  const date = seconds !== undefined && Number.isFinite(seconds) ? new Date(seconds * 1000) : new Date();
-  return date.toISOString();
 }
 
 /** Digest of the model definitions this corpus was compiled against. */

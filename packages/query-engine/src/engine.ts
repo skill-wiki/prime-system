@@ -26,6 +26,7 @@ import type {
   ValueIR,
 } from "@skill-wiki/ir";
 import type { RetrievalProfile } from "@skill-wiki/model-schema";
+import { NOOP_TRACER, withSpan, type SpanContext, type Tracer } from "@skill-wiki/observability";
 import { buildAdjacency, type Adjacency } from "./adjacency.ts";
 import { admit, type AdmissionResult } from "./admission.ts";
 import { planBudget, resolveProjectionChain } from "./budget.ts";
@@ -55,7 +56,41 @@ export interface PlanSelectionOptions {
   readonly rerankers?: RerankerRegistry;
   /** Hop ceiling for `transitive` relations during expansion. */
   readonly maxExpansionDepth?: number;
+  /**
+   * Where selection-pipeline spans go. Defaults to `NOOP_TRACER`, so an
+   * unconfigured deployment pays nothing and emits nothing.
+   *
+   * The engine names its own phases and reports its own arithmetic as span
+   * attributes, and decides nothing else about telemetry: it does not know whether
+   * spans are collected, batched or exported. That is why the parameter is a
+   * `Tracer` rather than an exporter or a boolean flag — a flag would put the
+   * "is telemetry on" decision inside the engine, where a caller cannot see it.
+   */
+  readonly tracer?: Tracer;
+  /**
+   * Parent for the spans this call emits. Explicit rather than read from an
+   * ambient "current span", because an ambient context silently detaches across
+   * every async boundary and this pipeline is called from four entry points
+   * (embedded transport, solver bridge, MCP server, HTTP server) that each have a
+   * different notion of what the enclosing operation is.
+   */
+  readonly traceParent?: SpanContext;
 }
+
+/**
+ * Span names for the selection pipeline.
+ *
+ * Frozen as constants in the package that *emits* them, not in the tracing
+ * package and not in each consumer: a dashboard query and an assertion in a test
+ * must be naming the same string, and the only way to guarantee that is for there
+ * to be one definition and for it to live where the span is created. They are
+ * pipeline phase names — mechanism, not model vocabulary — so they belong to the
+ * engine exactly as `RERANKER_APPLIED` does.
+ */
+export const SPAN_PLAN = "prime.query.plan";
+export const SPAN_RETRIEVAL = "prime.query.retrieval";
+export const SPAN_EXPANSION = "prime.query.expansion";
+export const SPAN_BUDGET = "prime.query.budget";
 
 interface Rejection {
   readonly candidate: SelectionCandidateIR;
@@ -136,6 +171,38 @@ export interface RetrievalResult {
 }
 
 export function runRetrieval(
+  request: QueryRequest,
+  ctx: QueryEngineContext,
+  options: PlanSelectionOptions,
+): RetrievalResult {
+  return withSpan(
+    options.tracer ?? NOOP_TRACER,
+    SPAN_RETRIEVAL,
+    {
+      ...(options.traceParent === undefined ? {} : { parent: options.traceParent }),
+      attributes: { "prime.request_id": request.requestId, "prime.profile_ref": request.profile },
+    },
+    span => {
+      const result = retrieve(request, ctx, options);
+      // Reported as attributes on the phase that produced them rather than
+      // recomputed by a consumer: `admitted - candidates` is the admission and
+      // generation funnel, and a dashboard that has to derive it from a plan
+      // payload is a second implementation of the engine's own arithmetic.
+      span.setAttributes({
+        "prime.admitted_units": result.admission.graph.units.length,
+        "prime.acl_denied_units": result.admission.aclDeniedCount,
+        "prime.request_filtered_units": result.admission.filtered.length,
+        "prime.candidates": result.candidates.length,
+        "prime.generators": result.profile.candidateGenerators.map(entry => entry.name),
+        "prime.reranker": result.reranker ?? "",
+        "prime.capability_gaps": result.capabilityGaps.length,
+      });
+      return result;
+    },
+  );
+}
+
+function retrieve(
   request: QueryRequest,
   ctx: QueryEngineContext,
   options: PlanSelectionOptions,
@@ -233,6 +300,43 @@ export function planSelection(
   ctx: QueryEngineContext,
   options: PlanSelectionOptions,
 ): SelectionPlanIR {
+  const tracer = options.tracer ?? NOOP_TRACER;
+  return withSpan(
+    tracer,
+    SPAN_PLAN,
+    {
+      ...(options.traceParent === undefined ? {} : { parent: options.traceParent }),
+      attributes: { "prime.request_id": request.requestId, "prime.profile_ref": request.profile, "prime.max_tokens": request.maxTokens },
+    },
+    span => {
+      // Every phase below re-parents onto this span. Rebuilding `options` is how
+      // the parent is passed, rather than a mutable field on the tracer: two
+      // concurrent `planSelection` calls sharing one tracer must not be able to
+      // adopt each other's children.
+      const plan = buildPlan(request, ctx, { ...options, tracer, traceParent: span.context });
+      span.setAttributes({
+        "prime.selected_units": plan.selected.length,
+        "prime.rejected_units": plan.rejections.length,
+        "prime.conflicts": plan.conflicts.length,
+        "prime.consumed_tokens": plan.budget.consumedTokens ?? 0,
+        "prime.corpus_release": plan.snapshot.corpusRelease,
+        "prime.corpus_digest": plan.snapshot.corpusDigest,
+      });
+      // `ok` rather than left `unset`: the engine reached the end of the pipeline
+      // and is making that claim. A conflict is a recorded outcome, not a failed
+      // call, so it does not become an error status — a backend's error rate must
+      // count broken requests, not requests whose answer was "these units clash".
+      span.setStatus({ code: "ok" });
+      return plan;
+    },
+  );
+}
+
+function buildPlan(
+  request: QueryRequest,
+  ctx: QueryEngineContext,
+  options: PlanSelectionOptions,
+): SelectionPlanIR {
   const retrieval = runRetrieval(request, ctx, options);
   const { profile, chain, admission, adjacency } = retrieval;
   const rationale: DiagnosticIR[] = [...retrieval.rationale];
@@ -259,12 +363,23 @@ export function planSelection(
   );
 
   // 6. Relation expansion from the units that made the cut.
-  const expansion = expandSelection(
-    ranked.map(candidate => candidate.unitId),
-    adjacency,
-    ctx.relations,
-    options.maxExpansionDepth ?? 8,
-  );
+  const tracer = options.tracer ?? NOOP_TRACER;
+  const spanOptions = options.traceParent === undefined ? {} : { parent: options.traceParent };
+  const expansion = withSpan(tracer, SPAN_EXPANSION, spanOptions, span => {
+    const result = expandSelection(
+      ranked.map(candidate => candidate.unitId),
+      adjacency,
+      ctx.relations,
+      options.maxExpansionDepth ?? 8,
+    );
+    span.setAttributes({
+      "prime.seed_units": ranked.length,
+      "prime.discovered_units": result.discovered.length,
+      "prime.expansions": result.expansions.length,
+      "prime.max_expansion_depth": options.maxExpansionDepth ?? 8,
+    });
+    return result;
+  });
   rationale.push(...expansion.diagnostics.filter(d => d.code !== "RELATION_CYCLE_REJECTED"));
   conflicts.push(...expansion.diagnostics.filter(d => d.code === "RELATION_CYCLE_REJECTED"));
 
@@ -357,7 +472,22 @@ export function planSelection(
   );
   rationale.push(...loadOrder.diagnostics);
 
-  const budget = planBudget(loadOrder.ordered, chain, request.maxTokens, ctx.projections, ctx.tokenCost);
+  const budget = withSpan(tracer, SPAN_BUDGET, spanOptions, span => {
+    const result = planBudget(loadOrder.ordered, chain, request.maxTokens, ctx.projections, ctx.tokenCost);
+    // The budget stage is the only one allowed to drop a unit for a reason
+    // unrelated to relevance, so its arithmetic is the one a caller most often
+    // needs after the fact: how much of the ceiling was used, and how many units
+    // the ceiling cost them.
+    span.setAttributes({
+      "prime.max_tokens": request.maxTokens,
+      "prime.consumed_tokens": result.consumedTokens,
+      "prime.offered_units": loadOrder.ordered.length,
+      "prime.assigned_units": result.assignments.length,
+      "prime.budget_rejected_units": result.rejections.length,
+      "prime.projection_chain": [...chain],
+    });
+    return result;
+  });
   const survivorsById = new Map(survivors.map(candidate => [candidate.unitId, candidate]));
   for (const rejection of budget.rejections) {
     rejections.push({ candidate: survivorsById.get(rejection.unitId)!, reasons: rejection.reasons });

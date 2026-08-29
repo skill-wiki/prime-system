@@ -19,7 +19,7 @@
 import type { SchemaIR } from "@skill-wiki/ir";
 import { GENERATED_ARTIFACT_PROTOCOL } from "@skill-wiki/sdk";
 import { camelCase, pascalCase, uniqueIdentifiers } from "./identifiers.ts";
-import { isBuiltinTypeRef, type CodegenSchema, type DeclaredField } from "./schema-ir.ts";
+import { isBuiltinTypeRef, parseTypeRef, type CodegenSchema, type DeclaredField } from "./schema-ir.ts";
 
 export const GENERATOR_ID = "@skill-wiki/sdk-codegen";
 
@@ -37,7 +37,30 @@ const HEADER_COMMENT = [
  * disable the checking the generated SDK exists to provide, and the model said
  * "unconstrained", not "unchecked".
  */
+/**
+ * Wrap in `readonly T[]` once per array level. `readonly` rather than `T[]` because
+ * every generated member is `readonly`, and a mutable array behind a readonly
+ * property is a hole in exactly that promise. Anything that is not a bare
+ * identifier gets parenthesised, so `readonly (readonly T[])[]` and
+ * `readonly ("a" | "b")[]` both parse as written.
+ */
+function arrayOf(inner: string, depth: number): string {
+  let out = inner;
+  for (let level = 0; level < depth; level += 1) {
+    out = `readonly ${/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(out) ? out : `(${out})`}[]`;
+  }
+  return out;
+}
+
 function tsType(ref: string, typeNames: ReadonlyMap<string, string>): string {
+  const parsed = parseTypeRef(ref);
+  // `model-schema.validateLinks` already rejects a malformed or dangling ref, so
+  // reaching here means the schema was assembled by something that skipped it.
+  if (parsed === undefined) throw new Error(`Malformed type reference '${ref}'`);
+  return arrayOf(elementTsType(parsed.element, typeNames), parsed.arrayDepth);
+}
+
+function elementTsType(ref: string, typeNames: ReadonlyMap<string, string>): string {
   switch (ref) {
     case "string":
       return "string";
@@ -51,12 +74,25 @@ function tsType(ref: string, typeNames: ReadonlyMap<string, string>): string {
   }
   if (isBuiltinTypeRef(ref)) return "unknown";
   const declared = typeNames.get(ref);
-  // `model-schema.validateLinks` already rejects a dangling ref, so reaching here
-  // means the schema was assembled by something that skipped that check.
   if (declared === undefined) {
     throw new Error(`Type reference '${ref}' is neither a builtin nor a declared type in this schema`);
   }
   return declared;
+}
+
+/**
+ * A field's TypeScript type. A declared value set becomes a literal union, which is
+ * the whole point of declaring one: `motion_priority: "low" | "med" | "high"` makes a
+ * wrong value a compile error in the generated SDK, where `string` made it a runtime
+ * surprise. Parenthesised inside an array so `("a" | "b")[]` does not parse as
+ * `"a" | ("b"[])`.
+ */
+function fieldTsType(field: DeclaredField, typeNames: ReadonlyMap<string, string>): string {
+  const values = field.enumValues;
+  if (values === undefined || values.length === 0) return tsType(field.typeRef, typeNames);
+  const parsed = parseTypeRef(field.typeRef);
+  if (parsed === undefined) throw new Error(`Malformed type reference '${field.typeRef}'`);
+  return arrayOf(values.map(value => JSON.stringify(value)).join(" | "), parsed.arrayDepth);
 }
 
 function docComment(text: string | undefined, indent: string): string {
@@ -75,7 +111,7 @@ function fieldLines(fields: readonly DeclaredField[], typeNames: ReadonlyMap<str
   return fields
     .map(field => {
       const optional = field.required ? "" : "?";
-      return `${docComment(field.description, "  ")}  readonly ${propertyName(field.name)}${optional}: ${tsType(field.typeRef, typeNames)};`;
+      return `${docComment(field.description, "  ")}  readonly ${propertyName(field.name)}${optional}: ${fieldTsType(field, typeNames)};`;
     })
     .join("\n") + "\n";
 }

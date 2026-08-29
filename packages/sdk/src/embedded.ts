@@ -26,6 +26,7 @@ import {
   type QueryRequest,
 } from "@skill-wiki/query-engine";
 import type { ActionRun, EffectPlan, EventRecord } from "@skill-wiki/action-runtime";
+import { NOOP_TRACER, withSpan, type SpanContext, type Tracer } from "@skill-wiki/observability";
 import type { ActionRuntime } from "@skill-wiki/action-runtime";
 import {
   SdkError,
@@ -48,7 +49,27 @@ export interface EmbeddedHost {
    * success; absent means every action call rejects with a stated reason.
    */
   readonly actions?: ActionRuntime;
+  /**
+   * Where this transport's spans go, and what they hang under. Both default to
+   * "nothing": `NOOP_TRACER` and no parent.
+   *
+   * They sit on the host rather than on each call because `EngineTransport` is
+   * the one place plan §10.4 forbids widening — adding a context argument to
+   * `query()` would change the interface every transport implements, and a remote
+   * transport would then have to invent a meaning for it. A host that wants
+   * per-request parenting rebuilds the transport per request, which costs one
+   * object literal because `createEmbeddedTransport` holds no state.
+   */
+  readonly tracer?: Tracer;
+  readonly traceParent?: SpanContext;
 }
+
+/**
+ * Span name for the materialisation step. Defined here, in the module that emits
+ * it, for the same reason `query-engine` defines its own phase names: the string
+ * a dashboard filters on and the string a test asserts on must have one source.
+ */
+export const SPAN_PROJECTION = "prime.query.projection";
 
 /**
  * Render the plan's own projection assignments. The mapping comes from
@@ -87,9 +108,19 @@ function requireActions(host: EmbeddedHost): ActionRuntime {
 }
 
 export function createEmbeddedTransport(host: EmbeddedHost): EngineTransport {
+  const tracer = host.tracer ?? NOOP_TRACER;
+  const spanOptions = host.traceParent === undefined ? {} : { parent: host.traceParent };
+  // Two different key names for the same context, because they are two different
+  // protocols: `PlanSelectionOptions` names it `traceParent` (it is one field
+  // among the engine's options) and `StartSpanOptions` names it `parent`. Spelling
+  // one where the other is expected type-checks — both fields are optional — and
+  // silently detaches the engine's spans into their own trace, which is what the
+  // parentage assertion in `test/tracing.test.ts` exists to catch.
+  const engineTrace = host.traceParent === undefined ? {} : { traceParent: host.traceParent };
+  const base = { generators: host.generators, tracer, ...engineTrace };
   const options = host.maxExpansionDepth === undefined
-    ? { generators: host.generators }
-    : { generators: host.generators, maxExpansionDepth: host.maxExpansionDepth };
+    ? base
+    : { ...base, maxExpansionDepth: host.maxExpansionDepth };
 
   // Errors from the engine propagate unchanged (no try/catch here): a
   // `QueryEngineError` must look the same to a caller whether it arrived in
@@ -103,7 +134,17 @@ export function createEmbeddedTransport(host: EmbeddedHost): EngineTransport {
     plan,
     query: async (request: QueryRequest): Promise<QueryResult> => {
       const selection = await plan(request);
-      return { plan: selection, projections: materialize(selection, host.engine) };
+      const projections = withSpan(tracer, SPAN_PROJECTION, spanOptions, span => {
+        const materialized = materialize(selection, host.engine);
+        span.setAttributes({
+          "prime.request_id": selection.requestId,
+          "prime.projection_loads": selection.projectionLoads.length,
+          "prime.materialized_units": materialized.length,
+          "prime.projection_refs": selection.projectionLoads.map(load => load.projectionRef),
+        });
+        return materialized;
+      });
+      return { plan: selection, projections };
     },
     preflight: async (request: ActionRequest): Promise<EffectPlan> =>
       requireActions(host).preflight(request.action, request.input, request.context),
