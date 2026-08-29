@@ -30,7 +30,7 @@
  *   --model <path>    Model package to compile against
  *                     (default: compat/prime-v1-model)
  *   --corpus <name>   Corpus name recorded in the manifest and used as the
- *                     domain fallback (default: derived from --out)
+ *                     domain fallback (default: derived from --src)
  *   --limit <n>       Only compile the first N units (for testing)
  *   --verbose         Print each unit's file list and every L3 finding
  */
@@ -86,17 +86,22 @@ if (!existsSync(srcDir)) {
  * The corpus name, which is also the domain fallback.
  *
  * `finalizeCorpusBundle` rejects an empty domain, and most v1 atoms declare no
- * `domain` field, so a corpus identity has to come from somewhere. Deriving it
- * from the output directory reproduces how the three example corpora are
- * addressed (`examples/<corpus>/primes/compiled`) without a lookup table.
+ * `domain` field, so a corpus identity has to come from somewhere.
+ *
+ * It must be derived from an *input*. `computeCompiledUnitContentDigest`
+ * (`packages/compiler/src/generic-unit.ts`) hashes the whole `unit.identity`,
+ * and `identity.corpus` is part of it — so deriving the corpus name from the
+ * output directory made every artifact byte a function of where it was written,
+ * and the same sources compiled into two different roots produced different
+ * `content_hash` values. `--src` is an input; `--out` is not.
  */
-function deriveCorpusName(outputDir: string): string {
-  const parts = outputDir.split("/").filter(Boolean);
+function deriveCorpusName(inputDir: string): string {
+  const parts = inputDir.split("/").filter(Boolean);
   const primes = parts.lastIndexOf("primes");
   if (primes > 0) return parts[primes - 1]!;
-  return basename(outputDir);
+  return basename(inputDir);
 }
-const corpusName = args.corpus || deriveCorpusName(outDir);
+const corpusName = args.corpus || deriveCorpusName(srcDir);
 
 // ── Walk for *.prime files ───────────────────────────────────────────────────
 

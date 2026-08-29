@@ -24,6 +24,7 @@
     "@skill-wiki/compiler": "workspace:*",
     "@skill-wiki/event-store": "workspace:*",
     "@skill-wiki/ir": "workspace:*",
+    "@skill-wiki/language-server": "workspace:*",
     "@skill-wiki/model-schema": "workspace:*",
     "@skill-wiki/parser": "workspace:*",
     "@skill-wiki/runtime": "workspace:*",

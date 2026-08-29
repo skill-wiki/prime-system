@@ -1,4 +1,8 @@
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { join, resolve } from "node:path";
+
 import { loadModel, type ActionDefinition, type FunctionDefinition, type LoadedModel, type ModelDefinition, type ProjectionDefinition, type RelationDefinition, type RetrievalProfile, type TypeDefinition } from "@skill-wiki/model-schema";
+import { assertSchemaDigestSelfConsistent, generateSdk } from "@skill-wiki/sdk-codegen";
 import { defaultRendererSections, type RendererSections } from "./renderer-sections.ts";
 import { check, finding, formatReport, report, skipped, type CheckOutcome, type Finding, type SuiteReport } from "./diagnostics.ts";
 
@@ -263,6 +267,83 @@ export interface ModelConformanceOptions {
   readonly rendererSections?: RendererSections;
 }
 
+/**
+ * §17.1 MC-SDK-COMPILE. The acceptance is that the *emitted bytes* compile, so
+ * this shells out to the repo's own `tsc` rather than trusting that the templates
+ * look right: a generator can emit a missing import, a property name that needs
+ * quoting, or a type referenced before it is declared, and only a compiler finds
+ * those.
+ *
+ * The scratch directory has to live inside this package rather than under
+ * `os.tmpdir()`, because the generated `types.ts` and `client.ts` both import
+ * `@skill-wiki/sdk`, and module resolution has to be able to walk up from the
+ * artifacts to `packages/testkit/node_modules`.
+ */
+function sdkCompileCheck(model: LoadedModel): CheckOutcome {
+  const id = "MC-SDK-COMPILE";
+  const title = "Generated SDK compiles";
+  const repo = resolve(import.meta.dir, "..", "..", "..");
+  const testkit = resolve(import.meta.dir, "..");
+  const findings: Finding[] = [];
+
+  let generated: ReturnType<typeof generateSdk>;
+  try {
+    generated = generateSdk(model);
+  } catch (e) {
+    return check(id, title, [finding("SDK_GENERATION_FAILED", `generateSdk threw: ${e instanceof Error ? e.message : String(e)}`, "error")]);
+  }
+
+  // The emitted `schema.json` claims the digest its siblings were generated from.
+  // If it does not hash to that digest, the artifacts compiling proves nothing.
+  try {
+    assertSchemaDigestSelfConsistent(generated.schema.schema);
+  } catch (e) {
+    findings.push(finding("SDK_SCHEMA_DIGEST_INCONSISTENT", e instanceof Error ? e.message : String(e), "error"));
+  }
+
+  let scratch: string | undefined;
+  let unavailable: string | undefined;
+  try {
+    scratch = mkdtempSync(join(testkit, ".mc-sdk-compile-"));
+    for (const file of generated.files) writeFileSync(join(scratch, file.path), file.content, "utf8");
+    const tsconfig = join(scratch, "tsconfig.json");
+    writeFileSync(tsconfig, JSON.stringify({
+      extends: join(repo, "tsconfig.json"),
+      compilerOptions: { noEmit: true },
+      include: ["*.ts"],
+    }), "utf8");
+
+    let result: { exitCode: number | null; stdout: Buffer; stderr: Buffer };
+    try {
+      result = Bun.spawnSync(["npx", "tsc", "--noEmit", "-p", tsconfig], { cwd: repo });
+    } catch (e) {
+      // No compiler on this machine is not a statement about the model, so it is
+      // a skip rather than a failure (§17.5 forbids the reverse, not this).
+      unavailable = `could not run \`npx tsc\`: ${e instanceof Error ? e.message : String(e)}`;
+      result = { exitCode: null, stdout: Buffer.alloc(0), stderr: Buffer.alloc(0) };
+    }
+
+    if (unavailable === undefined) {
+      const output = `${result.stdout.toString()}${result.stderr.toString()}`.trim();
+      if (result.exitCode !== 0 || output.length > 0) {
+        for (const line of output.split("\n").filter(l => l.trim().length > 0)) {
+          findings.push(finding("SDK_DOES_NOT_COMPILE", line.trim(), "error", { subject: `sdk:${generated.modelDigest}` }));
+        }
+        if (findings.length === 0) {
+          findings.push(finding("SDK_DOES_NOT_COMPILE", `tsc exited ${result.exitCode} with no diagnostics`, "error"));
+        }
+      }
+    }
+  } catch (e) {
+    findings.push(finding("SDK_COMPILE_CHECK_ERROR", e instanceof Error ? e.message : String(e), "error"));
+  } finally {
+    if (scratch !== undefined) rmSync(scratch, { recursive: true, force: true });
+  }
+
+  if (unavailable !== undefined && findings.length === 0) return skipped(id, title, unavailable);
+  return check(id, title, findings);
+}
+
 export function runModelConformance(root: string, options: ModelConformanceOptions = {}): SuiteReport {
   const loaded = loadModel(root);
   const diagnostics = loaded.ok ? [] : loaded.diagnostics;
@@ -277,6 +358,7 @@ export function runModelConformance(root: string, options: ModelConformanceOptio
       ["MC-PROJ-SELECTORS", "Every projection selector resolves to a declared field"],
       ["MC-PROJ-RENDERER-SECTIONS", "Selectors that name a renderer section instead of a field"],
       ["MC-RETRIEVAL-PROFILE", "Retrieval profiles are executable"],
+      ["MC-SDK-COMPILE", "Generated SDK compiles"],
     ] as const) checks.push(skipped(id, title, "model did not load; definitions unavailable"));
   } else {
     const model = loaded.value;
@@ -289,11 +371,11 @@ export function runModelConformance(root: string, options: ModelConformanceOptio
     checks.push(ioCheck(byKind(model, "function"), byKind(model, "action")));
     checks.push(...projectionCheck(types, byKind(model, "projection"), options.rendererSections ?? defaultRendererSections()));
     checks.push(retrievalCheck(byKind(model, "retrieval-profile")));
+    checks.push(sdkCompileCheck(model));
   }
 
   // §17.1 lists both, and §17.5 forbids dressing a skip up as a pass.
   checks.push(skipped("MC-MIGRATION-ROUNDTRIP", "Migration roundtrip", "protocol has no migration definition kind yet (plan §13.3)"));
-  checks.push(skipped("MC-SDK-COMPILE", "Generated SDK compiles", "no sdk-codegen package yet (plan §15.2)"));
 
   return report("model-conformance", root, checks);
 }

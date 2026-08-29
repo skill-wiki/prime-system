@@ -11,6 +11,7 @@
     "@skill-wiki/ir": "workspace:*",
     "@skill-wiki/model-schema": "workspace:*",
     "@skill-wiki/parser": "workspace:*",
+    "@skill-wiki/sdk-codegen": "workspace:*",
     "@skill-wiki/types": "workspace:*",
     "yaml": "^2.8.3",
     "zod": "^4.0.0"

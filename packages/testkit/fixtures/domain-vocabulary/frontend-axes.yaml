@@ -43,20 +43,12 @@ exemptions:
       - packages/compiler/src/global-index-emitter.ts
     linePattern: "\\bnumber\\b|[Cc]luster|\\batoms\\b|Math\\.|computeDensity"
 
-  # W10-F built the plugin digest registry §12.3 asks for ("Registry 同版本不同
-  # digest 必须拒绝"), and every hit is that registry: `PluginDigestRegistry`,
-  # `REGISTRY_DIGEST_CONFLICT`, `already registered with digest`. The frontend v1
-  # `register` axis is a typographic register — a bare weight or an axis-list
-  # entry. The line shape separates them: this pattern requires plugin, digest or
-  # manifest vocabulary on the same line, which an axis weight never carries.
-  # Same class as W9's `domain-plugin.ts:61 register(plugin: DomainPlugin)`.
-  - name: plugin-digest-registry
-    term: register
-    reason: >-
-      plugin digest registry required by plan §12.3 (same version + different digest must be
-      refused), not the frontend v1 register axis; sites: plugin-host/src/{trust,host,index}.ts
-    paths:
-      - packages/plugin-host/src/trust.ts
-      - packages/plugin-host/src/host.ts
-      - packages/plugin-host/src/index.ts
-    linePattern: "[Pp]lugin|digest|manifest|REGISTRY_DIGEST_CONFLICT|version"
+# W11-A: there is deliberately NO `register` exemption for the plugin digest
+# registry. `grep -rnwi register packages/plugin-host/src/` returns nothing: the
+# registry spells itself `PluginDigestRegistry` / `REGISTRY_DIGEST_CONFLICT` /
+# `already registered with digest`, and the scanner's term pattern
+# `(?<![A-Za-z0-9_])register(?![A-Za-z0-9_])` matches none of those — `registered`
+# fails the trailing lookahead and `register` is not a substring of `Registry`.
+# An exemption there suppresses nothing and only reports itself stale forever.
+# The plugin-host gate failure was term `method`, exempted in
+# generic-programming-terms.yaml as `plugin-rpc-dispatch-method`.

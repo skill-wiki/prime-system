@@ -97,3 +97,29 @@ exemptions:
     paths:
       - packages/types/src/evaluation.ts
     linePattern: "^\\s*method\\?:\\s*string;\\s*$"
+  # W11-A measured all 10 plugin-host gate hits: every one is the RPC dispatch
+  # parameter of the sandbox call protocol — `call(method, params)`,
+  # `HostFrame { t: "call"; method; params }`, `plugin.handle(frame.method,
+  # frame.params, …)`. It names a *procedure a plugin answers*, which is transport
+  # vocabulary in the JSON-RPC sense, not the v1 `method` atom kind.
+  #
+  # The line shape separates them: an atom-kind reference is a quoted kind
+  # (`kind === "method"`) or an entry in a kind list, and never carries the
+  # dispatch pair. This pattern requires `params`, or one of the three call-site
+  # spellings, on the same line — so if the dispatch signature is renamed or the
+  # `params` argument disappears, the hit returns as an error instead of staying
+  # suppressed. Sites: executor/child.ts:108, executor/plugin-api.ts:25,
+  # executor/process.ts:52,129,138,141, executor/protocol.ts:20, host.ts:226,233,234.
+  - name: plugin-rpc-dispatch-method
+    term: method
+    reason: >-
+      RPC procedure name in the plugin sandbox call protocol (paired with `params` on every
+      site), not the v1 method atom kind; sites: plugin-host/src/{host,executor/child,
+      executor/plugin-api,executor/process,executor/protocol}.ts
+    paths:
+      - packages/plugin-host/src/host.ts
+      - packages/plugin-host/src/executor/child.ts
+      - packages/plugin-host/src/executor/plugin-api.ts
+      - packages/plugin-host/src/executor/process.ts
+      - packages/plugin-host/src/executor/protocol.ts
+    linePattern: "\\bparams\\b|CALL_TIMEOUT|plugin\\.call|executor\\.call"

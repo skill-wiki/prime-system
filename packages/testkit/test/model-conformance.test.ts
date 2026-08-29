@@ -20,10 +20,13 @@ test("the second-domain fixture passes every runnable check without engine chang
   expect(r.status).toBe("pass");
   expect(r.errorCount).toBe(0);
   expect(r.warningCount).toBe(0);
-  // The two skips are protocol gaps, not fixture gaps, and must stay visible.
-  expect(r.checks.filter(c => c.status === "skip").map(c => c.id)).toEqual(["MC-MIGRATION-ROUNDTRIP", "MC-SDK-COMPILE"]);
-  // 9 since D-6 split the renderer-section namespace out of MC-PROJ-SELECTORS.
-  expect(r.counts).toEqual({ pass: 9, fail: 0, skip: 2 });
+  // MC-SDK-COMPILE stopped being a skip once sdk-codegen existed to answer it, so the
+  // one remaining skip is the protocol gap plan §13.3 names: there is no migration
+  // definition kind yet. It must stay visible rather than be counted as a pass.
+  expect(r.checks.filter(c => c.status === "skip").map(c => c.id)).toEqual(["MC-MIGRATION-ROUNDTRIP"]);
+  // 9 since D-6 split the renderer-section namespace out of MC-PROJ-SELECTORS; 10 once
+  // the generated SDK became something the checker can really compile.
+  expect(r.counts).toEqual({ pass: 10, fail: 0, skip: 1 });
 });
 
 test("an unloadable model reports manifest failure and skips the deeper checks", () => {
