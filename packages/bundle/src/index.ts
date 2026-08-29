@@ -25,10 +25,30 @@ function assertSafeExisting(path: string, label: string): void { if (!existsSync
 function moveIntoPlace(stage: string, target: string, backup: string): boolean { if (!existsSync(target)) { renameSync(stage, target); return false; } renameSync(target, backup); try { renameSync(stage, target); return true; } catch (error) { renameSync(backup, target); throw error; } }
 function restore(target: string, backup: string, hadOld: boolean): void { if (!hadOld) { rmSync(target, { force: true }); return; } if (!existsSync(backup)) return; if (existsSync(target)) rmSync(target, { force: true }); renameSync(backup, target); }
 
+/**
+ * Every unit must have been compiled under the corpus identity being recorded.
+ *
+ * `computeCompiledUnitContentDigest` hashes the whole `unit.identity`, so corpus
+ * identity is a content-digest input. A bundle labelled `A` whose units carry
+ * the digests of corpus `B` still passes every later digest check, because those
+ * checks compare the artifacts against the manifest rather than against the
+ * inputs. Refusing the mismatch here is what makes the recorded identity
+ * load-bearing, and it is also what catches an identity that was derived from
+ * the output directory instead of from a declared input (plan §8.4).
+ */
+function assertUnitsAgreeOnCorpus(units: readonly CompiledUnitIR[], corpus: string): void {
+  for (const unit of units) {
+    if (unit.unit.identity.corpus !== corpus) {
+      throw new Error(`Unit was compiled for corpus "${unit.unit.identity.corpus}" but the bundle manifest declares corpus "${corpus}": ${unit.meta.id}`);
+    }
+  }
+}
+
 /** Write the authoritative corpus index and immutable manifest, then ask Runtime to verify it. */
 export function finalizeCorpusBundle(options: FinalizeCorpusBundleOptions): FinalizedCorpusBundle {
   const root = resolve(options.outDir); const entries = [...(options.entries ?? []), ...(options.units ?? []).map(asEntry)];
   if (!entries.length) throw new Error("A corpus bundle requires at least one unit/index entry.");
+  assertUnitsAgreeOnCorpus(options.units ?? [], options.manifest.corpus);
   const ids = new Set<string>(); for (const entry of entries) { validate(entry); if (ids.has(entry.id)) throw new Error(`Duplicate corpus index entry: ${entry.id}`); ids.add(entry.id); }
   validateCorpusManifest({ ...options.manifest, models: canonicalModels(options.manifest.models), contentDigest: digest(Buffer.from("content")), indexDigest: digest(Buffer.from("index")) });
   ensureRoot(root);

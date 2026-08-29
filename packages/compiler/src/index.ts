@@ -178,7 +178,11 @@ export function discoverInstalledPrimes(filePath: string): Map<string, Installed
   ];
   for (const dir of searchDirs) {
     if (!existsSync(dir)) continue;
-    for (const entry of readdirSync(dir).filter(name => name.endsWith(".prime"))) {
+    // Sorted: `readdirSync` returns filesystem order, and the first-wins rule
+    // below then resolves a duplicate prime name differently on two machines
+    // holding identical files. Discovery order is an input to what gets
+    // compiled, so it has to be a property of the names, not of the volume.
+    for (const entry of readdirSync(dir).filter(name => name.endsWith(".prime")).sort()) {
       const primeName = entry.replace(".prime", "");
       if (installedPrimes.has(primeName)) continue;
       try {

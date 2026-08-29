@@ -40,6 +40,7 @@ export type PrimeBundleErrorCode =
   | "PROTOCOL_VERSION_UNSUPPORTED"
   | "IR_VERSION_UNSUPPORTED"
   | "EMITTER_VERSION_UNSUPPORTED"
+  | "SCHEMA_DIGEST_MISMATCH"
   | "INDEX_MISSING"
   | "INDEX_DIGEST_MISMATCH"
   | "CONTENT_DIGEST_MISMATCH"
@@ -110,6 +111,18 @@ export interface SnapshotRef {
 export interface LoadCorpusSnapshotOptions {
   /** Require a v0.2 manifest instead of accepting a v0.1 legacy bundle. */
   requireManifest?: boolean;
+  /**
+   * The schema digest this caller is prepared to serve.
+   *
+   * Runtime holds no model, so it cannot recompute `schemaDigest` from the
+   * bundle — until this option existed the field was a string nobody ever
+   * compared, and a corpus compiled against a since-changed model loaded
+   * cleanly. The party that does hold the model (the CLI, the MCP server, the
+   * SDK host) passes what it resolved; a mismatch then fails closed the same way
+   * a tampered projection does. Plan §8.4 lists "Model lock integrity" among the
+   * boot checks, and this is the half Runtime can carry on its own.
+   */
+  expectedSchemaDigest?: string;
 }
 
 export interface LoadedCorpusSnapshot {
@@ -315,6 +328,15 @@ export function loadCorpusSnapshot(
         context: { file: CORPUS_MANIFEST_FILE },
       });
     }
+    if (options.expectedSchemaDigest !== undefined) {
+      // A legacy bundle records neither the emitter that produced it nor the
+      // model it was compiled against, so a caller that knows which schema it
+      // must serve cannot be given one. This is the bypass that let a bundle
+      // predating the version gates load unchecked.
+      throw new PrimeBundleError("SCHEMA_DIGEST_MISMATCH", "Compiled corpus has no manifest, so its model schema cannot be verified against the caller's.", {
+        context: { expected: options.expectedSchemaDigest, file: CORPUS_MANIFEST_FILE },
+      });
+    }
     return {
       snapshot: legacySnapshot(indexDigest),
       diagnostics: [{
@@ -334,6 +356,11 @@ export function loadCorpusSnapshot(
     throw new PrimeBundleError("MANIFEST_INVALID", "Unable to parse corpus.manifest.json.", { cause });
   }
   const manifest = validateCorpusManifest(parsed);
+  if (options.expectedSchemaDigest !== undefined && manifest.schemaDigest !== options.expectedSchemaDigest) {
+    throw new PrimeBundleError("SCHEMA_DIGEST_MISMATCH", "Corpus was compiled against a different model schema than the caller resolved. Recompile the corpus.", {
+      context: { expected: options.expectedSchemaDigest, actual: manifest.schemaDigest },
+    });
+  }
   if (manifest.indexDigest !== indexDigest) {
     throw new PrimeBundleError("INDEX_DIGEST_MISMATCH", "_index.xml does not match manifest indexDigest.", {
       context: { expected: manifest.indexDigest, actual: indexDigest },

@@ -1,4 +1,5 @@
 import type { SnapshotRef } from "@skill-wiki/runtime";
+import type { SelectionPlanIR } from "@skill-wiki/ir";
 import { formatProjectionUri } from "@skill-wiki/projection-engine";
 
 /**
@@ -43,6 +44,39 @@ export interface ResourceIdentity {
   readonly tenant: string;
   readonly corpus: string;
   readonly release: string;
+}
+
+/**
+ * A `prime_plan` response.
+ *
+ * The `snapshot` field is deliberately the *same* `SnapshotRef` object the query
+ * and show responses carry, not a re-derived copy. Phase 0's first acceptance
+ * criterion is that `query/plan/show` report the same release and digests; making
+ * them read one value makes that structural instead of a coincidence that a test
+ * has to keep re-checking.
+ */
+export interface PrimePlanResponse {
+  plan: SelectionPlanIR;
+  snapshot: SnapshotRef;
+  diagnostics: readonly { code: string; message: string; severity: string }[];
+}
+
+/** Pure response formatter for `prime_plan`; transport-independent. */
+export function createPrimePlanResponse(
+  snapshot: SnapshotRef,
+  plan: SelectionPlanIR,
+): PrimePlanResponse {
+  return {
+    plan,
+    snapshot,
+    // The plan carries its own reasoning; surfacing it at the envelope level too
+    // keeps the two tools' diagnostic shape identical for a client.
+    diagnostics: [...plan.conflicts, ...(plan.rationale ?? [])].map((entry) => ({
+      code: entry.code,
+      message: entry.message,
+      severity: entry.severity,
+    })),
+  };
 }
 
 /** Pure response formatter: suitable for transport-independent tests. */

@@ -1,0 +1,15 @@
+{
+  "name": "@skill-wiki/sdk",
+  "version": "0.1.0",
+  "description": "Engine client: one Query/Plan/Action/Events surface over interchangeable transports (plan §10.2, §10.4)",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": { "test": "bun test", "typecheck": "tsc --noEmit -p tsconfig.json" },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@skill-wiki/action-runtime": "workspace:*",
+    "@skill-wiki/ir": "workspace:*",
+    "@skill-wiki/model-schema": "workspace:*",
+    "@skill-wiki/query-engine": "workspace:*"
+  }
+}

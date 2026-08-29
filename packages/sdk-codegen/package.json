@@ -1,0 +1,15 @@
+{
+  "name": "@skill-wiki/sdk-codegen",
+  "version": "0.1.0",
+  "description": "SchemaIR -> TypeScript types, MCP tool schemas and a typed model SDK, every artifact digest-stamped (plan §14.3)",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "bin": { "prime-sdk-codegen": "src/cli.ts" },
+  "scripts": { "test": "bun test", "typecheck": "tsc --noEmit -p tsconfig.json" },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@skill-wiki/ir": "workspace:*",
+    "@skill-wiki/model-schema": "workspace:*",
+    "@skill-wiki/sdk": "workspace:*"
+  }
+}

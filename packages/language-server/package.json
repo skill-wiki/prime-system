@@ -1,0 +1,18 @@
+{
+  "name": "@skill-wiki/language-server",
+  "version": "0.1.0",
+  "description": "Prime Language Server — editor-time document store, diagnostics and completion (plan §14). Toolchain only; never builds a runtime bundle.",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@skill-wiki/types": "workspace:*",
+    "@skill-wiki/parser": "workspace:*",
+    "@skill-wiki/model-schema": "workspace:*",
+    "@skill-wiki/compiler": "workspace:*"
+  }
+}

@@ -155,4 +155,48 @@ describe("loadCorpusSnapshot", () => {
     expect(loaded.snapshot.kind).toBe("legacy");
     expect(loaded.snapshot.emitterVersion).toBe("unknown");
   }));
+
+  /**
+   * `schemaDigest` used to be a string nobody compared: a corpus compiled against
+   * a since-changed model loaded cleanly, so "emitter/schema changes invalidate
+   * the artifact" held only for the emitter half. Runtime cannot recompute the
+   * digest (it holds no model), so the party that resolved the model states what
+   * it expects and the mismatch fails closed.
+   */
+  it("rejects a corpus whose schemaDigest is not the one the caller resolved", () => withCorpus((dir) => {
+    writeFileSync(join(dir, "_index.xml"), index);
+    const contentDigest = computeCorpusContentDigest(dir);
+    writeFileSync(join(dir, "corpus.manifest.json"), JSON.stringify(manifest(digest(index), contentDigest)));
+    try {
+      loadCorpusSnapshot(dir, { expectedSchemaDigest: digest("a-different-model") });
+    } catch (error) {
+      expect(error).toBeInstanceOf(PrimeBundleError);
+      expect((error as PrimeBundleError).code).toBe("SCHEMA_DIGEST_MISMATCH");
+      return;
+    }
+    throw new Error("expected SCHEMA_DIGEST_MISMATCH");
+  }));
+
+  it("accepts a corpus whose schemaDigest matches the caller's", () => withCorpus((dir) => {
+    writeFileSync(join(dir, "_index.xml"), index);
+    const contentDigest = computeCorpusContentDigest(dir);
+    writeFileSync(join(dir, "corpus.manifest.json"), JSON.stringify(manifest(digest(index), contentDigest)));
+    expect(loadCorpusSnapshot(dir, { expectedSchemaDigest: digest("schema") }).snapshot.schemaDigest).toBe(digest("schema"));
+  }));
+
+  /**
+   * The bypass that made the emitter gate skippable: a manifest-less bundle
+   * claims no emitter and no model, so a caller that knows which schema it must
+   * serve cannot be handed one.
+   */
+  it("refuses a manifest-less bundle when the caller states a schema digest", () => withCorpus((dir) => {
+    writeFileSync(join(dir, "_index.xml"), index);
+    try {
+      loadCorpusSnapshot(dir, { expectedSchemaDigest: digest("schema") });
+    } catch (error) {
+      expect((error as PrimeBundleError).code).toBe("SCHEMA_DIGEST_MISMATCH");
+      return;
+    }
+    throw new Error("expected the legacy bypass to be closed");
+  }));
 });

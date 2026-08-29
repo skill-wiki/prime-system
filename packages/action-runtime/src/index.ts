@@ -1,3 +1,4 @@
+import { ExpressionError, evaluateExpression } from "@skill-wiki/evaluation-engine";
 import type { DiagnosticIR, ExecutionPlanIR, ExecutionPlanNodeIR, SnapshotRef, ValueIR } from "@skill-wiki/ir";
 import type { ActionDefinition, FunctionDefinition, LoadedModel, TypeDefinition } from "@skill-wiki/model-schema";
 /**
@@ -128,7 +129,24 @@ export class ActionRuntime {
    * Two copies is how a plan-driven gate and a preflight start disagreeing.
    */
   private checkCapability(capability: string, context: RequestContext): void { if (!context.allowedCapabilities.includes(capability)) fail(`Capability denied: ${capability}`) }
-  private async checkPrecondition(condition: string, input: unknown, context: RequestContext): Promise<void> { if (!this.options.preconditions || !await this.options.preconditions.check(condition, input, context)) fail(`Precondition denied: ${condition}`) }
+  /**
+   * §5.4 declares a precondition as an *expression*, so with no provider injected
+   * the declared expression is evaluated by the evaluation engine's deterministic
+   * evaluator rather than refused for want of a provider. An injected provider
+   * still wins, because a model may declare a condition no expression can decide.
+   *
+   * Every failure mode remains a refusal: an expression the evaluator cannot
+   * answer denies the run and says why. That is the whole difference from the
+   * evaluator §9.7 forbids — this one cannot pass by not understanding the
+   * question.
+   */
+  private async checkPrecondition(condition: string, input: unknown, context: RequestContext): Promise<void> {
+    if (this.options.preconditions) { if (!await this.options.preconditions.check(condition, input, context)) fail(`Precondition denied: ${condition}`); return }
+    let satisfied: boolean;
+    try { satisfied = evaluateExpression(condition, { input, context }) }
+    catch (error) { return fail(`Precondition denied: ${condition} (${error instanceof ExpressionError ? error.message : String(error)})`) }
+    if (!satisfied) fail(`Precondition denied: ${condition}`);
+  }
   private async decideAuthorization(def: ActionDefinition, input: unknown, context: RequestContext): Promise<AuthorizationDecision> { if (!context.principal) return { allowed: false, reason: "Principal is required" }; if (!this.options.authorizer) return { allowed: false, reason: "No principal authorizer" }; try { return await this.options.authorizer.authorize(def, input, context) } catch (error) { const message = error instanceof Error ? error.message : String(error); throw new PreparationError(`Authorization provider error: ${message}`, { allowed: false, reason: `Authorization provider error: ${message}`, evidence: [{ kind: "authorization-error", value: message }] }) } }
   private validateContext(context: RequestContext) { if (!context || typeof context.principal !== "string" || typeof context.snapshot !== "string" || !context.snapshot || typeof context.trace !== "string" || !context.trace || !Array.isArray(context.roles) || !Array.isArray(context.allowedCapabilities) || !context.budget || typeof context.budget !== "object") fail("Invalid request context"); const { timeoutMs, maxAttempts } = context.budget; if (timeoutMs !== undefined && (!Number.isFinite(timeoutMs) || timeoutMs <= 0)) fail("Invalid request context"); if (maxAttempts !== undefined && (!Number.isInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 10)) fail("Invalid request context") }
   /**

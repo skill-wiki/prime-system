@@ -42,3 +42,21 @@ exemptions:
       - packages/runtime/src/atom-loader.ts
       - packages/compiler/src/global-index-emitter.ts
     linePattern: "\\bnumber\\b|[Cc]luster|\\batoms\\b|Math\\.|computeDensity"
+
+  # W10-F built the plugin digest registry §12.3 asks for ("Registry 同版本不同
+  # digest 必须拒绝"), and every hit is that registry: `PluginDigestRegistry`,
+  # `REGISTRY_DIGEST_CONFLICT`, `already registered with digest`. The frontend v1
+  # `register` axis is a typographic register — a bare weight or an axis-list
+  # entry. The line shape separates them: this pattern requires plugin, digest or
+  # manifest vocabulary on the same line, which an axis weight never carries.
+  # Same class as W9's `domain-plugin.ts:61 register(plugin: DomainPlugin)`.
+  - name: plugin-digest-registry
+    term: register
+    reason: >-
+      plugin digest registry required by plan §12.3 (same version + different digest must be
+      refused), not the frontend v1 register axis; sites: plugin-host/src/{trust,host,index}.ts
+    paths:
+      - packages/plugin-host/src/trust.ts
+      - packages/plugin-host/src/host.ts
+      - packages/plugin-host/src/index.ts
+    linePattern: "[Pp]lugin|digest|manifest|REGISTRY_DIGEST_CONFLICT|version"

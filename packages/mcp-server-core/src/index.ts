@@ -16,13 +16,15 @@ import {
 import type { SnapshotRef as IrSnapshotRef } from "@skill-wiki/ir";
 import type { Principal } from "@skill-wiki/query-engine";
 import type { ProjectionScope, TransportKind } from "@skill-wiki/projection-engine";
-import { createPrimeQueryResponse, type ResourceIdentity } from "./query-response";
+import { createPrimeQueryResponse, createPrimePlanResponse, type ResourceIdentity } from "./query-response";
 export {
   createPrimeQueryResponse,
+  createPrimePlanResponse,
   createPrimeResourceUri,
   type QueryResult,
   type QueryResponseResult,
   type PrimeQueryResponse,
+  type PrimePlanResponse,
   type ResourceIdentity,
 } from "./query-response";
 export {
@@ -40,11 +42,25 @@ export {
   type ServeModel,
 } from "./model-context";
 export {
+  MODEL_LOCK_FILE,
+  ModelLockError,
+  computeModelSchemaDigest,
+  parseModelLock,
+  verifyModelLock,
+  type ModelLock,
+  type ModelLockCode,
+  type ModelLockDiagnostic,
+  type ModelLockEntry,
+} from "./model-lock";
+export {
   DEFAULT_GENERATOR_BINDINGS,
+  executePrimePlan,
   executePrimeQuery,
   resolvePrimeUri,
   type GeneratorBinding,
   type GeneratorMechanism,
+  type PlanArguments,
+  type PlanOutcome,
   type QueryArguments,
   type ServeOptions,
   type ServeOutcome,
@@ -52,7 +68,8 @@ export {
 
 import { buildCorpusGraph, type CorpusGraph } from "./corpus-graph";
 import { loadServeModel, resolveModelRoot, type ServeModel } from "./model-context";
-import { executePrimeQuery, resolvePrimeUri, type QueryArguments, type ServeOptions } from "./serve";
+import { verifyModelLock } from "./model-lock";
+import { executePrimePlan, executePrimeQuery, resolvePrimeUri, type PlanArguments, type QueryArguments, type ServeOptions } from "./serve";
 
 export interface PrimeMcpOptions {
   primeDir: string;
@@ -84,6 +101,19 @@ const PRIME_QUERY_SCHEMA = z.object({
   kind: z.string().optional(),
   seeds: z.array(z.string().min(1)).optional(),
   limit: z.number().int().positive().max(100).optional().default(10),
+});
+
+/**
+ * `prime_plan` (§11.1). No `scope`: plan has one meaning. No `id`: a plan is over
+ * a retrieval signal, and "the plan for one known unit" is `prime_query`
+ * `scope=show`.
+ */
+const PRIME_PLAN_SCHEMA = z.object({
+  query: z.string().optional(),
+  seeds: z.array(z.string().min(1)).optional(),
+  kind: z.string().optional(),
+  level: z.string().optional(),
+  limit: z.number().int().positive().max(100).optional(),
 });
 
 const PRIME_RESOURCE_SCHEMA = z.object({ uri: z.string().min(1) });
@@ -144,6 +174,20 @@ export function createPrimeMcpServer(options: PrimeMcpOptions): PrimeMcpInstance
 
   const resolution = resolveModelRoot(options.primeDir, environment, options.modelRoot);
   const model = loadServeModel(resolution);
+  // §8.4 lists model-lock integrity among the boot checks; nothing performed it,
+  // so a manifest could name one model while a different one served the corpus.
+  // A mismatch throws out of `createPrimeMcpServer` — refusing to boot is the
+  // only honest response to "the snapshot identity does not describe the answer".
+  for (const diagnostic of verifyModelLock({
+    bundleRoot: options.primeDir,
+    model: model.model,
+    ...(loaded.manifest === undefined ? {} : {
+      manifestModels: loaded.manifest.models,
+      manifestSchemaDigest: loaded.manifest.schemaDigest,
+    }),
+  })) {
+    stderr.error(`[prime-mcp-core] ${diagnostic.severity} ${diagnostic.code}: ${diagnostic.message}`);
+  }
   stderr.error(
     `[prime-mcp-core] model ${model.model.manifest.name}@${model.model.manifest.version} (${resolution.origin}) · ` +
       `profiles ${Object.keys(model.profiles).sort().join(",")} · projections ${model.catalog.profiles().join(",")}`,
@@ -222,6 +266,24 @@ export function createPrimeMcpServer(options: PrimeMcpOptions): PrimeMcpInstance
     },
   );
   server.registerTool(
+    "prime_plan",
+    {
+      description:
+        "Return the selection plan for a retrieval request without rendering it: candidates with per-axis scores, rejections with reasons, relation expansions, load order, and the budget arithmetic that chose each unit's projection level. Same request and same plan as prime_query scope=atoms, minus the projection cost.",
+      inputSchema: PRIME_PLAN_SCHEMA,
+    },
+    async (args: PlanArguments) => {
+      const outcome = executePrimePlan(args, serve);
+      if ("error" in outcome) return { content: [{ type: "text", text: outcome.error }] };
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify(createPrimePlanResponse(loaded.snapshot, outcome.plan), null, 2),
+        }],
+      };
+    },
+  );
+  server.registerTool(
     "prime_resource",
     {
       description:
@@ -248,7 +310,7 @@ export async function runStdioServer(environment: Record<string, string | undefi
   });
   console.error(`[prime-mcp-core] ${instance.index.total} atoms · ${instance.index.totalTokens} tokens · snapshot ${instance.snapshot.corpus}@${instance.snapshot.release}`);
   await instance.server.connect(new StdioServerTransport());
-  console.error(`[prime-mcp-core] ready · tools: prime_query, prime_resource · transport ${instance.serve.transport} · stdio active`);
+  console.error(`[prime-mcp-core] ready · tools: prime_query, prime_plan, prime_resource · transport ${instance.serve.transport} · stdio active`);
 }
 
 const isEntrypoint = Boolean(process.argv[1]) && import.meta.url === pathToFileURL(resolveFsPath(process.argv[1])).href;

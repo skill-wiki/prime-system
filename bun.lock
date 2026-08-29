@@ -19,8 +19,12 @@
       "name": "@skill-wiki/action-runtime",
       "version": "0.1.0",
       "dependencies": {
+        "@skill-wiki/evaluation-engine": "workspace:*",
         "@skill-wiki/ir": "workspace:*",
         "@skill-wiki/model-schema": "workspace:*",
+      },
+      "devDependencies": {
+        "@skill-wiki/policy-engine": "workspace:*",
       },
     },
     "packages/bundle": {
@@ -70,6 +74,15 @@
         "@skill-wiki/ir": "workspace:*",
       },
     },
+    "packages/evaluation-engine": {
+      "name": "@skill-wiki/evaluation-engine",
+      "version": "0.1.0",
+      "dependencies": {
+        "@skill-wiki/ir": "workspace:*",
+        "@skill-wiki/policy-engine": "workspace:*",
+        "zod": "^4.0.0",
+      },
+    },
     "packages/event-store": {
       "name": "@skill-wiki/event-store",
       "version": "0.1.0",
@@ -77,6 +90,16 @@
     "packages/ir": {
       "name": "@skill-wiki/ir",
       "version": "0.1.0",
+    },
+    "packages/language-server": {
+      "name": "@skill-wiki/language-server",
+      "version": "0.1.0",
+      "dependencies": {
+        "@skill-wiki/compiler": "workspace:*",
+        "@skill-wiki/model-schema": "workspace:*",
+        "@skill-wiki/parser": "workspace:*",
+        "@skill-wiki/types": "workspace:*",
+      },
     },
     "packages/mcp-server-core": {
       "name": "@skill-wiki/mcp-server-core",
@@ -107,6 +130,23 @@
       "version": "0.1.0",
       "dependencies": {
         "@skill-wiki/types": "workspace:*",
+      },
+    },
+    "packages/plugin-host": {
+      "name": "@skill-wiki/plugin-host",
+      "version": "0.1.0",
+      "dependencies": {
+        "yaml": "^2.8.3",
+        "zod": "^4.0.0",
+      },
+    },
+    "packages/policy-engine": {
+      "name": "@skill-wiki/policy-engine",
+      "version": "0.1.0",
+      "dependencies": {
+        "@skill-wiki/model-schema": "workspace:*",
+        "yaml": "^2.8.3",
+        "zod": "^4.0.0",
       },
     },
     "packages/projection-engine": {
@@ -145,6 +185,28 @@
         "@skill-wiki/types": "workspace:*",
         "yaml": "^2.8.3",
         "zod": "^4.0.0",
+      },
+    },
+    "packages/sdk": {
+      "name": "@skill-wiki/sdk",
+      "version": "0.1.0",
+      "dependencies": {
+        "@skill-wiki/action-runtime": "workspace:*",
+        "@skill-wiki/ir": "workspace:*",
+        "@skill-wiki/model-schema": "workspace:*",
+        "@skill-wiki/query-engine": "workspace:*",
+      },
+    },
+    "packages/sdk-codegen": {
+      "name": "@skill-wiki/sdk-codegen",
+      "version": "0.1.0",
+      "bin": {
+        "prime-sdk-codegen": "src/cli.ts",
+      },
+      "dependencies": {
+        "@skill-wiki/ir": "workspace:*",
+        "@skill-wiki/model-schema": "workspace:*",
+        "@skill-wiki/sdk": "workspace:*",
       },
     },
     "packages/testkit": {
@@ -189,15 +251,23 @@
 
     "@skill-wiki/constraint-solver": ["@skill-wiki/constraint-solver@workspace:packages/constraint-solver"],
 
+    "@skill-wiki/evaluation-engine": ["@skill-wiki/evaluation-engine@workspace:packages/evaluation-engine"],
+
     "@skill-wiki/event-store": ["@skill-wiki/event-store@workspace:packages/event-store"],
 
     "@skill-wiki/ir": ["@skill-wiki/ir@workspace:packages/ir"],
+
+    "@skill-wiki/language-server": ["@skill-wiki/language-server@workspace:packages/language-server"],
 
     "@skill-wiki/mcp-server-core": ["@skill-wiki/mcp-server-core@workspace:packages/mcp-server-core"],
 
     "@skill-wiki/model-schema": ["@skill-wiki/model-schema@workspace:packages/model-schema"],
 
     "@skill-wiki/parser": ["@skill-wiki/parser@workspace:packages/parser"],
+
+    "@skill-wiki/plugin-host": ["@skill-wiki/plugin-host@workspace:packages/plugin-host"],
+
+    "@skill-wiki/policy-engine": ["@skill-wiki/policy-engine@workspace:packages/policy-engine"],
 
     "@skill-wiki/projection-engine": ["@skill-wiki/projection-engine@workspace:packages/projection-engine"],
 
@@ -206,6 +276,10 @@
     "@skill-wiki/registry": ["@skill-wiki/registry@workspace:packages/registry"],
 
     "@skill-wiki/runtime": ["@skill-wiki/runtime@workspace:packages/runtime"],
+
+    "@skill-wiki/sdk": ["@skill-wiki/sdk@workspace:packages/sdk"],
+
+    "@skill-wiki/sdk-codegen": ["@skill-wiki/sdk-codegen@workspace:packages/sdk-codegen"],
 
     "@skill-wiki/testkit": ["@skill-wiki/testkit@workspace:packages/testkit"],
 

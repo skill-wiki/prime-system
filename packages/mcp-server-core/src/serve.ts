@@ -15,7 +15,7 @@
  * admission first, and the graph handed onward is the admitted one.
  */
 
-import type { DiagnosticIR, GraphIR, SnapshotRef as IrSnapshotRef, UnitIR } from "@skill-wiki/ir";
+import type { DiagnosticIR, GraphIR, SelectionPlanIR, SnapshotRef as IrSnapshotRef, UnitIR } from "@skill-wiki/ir";
 import {
   CandidateGeneratorRegistry,
   admit,
@@ -95,6 +95,25 @@ export interface ServeOptions {
 
 export type ServeOutcome =
   | { readonly results: readonly QueryResult[]; readonly diagnostics: readonly DiagnosticIR[] }
+  | { readonly error: string };
+
+/**
+ * `prime_plan` arguments: the retrieval-shaped subset of `prime_query`.
+ *
+ * There is no `scope`, because plan has only one meaning. `level` is accepted
+ * because it changes the plan — it sets the primary projection the budget tries
+ * first and therefore the fallback chain below it.
+ */
+export interface PlanArguments {
+  readonly query?: string;
+  readonly seeds?: readonly string[];
+  readonly kind?: string;
+  readonly level?: string;
+  readonly limit?: number;
+}
+
+export type PlanOutcome =
+  | { readonly plan: SelectionPlanIR }
   | { readonly error: string };
 
 /** Preserved verbatim from the pre-cutover implementation; see the lane report. */
@@ -329,6 +348,81 @@ export function executePrimeQuery(args: QueryArguments, options: ServeOptions): 
   }
 }
 
+/**
+ * The single selection-planning call in this package.
+ *
+ * `prime_query` and `prime_plan` both go through here, and that is the point:
+ * plan is defined as "what query would select, without rendering it" (§9.1
+ * `plan(request) => SelectionPlanIR`). Two independent request builders would let
+ * the two tools drift, and a plan that does not describe the query is worse than
+ * no plan tool at all.
+ */
+function runSelectionPlan(
+  options: ServeOptions,
+  profile: string,
+  args: QueryArguments,
+): SelectionPlanIR {
+  const declared = options.model.profiles[profile]!;
+  const primary = args.level ?? declared.projection;
+  const request: QueryRequest = {
+    ...baseRequest(options, profile, args),
+    fallbackProjections: cheaperProjections(primary, options.model.projections),
+  };
+  return planSelection(request, {
+    graph: options.corpus.graph,
+    profiles: options.model.profiles,
+    relations: options.model.relations,
+    projections: options.model.projections,
+    tokenCost: (unitId, projectionRef) => options.corpus.tokenCosts.get(unitId)?.[projectionRef],
+  }, { generators: buildRegistry(options, profile) });
+}
+
+/**
+ * `prime_plan` (§11.1) mapped onto the Engine's plan capability (§9.1
+ * `plan(request) => SelectionPlanIR`).
+ *
+ * This is not a rename of the old `prime_compile` and not an alias for anything:
+ * §16 Phase 0 asked for a request-time plan tool, the capability it would have
+ * named was dropped rather than renamed at the cutover, and an alias to a missing
+ * capability would be a compatibility shim. What exists here is the plan itself —
+ * `query-engine`'s `planSelection` output returned verbatim, so a caller can see
+ * candidates, scores, rejections with reasons, relation expansions, the load
+ * order, the budget arithmetic and the level each unit could be afforded at,
+ * *without* paying to render any of it.
+ *
+ * The difference from `prime_query` is exactly rendering: same profile, same
+ * request, same plan. Nothing is re-decided here.
+ */
+export function executePrimePlan(args: PlanArguments, options: ServeOptions): PlanOutcome {
+  const profile = profileName(options.model);
+  const hasSeeds = args.seeds !== undefined && args.seeds.length > 0;
+  if (args.query === undefined && !hasSeeds) {
+    // Refused explicitly rather than answered with an empty plan. With neither
+    // text nor seeds no candidate generator can fire, so the result would be an
+    // empty selection whose emptiness says nothing about the corpus — and
+    // enumerating instead (what `scope=atoms` does) would return a listing
+    // dressed up as a plan.
+    return { error: "prime_plan requires `query` or `seeds`: a selection plan with no retrieval signal is not a plan." };
+  }
+  try {
+    return {
+      plan: runSelectionPlan(options, profile, {
+        scope: "atoms",
+        ...(args.query === undefined ? {} : { query: args.query }),
+        ...(hasSeeds ? { seeds: args.seeds } : {}),
+        ...(args.kind === undefined ? {} : { kind: args.kind }),
+        ...(args.level === undefined ? {} : { level: args.level }),
+        ...(args.limit === undefined ? {} : { limit: args.limit }),
+      }),
+    };
+  } catch (error) {
+    if (error instanceof QueryEngineError) {
+      return { error: error.diagnostics.map((d) => `${d.code}: ${d.message}`).join("; ") };
+    }
+    throw error;
+  }
+}
+
 function planAtoms(
   args: QueryArguments,
   options: ServeOptions,
@@ -349,17 +443,7 @@ function planAtoms(
     return enumerate(args, options, base, primary, cache, diagnostics);
   }
 
-  const request: QueryRequest = {
-    ...base,
-    fallbackProjections: cheaperProjections(primary, options.model.projections),
-  };
-  const plan = planSelection(request, {
-    graph: options.corpus.graph,
-    profiles: options.model.profiles,
-    relations: options.model.relations,
-    projections: options.model.projections,
-    tokenCost: (unitId, projectionRef) => options.corpus.tokenCosts.get(unitId)?.[projectionRef],
-  }, { generators: buildRegistry(options, profile) });
+  const plan = runSelectionPlan(options, profile, args);
 
   diagnostics.push(...plan.conflicts, ...(plan.rationale ?? []));
 
