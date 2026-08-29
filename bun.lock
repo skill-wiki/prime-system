@@ -75,6 +75,24 @@
         "@skill-wiki/ir": "workspace:*",
       },
     },
+    "packages/corpus-schema": {
+      "name": "@skill-wiki/corpus-schema",
+      "version": "0.1.0",
+      "dependencies": {
+        "yaml": "^2.8.3",
+        "zod": "^4.0.0",
+      },
+    },
+    "packages/corpus-tools": {
+      "name": "@skill-wiki/corpus-tools",
+      "version": "0.1.0",
+      "bin": {
+        "prime-corpus-reconcile": "src/cli.ts",
+      },
+      "dependencies": {
+        "yaml": "^2.8.3",
+      },
+    },
     "packages/evaluation-engine": {
       "name": "@skill-wiki/evaluation-engine",
       "version": "0.1.0",
@@ -183,6 +201,7 @@
       "name": "@skill-wiki/runtime",
       "version": "0.1.0",
       "dependencies": {
+        "@skill-wiki/corpus-schema": "workspace:*",
         "@skill-wiki/types": "workspace:*",
         "yaml": "^2.8.3",
         "zod": "^4.0.0",
@@ -217,6 +236,7 @@
         "prime-testkit": "src/cli.ts",
       },
       "dependencies": {
+        "@skill-wiki/corpus-schema": "workspace:*",
         "@skill-wiki/ir": "workspace:*",
         "@skill-wiki/model-schema": "workspace:*",
         "@skill-wiki/parser": "workspace:*",
@@ -252,6 +272,10 @@
     "@skill-wiki/compiler": ["@skill-wiki/compiler@workspace:packages/compiler"],
 
     "@skill-wiki/constraint-solver": ["@skill-wiki/constraint-solver@workspace:packages/constraint-solver"],
+
+    "@skill-wiki/corpus-schema": ["@skill-wiki/corpus-schema@workspace:packages/corpus-schema"],
+
+    "@skill-wiki/corpus-tools": ["@skill-wiki/corpus-tools@workspace:packages/corpus-tools"],
 
     "@skill-wiki/evaluation-engine": ["@skill-wiki/evaluation-engine@workspace:packages/evaluation-engine"],
 

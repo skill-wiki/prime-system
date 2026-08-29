@@ -32,7 +32,7 @@
     {
       "code": "RERANKER_NOT_IMPLEMENTED",
       "severity": "warning",
-      "message": "Retrieval profile 'triage-default' declares reranker 'weighted-blend-v2', which this engine does not implement. The returned order is the feature-scored order with no reranking applied; treat any ranking-sensitive decision accordingly."
+      "message": "Retrieval profile 'triage-default' declares reranker 'weighted-blend-v2', which this engine does not implement (registered: [stable-linear-v1]). The returned order is the feature-scored order with no reranking applied; treat any ranking-sensitive decision accordingly."
     },
     {
       "code": "RELATION_EXCLUSION",

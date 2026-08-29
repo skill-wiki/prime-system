@@ -10,6 +10,7 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
+    "@skill-wiki/corpus-schema": "workspace:*",
     "@skill-wiki/types": "workspace:*",
     "yaml": "^2.8.3",
     "zod": "^4.0.0"

@@ -25,11 +25,6 @@
   ],
   "conflicts": [
     {
-      "code": "RERANKER_NOT_IMPLEMENTED",
-      "severity": "warning",
-      "message": "Retrieval profile 'audit-default' declares reranker 'stable-linear-v1', which this engine does not implement. The returned order is the feature-scored order with no reranking applied; treat any ranking-sensitive decision accordingly."
-    },
-    {
       "code": "BUDGET_EXCEEDED_AT_CHEAPEST_PROJECTION",
       "severity": "error",
       "message": "Selection of 2 unit(s) costs 120 at the cheapest projection 'core' against a budget of 30; short by 90. No unit was dropped: membership is a constraint decision, not a budget decision."

@@ -10,6 +10,11 @@
  *   closure relation cyclePolicy   reject / reject / collapse
  *   exclusion conflictSeverity     error  / warning / error
  *   profile declares a reranker    yes    / no      / yes
+ *   …and is it one we implement    yes    / n/a     / no
+ *
+ * That last row is why the reranker assertions read the engine's own registry
+ * rather than a literal: `security` declares `stable-linear-v1` and gets it,
+ * `incident-ops` declares `weighted-blend-v2` and gets the gap diagnostic instead.
  *
  * Every expectation below is read out of the fixture's own declarations at run
  * time. There is no literal `"depends-on"`, no literal `"error"` keyed to a
@@ -19,7 +24,7 @@
 
 import { beforeAll, describe, expect, test } from "bun:test";
 import type { SelectionPlanIR } from "@skill-wiki/ir";
-import { planSelection, type QueryRequest } from "../src/index.ts";
+import { RERANKER_APPLIED, builtinRerankers, planSelection, type QueryRequest } from "../src/index.ts";
 import {
   DOMAINS,
   loadDomainPackage,
@@ -135,9 +140,23 @@ for (const domain of DOMAINS) {
       }
     });
 
-    test("reports the reranker gap if and only if its profile declares one", () => {
-      const codes = plan(domain).conflicts.map(d => d.code);
-      expect(codes.includes("RERANKER_NOT_IMPLEMENTED")).toBe(domain.declaresReranker);
+    test("reports the reranker gap if and only if its declared reranker is absent here", () => {
+      // Read against the engine's actual registry, not a literal per domain: the
+      // three fixtures deliberately split three ways — `security` declares
+      // `stable-linear-v1` (implemented, so it runs), `incident-ops` declares
+      // `weighted-blend-v2` (not implemented, so the gap fires) and `recipe`
+      // declares none. Hard-coding the expectation would let the row survive a
+      // change in what the engine implements.
+      const model = loaded.get(domain.fixtureDir)!;
+      const declared = model.profiles[domain.profileName]!.reranker;
+      const implemented = declared !== undefined && builtinRerankers().has(declared);
+      const result = plan(domain);
+      const codes = result.conflicts.map(d => d.code);
+
+      expect(codes.includes("RERANKER_NOT_IMPLEMENTED")).toBe(domain.declaresReranker && !implemented);
+      // The positive receipt is the other half: a stage that ran says so, so the
+      // three states stay distinguishable from the plan alone.
+      expect((result.rationale ?? []).map(d => d.code).includes(RERANKER_APPLIED)).toBe(implemented);
     });
 
     test("reports a rejected cycle only where its closure relation declares reject", () => {

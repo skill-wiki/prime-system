@@ -34,6 +34,17 @@ export {
   type IndexAtomLike,
 } from "./corpus-graph";
 export {
+  DIAGNOSTICS_FILE,
+  buildDiagnosticsDocument,
+  classifyDangling,
+  parseDanglingMessage,
+  writeDiagnosticsDocument,
+  type BundleDiagnosticsDocument,
+  type ClassifyContext,
+  type DanglingClass,
+  type DanglingRecord,
+} from "./diagnostics-sink";
+export {
   cheaperProjections,
   loadServeModel,
   resolveModelRoot,

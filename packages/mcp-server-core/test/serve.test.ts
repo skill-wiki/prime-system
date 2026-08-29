@@ -250,11 +250,19 @@ describe("changed external semantics (each one deliberate)", () => {
     expect(outcome.results.length).toBeGreaterThan(1);
   });
 
-  it("surfaces the declared-but-unimplemented reranker instead of staying silent", () => {
+  it("runs the profile's declared reranker instead of reporting it as a gap", () => {
+    // Was: asserted RERANKER_NOT_IMPLEMENTED is surfaced. That assertion pinned the
+    // absence of a reranker stage, which the engine now has: the model declares
+    // `stable-linear-v1` and query-engine resolves + runs it. The diagnostic is still
+    // correct for a profile naming a reranker this engine does not implement, so the
+    // gap-reporting path keeps its own coverage in query-engine/test/capabilities.test.ts.
+    // What this suite must pin is the *serve* path's outcome: a recognised reranker runs
+    // and therefore raises no capability gap.
     const options = serve();
     const outcome = executePrimeQuery({ scope: "atoms", query: "tea", limit: 3 }, options);
     if ("error" in outcome) throw new Error(outcome.error);
-    expect(outcome.diagnostics.some((d) => d.code === "RERANKER_NOT_IMPLEMENTED")).toBe(true);
+    expect(outcome.diagnostics.some((d) => d.code === "RERANKER_NOT_IMPLEMENTED")).toBe(false);
+    expect(outcome.results.length).toBeGreaterThan(0);
   });
 
   it("emits a §11.3 resource URI that the projection engine can parse back", () => {

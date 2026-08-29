@@ -1,11 +1,14 @@
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { parse as parseYaml } from "yaml";
 import { loadModel } from "@skill-wiki/model-schema";
+import { loadCorpusPackage } from "@skill-wiki/corpus-schema";
 import { formatReport } from "./diagnostics.ts";
 import { runModelConformance } from "./model-conformance.ts";
 import { loadCorpus } from "./corpus.ts";
 import { runCorpusConformance } from "./corpus-conformance.ts";
+import { runCorpusDeclarationConformance } from "./corpus-declaration-conformance.ts";
 import { corpusFromV1Sources } from "./corpus-adapter.ts";
 import { closedSetCheck, domainScanCheck, formatDomainScan, loadVocabulary, mergeVocabularies, scanDomainSemantics, vocabularyFromModel, type Vocabulary } from "./domain-scan.ts";
 import { buildPackageGraph, formatPackageGraph, packageWiringCheck } from "./package-graph.ts";
@@ -18,6 +21,8 @@ const USAGE = `prime testkit
 
   bun packages/testkit/src/cli.ts model  <model-root> [--allow-empty-type-shells]
   bun packages/testkit/src/cli.ts corpus <model-root> <corpus.yaml> [--licenses=A,B] [--require-citations]
+                                         (a prime-corpus.yaml declaration runs the §4.3 declaration suite;
+                                          a kind: corpus document runs the §17.2 content suite)
   bun packages/testkit/src/cli.ts corpus-v1 <model-root> <sources-dir> [--name=N] [--citation-fields=a,b] [--licenses=A,B]
   bun packages/testkit/src/cli.ts scan   [--roots=dir,dir] [--model=<model-root>] [--vocabulary=file.yaml]
                                          [--markdown] [--max-rows=N] [--all-hits] [--closed-sets]
@@ -68,12 +73,30 @@ function runModel(argv: readonly string[]): number {
   return result.status === "fail" ? 1 : 0;
 }
 
+/**
+ * `corpus` accepts either of the two documents that legitimately live in a
+ * `.yaml` a corpus owner points at: the §4.3 *declaration*
+ * (`protocol: prime/corpus/v2`) or a content corpus (`kind: corpus`). Dispatch
+ * is on the document's own protocol marker rather than on a flag, because the two
+ * are distinguishable from their contents and a flag would let a caller run the
+ * wrong suite and read its pass as coverage of the other.
+ */
 function runCorpus(argv: readonly string[]): number {
   const [modelRoot, corpusPath] = argv;
   if (modelRoot === undefined || corpusPath === undefined) { console.error(USAGE); return 2; }
   const model = loadModel(resolve(modelRoot));
   if (!model.ok) { console.error(`model failed to load:\n${model.diagnostics.map(d => `  ${d.code}: ${d.message}`).join("\n")}`); return 1; }
-  const corpus = loadCorpus(resolve(corpusPath));
+
+  const resolvedCorpusPath = resolve(corpusPath);
+  if (declaresCorpusPackage(resolvedCorpusPath)) {
+    const declaration = loadCorpusPackage(resolvedCorpusPath);
+    if (!declaration.ok) { console.error(`corpus declaration failed to load:\n${declaration.diagnostics.map(d => `  ${d.code}: ${d.message}`).join("\n")}`); return 1; }
+    const result = runCorpusDeclarationConformance(declaration.value.declaration, model.value);
+    console.log(formatReport(result));
+    return result.status === "fail" ? 1 : 0;
+  }
+
+  const corpus = loadCorpus(resolvedCorpusPath);
   if (!corpus.ok) { console.error(`corpus failed to load:\n${corpus.diagnostics.map(d => `  ${d.code}: ${d.message}`).join("\n")}`); return 1; }
   const licenses = list(argv, "licenses");
   const result = runCorpusConformance(corpus.value, model.value, {
@@ -82,6 +105,16 @@ function runCorpus(argv: readonly string[]): number {
   });
   console.log(formatReport(result));
   return result.status === "fail" ? 1 : 0;
+}
+
+/** Peek at the document's protocol marker without committing to either schema. */
+function declaresCorpusPackage(path: string): boolean {
+  if (!existsSync(path)) return false;
+  try {
+    const document: unknown = parseYaml(readFileSync(path, "utf8"));
+    return document !== null && typeof document === "object" && !Array.isArray(document)
+      && (document as Record<string, unknown>)["protocol"] === "prime/corpus/v2";
+  } catch { return false; }
 }
 
 function runScan(argv: readonly string[]): number {

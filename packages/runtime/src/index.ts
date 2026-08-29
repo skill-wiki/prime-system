@@ -64,3 +64,14 @@ export {
   type LoadCorpusSnapshotOptions,
   type LoadedCorpusSnapshot,
 } from "./corpus-snapshot";
+export {
+  CorpusRegistry,
+  mountCorpus,
+  corpusMountKey,
+  type CorpusMountRequest,
+  type CorpusMountDiagnostic,
+  type CorpusMountErrorCode,
+  type MountedCorpus,
+  type FailedMount,
+  type NamespaceSource,
+} from "./corpus-snapshot";

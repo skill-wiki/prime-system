@@ -129,9 +129,39 @@ The frontend-design MCP wrapper performs 6-axis retrieval after Layer 1 intent c
 
 ---
 
-## §5 · MCP Tools (Frontend-Design Wrapper)
+## §5 · MCP Tools
 
-5 tools registered in `mcp-server/index.ts` under server name `prime-wiki` (earlier drafts said "6" — the deferred-search tool was planned but never shipped):
+### §5.1 · The production surface
+
+Six tools across two `.mcp.json` servers. Neither is `mcp-server/index.ts`: that
+file has not been the production entry since `.mcp.json` was pointed at
+`mcp-server-core`, and `grep PRIME_BACKEND|IS_V3` over the wired path returns 0.
+
+| Server | Entry | Tools |
+|---|---|---|
+| `prime-wiki` | `release/prime-system/packages/mcp-server-core/src/index.ts` | `prime_query` (`scope=atoms\|related\|show`), `prime_plan`, `prime_resource` |
+| `prime-design` | `domains/prime-frontend-design/mcp/src/server.ts` | `prime_design_plan`, `prime_design_resolve`, `prime_design_validate` |
+
+The three `prime_design_*` tools are not hand-written: they are projected from
+`domains/prime-frontend-design/model/tools/` by `sdk-codegen`'s `emitMcpTools`, so
+their names, input schemas and annotations come from the Model Package (§11.2).
+Two servers rather than one because §15.4 is one-way — the kernel cannot import a
+domain, so an aggregated process would have to be owned by a domain package.
+
+`prime_design_*` input keys are deliberately identical to the retired tools they
+replace (`design-actions.yaml`), and `prime_design_plan` is byte-identical to the
+retired `prime_intent` on the briefs exercised by
+`scripts/shadow-mcp/run.ts`.
+
+### §5.2 · The retired v1 surface (historical)
+
+Everything below describes the five tools of `mcp-server/index.ts` as it stood
+before the cutover. It is kept for provenance and is **not** a description of any
+running server. Two of the descriptions were also wrong about that server:
+`prime_validate` took `(html_path, brief)` and not `(html_path, register,
+contract)`, and `prime_resolve` took a `brief` and returned a typed design spec —
+resolving an atom id to content at a projection level is what the current
+`prime_query scope=show` and `prime_resource` do.
 
 ### `prime_compile`
 Primary entry point. Brief → 6-axis atom retrieval plan.

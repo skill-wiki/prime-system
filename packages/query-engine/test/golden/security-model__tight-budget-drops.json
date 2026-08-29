@@ -23,13 +23,7 @@
     "@sec/assessment-multi-factor-q3",
     "@sec/threat-injected-query"
   ],
-  "conflicts": [
-    {
-      "code": "RERANKER_NOT_IMPLEMENTED",
-      "severity": "warning",
-      "message": "Retrieval profile 'audit-default' declares reranker 'stable-linear-v1', which this engine does not implement. The returned order is the feature-scored order with no reranking applied; treat any ranking-sensitive decision accordingly."
-    }
-  ],
+  "conflicts": [],
   "budget": {
     "maxTokens": 120,
     "consumedTokens": 94,

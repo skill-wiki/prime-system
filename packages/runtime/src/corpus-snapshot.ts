@@ -7,6 +7,7 @@
 import { existsSync, lstatSync, readFileSync, readdirSync } from "fs";
 import { createHash } from "crypto";
 import { isAbsolute, join, parse as parsePath, relative, resolve, sep } from "path";
+import { CORPUS_DECLARATION_FILE, NAMESPACE, loadCorpusPackage } from "@skill-wiki/corpus-schema";
 
 export const CORPUS_MANIFEST_FILE = "corpus.manifest.json";
 export const CORPUS_INDEX_FILE = "_index.xml";
@@ -373,4 +374,315 @@ export function loadCorpusSnapshot(
     });
   }
   return { manifest, snapshot: snapshotFromManifest(manifest), diagnostics: [] };
+}
+
+// ─── Multi-corpus mounting (§8.5 activate/swap, §12.4 scoped keys) ───────────
+
+/**
+ * Why a registry, and why here.
+ *
+ * `loadCorpusSnapshot` above takes one directory and returns one snapshot. The
+ * server built on it reads one `PRIME_DIR` and freezes one `{tenant, workspace,
+ * corpus, release}` tuple at boot, so switching corpus means editing
+ * `.mcp.json` and restarting the process. §12.4 names that shape explicitly and
+ * forbids it — "多租户不能靠多个全局 PRIME_DIR 模拟" — and §8.5 requires that a
+ * new release be activated by an atomic swap with old runs still replayable.
+ * Neither is possible while the loader's arity is the limit.
+ *
+ * So the registry is deliberately *not* a second loader. It is a keyed set of
+ * results from the loader that already exists, plus the two operations §8.5
+ * names: `activate` and `swap`. Every mount goes through the same boot checks
+ * (index digest, content digest, protocol/ir/emitter gates); nothing here
+ * loosens them, and a mount that fails them is recorded as failed rather than
+ * dropped, because "the corpus you asked for did not load" and "the corpus you
+ * asked for was never mounted" are different answers to a request.
+ *
+ * Identity, not paths, is the key: `namespace@release`. A path is machine-local
+ * and mutable — the comment on `legacySnapshot` above already says so — and two
+ * mounts of the same release from two paths are the same corpus.
+ */
+
+export type CorpusMountErrorCode =
+  | "MOUNT_LOAD_FAILED"
+  | "MOUNT_DUPLICATE"
+  | "MOUNT_NAMESPACE_INVALID"
+  | "MOUNT_NAMESPACE_MISMATCH"
+  | "MOUNT_DECLARATION_INVALID"
+  | "MOUNT_NOT_FOUND";
+
+export interface CorpusMountDiagnostic {
+  code: CorpusMountErrorCode;
+  message: string;
+  context?: Record<string, string>;
+  severity: "warning" | "error";
+}
+
+/**
+ * How a mount's namespace is decided when the bundle's manifest and the corpus
+ * package declaration disagree.
+ *
+ * - `manifest` (default): the snapshot keeps `manifest.corpus`. The declaration
+ *   is still read and a mismatch is reported, so the divergence is visible
+ *   without changing a single outward-facing `prime://` URI.
+ * - `declaration`: the declared namespace wins and becomes the registry key.
+ *
+ * The default is `manifest` because `manifest.corpus` currently flows straight
+ * into the public resource URI (§11.3). Flipping the default would rewrite every
+ * URI a client has seen, which is a release decision and not a loader decision.
+ */
+export type NamespaceSource = "manifest" | "declaration";
+
+export interface CorpusMountRequest {
+  /** Directory holding the compiled bundle (`_index.xml` + `corpus.manifest.json`). */
+  readonly path: string;
+  /**
+   * Directory holding this corpus's `prime-corpus.yaml`. When given, the declared
+   * namespace is the authoritative source of the corpus's identity — that is the
+   * §4.3 answer to "where does a namespace come from", as opposed to the current
+   * answer, which is the basename of `path`.
+   */
+  readonly declarationRoot?: string;
+  readonly expectedSchemaDigest?: string;
+  readonly requireManifest?: boolean;
+}
+
+export interface MountedCorpus {
+  /** `namespace@release` — the registry key and the §12.4 corpus/release pair. */
+  readonly key: string;
+  readonly namespace: string;
+  readonly release: string;
+  /** What the bundle's own manifest called the corpus, kept even when overridden. */
+  readonly manifestCorpus: string;
+  /** What `prime-corpus.yaml` declared, when a declaration was supplied. */
+  readonly declaredNamespace?: string;
+  readonly path: string;
+  readonly loaded: LoadedCorpusSnapshot;
+  /** Corpus-side default retrieval profile from the declaration, if any (§4.3). */
+  readonly defaultProfile?: string;
+  readonly diagnostics: readonly CorpusMountDiagnostic[];
+}
+
+export interface FailedMount {
+  readonly path: string;
+  readonly diagnostics: readonly CorpusMountDiagnostic[];
+}
+
+export function corpusMountKey(namespace: string, release: string): string {
+  // Canonical JSON array rather than a delimiter join, matching
+  // `projection-engine/src/cache.ts`: a namespace may contain `/` and `.`, and a
+  // release may contain `+`, so no single separator is collision-free.
+  return JSON.stringify([namespace, release]);
+}
+
+/**
+ * A set of mounted corpora with one active release per namespace.
+ *
+ * Immutability is per snapshot, not per registry: `swap` replaces which release
+ * a namespace resolves to by default, and the displaced release stays mounted so
+ * a run recorded against it can still be replayed. That is the §8.5 sentence
+ * "旧 run 仍可重放" made operational rather than merely representable — the keys
+ * could already record an old snapshot, but nothing could load it back.
+ */
+export class CorpusRegistry {
+  private readonly mounts = new Map<string, MountedCorpus>();
+  private readonly active = new Map<string, string>();
+
+  static from(requests: readonly CorpusMountRequest[], options: { namespaceSource?: NamespaceSource } = {}): {
+    registry: CorpusRegistry;
+    failed: readonly FailedMount[];
+  } {
+    const registry = new CorpusRegistry();
+    const failed: FailedMount[] = [];
+    for (const request of requests) {
+      const outcome = mountCorpus(request, options);
+      if (outcome.ok) registry.add(outcome.mount, failed);
+      else failed.push(outcome.failure);
+    }
+    return { registry, failed };
+  }
+
+  private add(mount: MountedCorpus, failed: FailedMount[]): void {
+    const existing = this.mounts.get(mount.key);
+    if (existing !== undefined) {
+      failed.push({
+        path: mount.path,
+        diagnostics: [{
+          code: "MOUNT_DUPLICATE", severity: "error",
+          message: "A corpus release is already mounted under this identity.",
+          context: { key: mount.key, existingPath: existing.path, rejectedPath: mount.path },
+        }],
+      });
+      return;
+    }
+    this.mounts.set(mount.key, mount);
+    // First mount of a namespace becomes its active release; later ones must be
+    // activated explicitly, so mount order cannot silently repoint a namespace.
+    if (!this.active.has(mount.namespace)) this.active.set(mount.namespace, mount.release);
+  }
+
+  get size(): number { return this.mounts.size; }
+
+  namespaces(): readonly string[] {
+    return [...new Set([...this.mounts.values()].map(mount => mount.namespace))].sort(compareCanonicalStrings);
+  }
+
+  releasesOf(namespace: string): readonly string[] {
+    return [...this.mounts.values()].filter(mount => mount.namespace === namespace).map(mount => mount.release).sort(compareCanonicalStrings);
+  }
+
+  all(): readonly MountedCorpus[] {
+    return [...this.mounts.values()].sort((a, b) => compareCanonicalStrings(a.key, b.key));
+  }
+
+  /** Resolve a request to a mount. Omitting `release` takes the active one. */
+  resolve(namespace: string, release?: string): MountedCorpus | undefined {
+    const wanted = release ?? this.active.get(namespace);
+    if (wanted === undefined) return undefined;
+    return this.mounts.get(corpusMountKey(namespace, wanted));
+  }
+
+  activeRelease(namespace: string): string | undefined { return this.active.get(namespace); }
+
+  /**
+   * Point a namespace at an already-mounted release.
+   *
+   * Fails closed on an unmounted release rather than activating nothing: a
+   * silent no-op here would serve the previous corpus under the new release's
+   * name, which is the failure mode a swap exists to prevent.
+   */
+  activate(namespace: string, release: string): { ok: true; previous?: string } | { ok: false; diagnostic: CorpusMountDiagnostic } {
+    const key = corpusMountKey(namespace, release);
+    if (!this.mounts.has(key)) {
+      return {
+        ok: false,
+        diagnostic: {
+          code: "MOUNT_NOT_FOUND", severity: "error",
+          message: "Cannot activate a release that is not mounted.",
+          context: { namespace, release, mounted: this.releasesOf(namespace).join(", ") },
+        },
+      };
+    }
+    const previous = this.active.get(namespace);
+    this.active.set(namespace, release);
+    return previous === undefined ? { ok: true } : { ok: true, previous };
+  }
+
+  /**
+   * Mount a new release and activate it in one step, keeping the displaced one
+   * mounted for replay. The mount is validated before the activation, so a
+   * bundle that fails its boot checks never becomes the active corpus.
+   */
+  swap(request: CorpusMountRequest, options: { namespaceSource?: NamespaceSource } = {}):
+    | { ok: true; mounted: MountedCorpus; previous?: MountedCorpus }
+    | { ok: false; diagnostics: readonly CorpusMountDiagnostic[] } {
+    const outcome = mountCorpus(request, options);
+    if (!outcome.ok) return { ok: false, diagnostics: outcome.failure.diagnostics };
+    const previousRelease = this.active.get(outcome.mount.namespace);
+    const previous = previousRelease === undefined ? undefined : this.mounts.get(corpusMountKey(outcome.mount.namespace, previousRelease));
+    const failed: FailedMount[] = [];
+    if (!this.mounts.has(outcome.mount.key)) this.add(outcome.mount, failed);
+    if (failed.length > 0) return { ok: false, diagnostics: failed.flatMap(entry => entry.diagnostics) };
+    this.active.set(outcome.mount.namespace, outcome.mount.release);
+    const mounted = this.mounts.get(outcome.mount.key)!;
+    return previous === undefined || previous.key === mounted.key ? { ok: true, mounted } : { ok: true, mounted, previous };
+  }
+}
+
+/**
+ * Validate one bundle and pair it with its §4.3 declaration.
+ *
+ * The declaration is what makes a namespace legitimate: without it the only
+ * available identity is `manifest.corpus`, whose current value in this repo is
+ * the bundle directory's basename. Reading the declaration does not by itself
+ * change any URI — see `NamespaceSource`.
+ */
+export function mountCorpus(
+  request: CorpusMountRequest,
+  options: { namespaceSource?: NamespaceSource } = {},
+): { ok: true; mount: MountedCorpus } | { ok: false; failure: FailedMount } {
+  const diagnostics: CorpusMountDiagnostic[] = [];
+  let loaded: LoadedCorpusSnapshot;
+  try {
+    loaded = loadCorpusSnapshot(request.path, {
+      ...(request.requireManifest === undefined ? {} : { requireManifest: request.requireManifest }),
+      ...(request.expectedSchemaDigest === undefined ? {} : { expectedSchemaDigest: request.expectedSchemaDigest }),
+    });
+  } catch (cause) {
+    const code = cause instanceof PrimeBundleError ? cause.code : "unknown";
+    return {
+      ok: false,
+      failure: {
+        path: request.path,
+        diagnostics: [{
+          code: "MOUNT_LOAD_FAILED", severity: "error",
+          message: cause instanceof Error ? cause.message : "Corpus bundle failed to load.",
+          context: { path: request.path, bundleError: code },
+        }],
+      },
+    };
+  }
+
+  const manifestCorpus = loaded.snapshot.corpus;
+  let declaredNamespace: string | undefined;
+  let defaultProfile: string | undefined;
+  if (request.declarationRoot !== undefined) {
+    const declarationPath = join(request.declarationRoot, CORPUS_DECLARATION_FILE);
+    const declaration = loadCorpusPackage(declarationPath);
+    if (!declaration.ok) {
+      return {
+        ok: false,
+        failure: {
+          path: request.path,
+          diagnostics: [{
+            code: "MOUNT_DECLARATION_INVALID", severity: "error",
+            message: `Corpus declaration failed to load: ${declaration.diagnostics.map(d => `${d.code}: ${d.message}`).join("; ")}`,
+            context: { declaration: declarationPath },
+          }],
+        },
+      };
+    }
+    declaredNamespace = declaration.value.declaration.namespace;
+    defaultProfile = declaration.value.declaration.retrieval.defaultProfile;
+    if (declaredNamespace !== manifestCorpus) {
+      diagnostics.push({
+        // Warning, not error: with `namespaceSource: "manifest"` the mount is
+        // still correct and serving continues on the manifest's identity. The
+        // divergence is reported so it cannot be discovered only by reading a
+        // published URI.
+        code: "MOUNT_NAMESPACE_MISMATCH", severity: "warning",
+        message: "Corpus declaration and bundle manifest disagree about the corpus namespace.",
+        context: { declared: declaredNamespace, manifest: manifestCorpus, namespaceSource: options.namespaceSource ?? "manifest" },
+      });
+    }
+  }
+
+  const namespace = options.namespaceSource === "declaration" && declaredNamespace !== undefined ? declaredNamespace : manifestCorpus;
+  if (options.namespaceSource === "declaration" && !NAMESPACE.test(namespace)) {
+    return {
+      ok: false,
+      failure: {
+        path: request.path,
+        diagnostics: [{
+          code: "MOUNT_NAMESPACE_INVALID", severity: "error",
+          message: "Corpus namespace is not a formal namespace.",
+          context: { namespace, path: request.path },
+        }],
+      },
+    };
+  }
+
+  return {
+    ok: true,
+    mount: {
+      key: corpusMountKey(namespace, loaded.snapshot.release),
+      namespace,
+      release: loaded.snapshot.release,
+      manifestCorpus,
+      ...(declaredNamespace === undefined ? {} : { declaredNamespace }),
+      path: resolve(request.path),
+      loaded,
+      ...(defaultProfile === undefined ? {} : { defaultProfile }),
+      diagnostics,
+    },
+  };
 }

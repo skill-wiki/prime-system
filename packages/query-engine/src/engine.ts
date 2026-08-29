@@ -5,15 +5,18 @@
  *
  * The pipeline order is itself a contract, not an implementation detail:
  *
- *   admission (ACL) -> generation -> scoring -> rank cutoff -> relation expansion
- *   -> exclusion -> load order -> budget -> plan
+ *   admission (ACL) -> generation -> scoring -> reranking -> rank cutoff
+ *   -> relation expansion -> exclusion -> load order -> budget -> plan
  *
  * Admission is first so no later stage can observe a unit the principal may not
- * see. Expansion is after the rank cutoff so a closure is pulled for units that
- * actually made the cut, not for every unit that scored above zero. Exclusion is
- * after expansion so a prohibition still applies to a unit a closure dragged in.
- * Budget is last because it is the only stage allowed to drop a unit for a reason
- * unrelated to relevance, and that reason has to be reported as arithmetic.
+ * see. Reranking is after scoring and *before* the rank cutoff, because a
+ * reranker that could only reorder what already survived `limit` would have no
+ * say in which candidates the caller receives. Expansion is after the rank cutoff
+ * so a closure is pulled for units that actually made the cut, not for every unit
+ * that scored above zero. Exclusion is after expansion so a prohibition still
+ * applies to a unit a closure dragged in. Budget is last because it is the only
+ * stage allowed to drop a unit for a reason unrelated to relevance, and that
+ * reason has to be reported as arithmetic.
  */
 
 import type {
@@ -36,11 +39,20 @@ import {
 import { expandSelection, findExclusions } from "./expansion.ts";
 import type { CandidateGeneratorRegistry } from "./generators/registry.ts";
 import { orderByLoadOrder } from "./loadorder.ts";
+import { applyReranker, builtinRerankers, type RerankerRegistry } from "./reranker.ts";
 import { scoreCandidates, type GeneratorOutput } from "./scoring.ts";
 import { fail, type FacetSelector, type QueryEngineContext, type QueryRequest } from "./types.ts";
 
 export interface PlanSelectionOptions {
   readonly generators: CandidateGeneratorRegistry;
+  /**
+   * Rerankers available to resolve `RetrievalProfile.reranker`. Defaults to
+   * `builtinRerankers()`. A host adding its own starts from that call rather than
+   * from an empty registry, so passing this never silently withdraws
+   * `stable-linear-v1` — and a profile naming a reranker the supplied registry
+   * lacks is reported, never silently skipped.
+   */
+  readonly rerankers?: RerankerRegistry;
   /** Hop ceiling for `transitive` relations during expansion. */
   readonly maxExpansionDepth?: number;
 }
@@ -103,8 +115,16 @@ export interface RetrievalResult {
   readonly chain: readonly string[];
   readonly admission: AdmissionResult;
   readonly adjacency: Adjacency;
-  /** Scored candidates, descending score then unit id. */
+  /** Scored candidates in final ranked order: reranked when a reranker ran. */
   readonly candidates: readonly SelectionCandidateIR[];
+  /**
+   * Name of the reranker that ran, or `undefined` when the profile declared none
+   * or declared one this engine does not implement. Exposed so a caller can tell
+   * "no reranker was asked for" from "one was asked for and honoured" without
+   * re-resolving the profile — and, with `capabilityGaps`, from "asked for and
+   * absent".
+   */
+  readonly reranker: string | undefined;
   readonly rationale: readonly DiagnosticIR[];
   /**
    * Stages `profile` declares that this engine cannot run. Kept out of
@@ -142,11 +162,12 @@ export function runRetrieval(
 
   const chain = resolveProjectionChain(profile.projection, request.fallbackProjections, ctx.projections);
   const rationale: DiagnosticIR[] = [];
+  const rerankers = options.rerankers ?? builtinRerankers();
 
   // Detected here, at the one place the profile is resolved and validated, so a
   // declared-but-absent stage cannot be reported by one entry point and dropped
   // by the other.
-  const capabilityGaps = detectCapabilityGaps(profile);
+  const capabilityGaps = detectCapabilityGaps(profile, rerankers);
 
   // 1. Admission. Runs before generation so denied units never enter corpus
   //    statistics, graph paths or reasons.
@@ -191,12 +212,17 @@ export function runRetrieval(
   const scoring = scoreCandidates(outputs, profile);
   rationale.push(...scoring.diagnostics);
 
+  // 4. Reranking. Both plan entry points read `candidates` from here, so the stage
+  //    runs exactly once and neither path can end up with the other's order.
+  const reranked = applyReranker(scoring.candidates, profile, rerankers, d => rationale.push(d));
+
   return {
     profile,
     chain,
     admission,
     adjacency,
-    candidates: scoring.candidates,
+    candidates: reranked.candidates,
+    reranker: reranked.applied,
     rationale,
     capabilityGaps,
   };
@@ -222,7 +248,7 @@ export function planSelection(
   const scoring = { candidates: retrieval.candidates };
   const scored = new Map(scoring.candidates.map(candidate => [candidate.unitId, candidate]));
 
-  // 4. Rank cutoff.
+  // 5. Rank cutoff, applied to the reranked order.
   const limit = request.limit ?? scoring.candidates.length;
   const ranked = scoring.candidates.slice(0, limit);
   const cutoff = new Map(
@@ -232,7 +258,7 @@ export function planSelection(
     ]),
   );
 
-  // 5. Relation expansion from the units that made the cut.
+  // 6. Relation expansion from the units that made the cut.
   const expansion = expandSelection(
     ranked.map(candidate => candidate.unitId),
     adjacency,
@@ -269,7 +295,7 @@ export function planSelection(
     rejections.push({ candidate: scored.get(unitId)!, reasons: [reason] });
   }
 
-  // 6. Exclusion, applied to the post-expansion set.
+  // 7. Exclusion, applied to the post-expansion set.
   const exclusions = findExclusions(
     working.map(candidate => candidate.unitId),
     adjacency,
@@ -301,9 +327,30 @@ export function planSelection(
     rejections.push({ candidate: byId.get(unitId)!, reasons });
   }
 
-  const survivors = working.filter(candidate => !dropped.has(candidate.unitId)).sort(compareByScoreThenId);
+  // Ordered by *rank*, not by score. For the unreranked path and for
+  // `stable-linear-v1` the two coincide, because `retrieval.candidates` is itself
+  // score-then-id ordered. They stop coinciding the moment a reranker with
+  // different semantics runs, and then rank is the answer the caller asked for:
+  // re-sorting by score here would let the reranker decide cutoff membership and
+  // then throw away its ordering, which is a half-implemented stage.
+  //
+  // A unit absent from the ranked list is one no generator scored — it is present
+  // only because a relation demanded it. Those sort after everything carrying
+  // measured relevance, and among themselves by score then id. The load-order
+  // stage then moves any of them the model's `loadOrder` constraints require.
+  const rankOf = new Map(retrieval.candidates.map((candidate, index) => [candidate.unitId, index]));
+  const survivors = working
+    .filter(candidate => !dropped.has(candidate.unitId))
+    .sort((a, b) => {
+      const rankA = rankOf.get(a.unitId);
+      const rankB = rankOf.get(b.unitId);
+      if (rankA !== undefined && rankB !== undefined) return rankA - rankB;
+      if (rankA !== undefined) return -1;
+      if (rankB !== undefined) return 1;
+      return compareByScoreThenId(a, b);
+    });
 
-  // 7. Load order, then 8. budget.
+  // 8. Load order, then 9. budget.
   const loadOrder = orderByLoadOrder(
     survivors.map(candidate => candidate.unitId),
     expansion.orderConstraints,

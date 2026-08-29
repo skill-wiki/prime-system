@@ -8,6 +8,7 @@
   "scripts": { "test": "bun test", "typecheck": "tsc --noEmit -p tsconfig.json" },
   "license": "Apache-2.0",
   "dependencies": {
+    "@skill-wiki/corpus-schema": "workspace:*",
     "@skill-wiki/ir": "workspace:*",
     "@skill-wiki/model-schema": "workspace:*",
     "@skill-wiki/parser": "workspace:*",

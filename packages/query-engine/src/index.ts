@@ -53,7 +53,26 @@ export {
   createUnimplementedGenerator,
 } from "./generators/registry.ts";
 export { orderByLoadOrder, type LoadOrderResult } from "./loadorder.ts";
-export { scoreCandidates, type GeneratorOutput, type ScoringResult } from "./scoring.ts";
+export {
+  RERANKER_APPLIED,
+  RERANK_SCORE_DISAGREEMENT,
+  RerankerRegistry,
+  STABLE_LINEAR_V1,
+  applyReranker,
+  builtinRerankers,
+  createStableLinearReranker,
+  linearScore,
+  type RerankContext,
+  type RerankOutcome,
+  type Reranker,
+} from "./reranker.ts";
+export {
+  FEATURE_AXIS_NOT_APPLICABLE,
+  FEATURE_AXIS_UNPRODUCED,
+  scoreCandidates,
+  type GeneratorOutput,
+  type ScoringResult,
+} from "./scoring.ts";
 export {
   QueryEngineError,
   diagnostic,
