@@ -46,8 +46,9 @@ describe("loadCorpusPackage", () => {
   }));
 
   it("rejects a directory basename as a namespace", () => withPackage((_root, write) => {
-    // This is the value `compiled-v3-final/corpus.manifest.json` carries today and
-    // that reaches the public prime:// URI. The grammar makes it unrepresentable.
+    // This is the value `corpus.manifest.json` carried before the namespace
+    // cutover, and it reached the public prime:// URI. The grammar makes it
+    // unrepresentable, and `mountCorpus` now enforces the grammar at mount time.
     const result = loadCorpusPackage(write(declaration({ namespace: "compiled-v3-final" })));
     expect(result.ok).toBe(false);
     if (result.ok) return;
@@ -98,16 +99,121 @@ describe("loadCorpusPackage", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.diagnostics.some(d => d.code === "SOURCE_LICENSE_UNPARSABLE")).toBe(true);
   }));
+
+  it("defaults assets and citations to empty rather than absent", () => withPackage((_root, write) => {
+    // A pure-text corpus ships no bytes and may cite nothing. The fields still
+    // exist on the parsed value, so a consumer never has to test for undefined
+    // before deciding whether the corpus publishes assets.
+    const result = loadCorpusPackage(write(declaration()));
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.declaration.assets).toEqual([]);
+    expect(result.value.declaration.citations).toEqual([]);
+  }));
+
+  it("requires an asset path to exist on disk, because assets are published bytes", () => withPackage((root, write) => {
+    // Unlike a source set, `path` is mandatory on an asset: §8.3's bundle has an
+    // `assets/` directory, so these bytes are copied through and served verbatim.
+    mkdirSync(join(root, "assets"));
+    const present = loadCorpusPackage(write(declaration({
+      assets: [{ id: "brand", path: "assets", kind: "image", license: "Apache-2.0" }],
+    })));
+    expect(present.ok).toBe(true);
+    if (present.ok) expect(present.value.declaration.assets[0]?.emit).toBe(true);
+    const missing = loadCorpusPackage(write(declaration({
+      assets: [{ id: "brand", path: "absent", kind: "image", license: "Apache-2.0" }],
+    })));
+    expect(missing.ok).toBe(false);
+    if (!missing.ok) expect(missing.diagnostics.some(d => d.code === "PATH_NOT_FOUND")).toBe(true);
+    const pathless = loadCorpusPackage(write(declaration({
+      assets: [{ id: "brand", kind: "image", license: "Apache-2.0" }],
+    })));
+    expect(pathless.ok).toBe(false);
+  }));
+
+  it("refuses two emitted asset sets that claim the same path", () => withPackage((root, write) => {
+    mkdirSync(join(root, "assets"));
+    const clashing = loadCorpusPackage(write(declaration({
+      assets: [
+        { id: "a", path: "assets", kind: "image", license: "Apache-2.0" },
+        { id: "b", path: "assets", kind: "image", license: "MPL-2.0" },
+      ],
+      license: { expression: "Apache-2.0 AND MPL-2.0", policy: { allow: ["Apache-2.0", "MPL-2.0"] } },
+    })));
+    expect(clashing.ok).toBe(false);
+    if (!clashing.ok) expect(clashing.diagnostics.some(d => d.code === "ASSET_PATH_CLAIMED_TWICE")).toBe(true);
+    // Not emitted means not published, so the same path may be declared again:
+    // the ambiguity the check guards against is about the bytes in the bundle.
+    const unemitted = loadCorpusPackage(write(declaration({
+      assets: [
+        { id: "a", path: "assets", kind: "image", license: "Apache-2.0" },
+        { id: "b", path: "assets", kind: "image", license: "Apache-2.0", emit: false },
+      ],
+    })));
+    expect(unemitted.ok).toBe(true);
+  }));
+
+  it("refuses a citation that names a source set nobody declared", () => withPackage((_root, write) => {
+    const citation = {
+      id: "wcag-22", work: "WCAG 2.2", rightsHolder: "W3C",
+      url: "https://www.w3.org/TR/WCAG22/", publishedOn: "2023-10-05",
+      appliesTo: ["w3c-references"], use: "restatement",
+    };
+    const dangling = loadCorpusPackage(write(declaration({ citations: [citation] })));
+    expect(dangling.ok).toBe(false);
+    if (!dangling.ok) expect(dangling.diagnostics.some(d => d.code === "CITATION_TARGET_UNKNOWN")).toBe(true);
+    const attached = loadCorpusPackage(write(declaration({
+      sources: [{ id: "w3c-references", origin: "https://www.w3.org/TR/WCAG22/", license: "Apache-2.0" }],
+      citations: [citation],
+    })));
+    expect(attached.ok).toBe(true);
+  }));
+
+  it("requires a citation to be locatable and anchored to a version", () => withPackage((_root, write) => {
+    const base = {
+      id: "nielsen", work: "Usability Engineering", rightsHolder: "Jakob Nielsen",
+      appliesTo: ["own"], use: "restatement" as const,
+    };
+    // An ISBN is a locator even though it is not a URL — the printed book this
+    // corpus actually cites has no canonical URL, which is why `url` is optional.
+    const byIsbn = loadCorpusPackage(write(declaration({
+      citations: [{ ...base, identifier: "isbn:978-0125184069", publishedOn: "1994" }],
+    })));
+    expect(byIsbn.ok).toBe(true);
+    const unlocatable = loadCorpusPackage(write(declaration({ citations: [{ ...base, publishedOn: "1994" }] })));
+    expect(unlocatable.ok).toBe(false);
+    if (!unlocatable.ok) expect(unlocatable.diagnostics.some(d => d.code === "CITATION_NOT_LOCATABLE")).toBe(true);
+    const unanchored = loadCorpusPackage(write(declaration({ citations: [{ ...base, identifier: "isbn:978-0125184069" }] })));
+    expect(unanchored.ok).toBe(false);
+    if (!unanchored.ok) expect(unanchored.diagnostics.some(d => d.code === "CITATION_NOT_ANCHORED")).toBe(true);
+  }));
+
+  it("carries no licence on a citation, because nothing is redistributed", () => withPackage((_root, write) => {
+    // §8.3's CorpusBundle has `assets/` and no `citations/`. A licence answers
+    // "under what terms may I pass these bytes on", and for a cited work the
+    // answer is "you may not, they are not here" — so the field is unrepresentable
+    // rather than merely optional, and the obligation lives on the source set.
+    const result = loadCorpusPackage(write(declaration({
+      citations: [{
+        id: "wcag-22", work: "WCAG 2.2", rightsHolder: "W3C", url: "https://www.w3.org/TR/WCAG22/",
+        publishedOn: "2023-10-05", appliesTo: ["own"], use: "restatement", license: "CC-BY-4.0",
+      }],
+    })));
+    expect(result.ok).toBe(false);
+  }));
 });
 
 describe("resolveCorpusPackage", () => {
-  const parse = (overrides: Record<string, unknown> = {}): CorpusPackageDeclaration => {
+  const parse = (overrides: Record<string, unknown> = {}, setup?: (root: string) => void): CorpusPackageDeclaration => {
     let parsed: CorpusPackageDeclaration | undefined;
-    withPackage((_root, write) => {
+    let diagnostics: readonly { code: string; message: string }[] = [];
+    withPackage((root, write) => {
+      setup?.(root);
       const result = loadCorpusPackage(write(declaration(overrides)));
       if (result.ok) parsed = result.value.declaration;
+      else diagnostics = result.diagnostics;
     });
-    if (parsed === undefined) throw new Error("fixture declaration failed to load");
+    if (parsed === undefined) throw new Error(`fixture declaration failed to load: ${diagnostics.map(d => `${d.code}: ${d.message}`).join("; ")}`);
     return parsed;
   };
 
@@ -179,5 +285,21 @@ describe("resolveCorpusPackage", () => {
       { availableModelVersions: { "prime-v1-compatibility": ["1.0.0"] } },
     );
     expect(resolved.licenseIds).toEqual(["Apache-2.0", "MIT", "MPL-2.0"]);
+  });
+
+  it("runs asset licences through the same policy as source licences", () => {
+    // Assets are the material that is published *verbatim*, so leaving them out
+    // of the gate would exempt exactly the bytes whose terms matter most.
+    const resolved = resolveCorpusPackage(
+      parse({
+        assets: [{ id: "borrowed-art", path: "assets", kind: "image", license: "GPL-3.0" }],
+        license: { expression: "Apache-2.0 AND GPL-3.0", policy: { allow: ["Apache-2.0"], deny: ["GPL-3.0"] } },
+      }, (root) => mkdirSync(join(root, "assets"))),
+      { availableModelVersions: { "prime-v1-compatibility": ["1.0.0"] } },
+    );
+    expect(resolved.diagnostics.some(d => d.code === "LICENSE_DENIED" && d.subject === "borrowed-art")).toBe(true);
+    expect(resolved.assetLicenses[0]?.verdictOk).toBe(false);
+    // And an asset licence counts toward what the corpus expression must summarise.
+    expect(resolved.licenseIds).toEqual(["Apache-2.0", "GPL-3.0"]);
   });
 });

@@ -14,9 +14,17 @@ now sit in `packages/query-engine`, `packages/constraint-solver`,
 
 An earlier revision of this file described those modules as "experimental
 (tests only)" and named `mcp-server/index.ts` — the parent repo's legacy server —
-as the production consumer of `atom-loader.ts`. Both statements were stale:
-`mcp-server/index.ts` has not been the production entry since `.mcp.json` was
-pointed at `mcp-server-core`, and it does not import this package at all.
+as the production consumer of `atom-loader.ts`. Both statements were stale even
+then: that file had not been the production entry since `.mcp.json` was pointed at
+`mcp-server-core`, and it did not import this package at all. Round 13 (lane
+L13-E) deleted it outright, together with its copy under
+`release/prime-corpus-frontend-design/app/mcp-server-frontend/`; the behaviour of
+its five orphaned `prime_query` scopes is recorded in the parent repo at
+`docs/analysis/legacy-scope-spec.md`. `atom-loader.ts` reaches production through
+this package's own `src/index.ts:46` re-export and through
+`packages/projection-engine/src/adapters/atom-loader.ts` (re-exported at
+`projection-engine/src/index.ts:94` as `atomLoaderAdapter`); `mcp-server-core`
+names it only in comments.
 
 ## Modules
 

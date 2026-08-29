@@ -26,6 +26,16 @@ export interface CompileUnitOptions { readonly projections?: readonly string[]; 
  * still write `"3"` by hand — both are outside this lane's write scope and are
  * listed as coordinator rewiring in `docs/lanes/W9-B-PHASE2-RESIDUAL.md`.
  */
+/**
+ * NOTE (L13-B): removing the per-unit `graph.yaml` is a file-set change, so this
+ * constant is owed a bump to "4" by the rule stated above. The bump is not made
+ * here because it cannot land atomically inside this lane's write scope:
+ * `SUPPORTED_CORPUS_EMITTER_VERSION` in `@skill-wiki/runtime`,
+ * `packages/cli/src/audit/report.ts` and the hand-written `"3"` in
+ * `scripts/build-atom-dirs.ts` all have to move in the same commit, and
+ * `compiled-v3-final/corpus.manifest.json` records `"3"`. Coordinator: sequence
+ * the bump with the runtime constant rather than letting one side move alone.
+ */
 export const EMITTER_VERSION = "3";
 export type CompileUnitDiagnostic = NormalizeDiagnostic | { readonly code: string; readonly message: string; readonly source?: { readonly filename?: string; readonly loc: { readonly line: number; readonly column: number; readonly offset: number } } };
 export type CompileUnitResult = { readonly ok: true; readonly value: CompiledUnitIR } | { readonly ok: false; readonly diagnostics: readonly CompileUnitDiagnostic[] };
@@ -236,7 +246,6 @@ export function emitCompiledUnit(compiled: CompiledUnitIR, outDir: string): Emit
     const files: string[] = [];
     const write = (name: string, data: string) => { const path = join(temp, name); writeFileSync(path, data, "utf8"); files.push(name); };
     write("atom.yaml", atomYaml(compiled));
-    write("graph.yaml", yaml({ edges: compiled.unit.relations.map(edge => ({ id: edge.id, relation: edge.relationRef, from: edge.from, to: edge.to })) }).trimStart() + "\n");
     for (const artifact of Object.values(compiled.projections).sort((a, b) => compare(a.name, b.name))) { if (artifact.path !== `chunks/${safeName(artifact.name)}.md`) throw new Error(`Unsafe projection artifact path: ${artifact.path}`); if (artifact.bytes !== Buffer.byteLength(artifact.content, "utf8") || artifact.digest !== sha256(artifact.content) || artifact.tokens !== tokenCount(artifact.content)) throw new Error(`Projection artifact integrity mismatch: ${artifact.name}`); write(artifact.path, artifact.content); }
     const index = `<unit id="${xml(compiled.meta.id)}" kind="${xml(compiled.meta.kind)}"/>\n`; write("index.xml", index);
     let hadTarget = false;

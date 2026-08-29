@@ -133,9 +133,13 @@ The frontend-design MCP wrapper performs 6-axis retrieval after Layer 1 intent c
 
 ### §5.1 · The production surface
 
-Six tools across two `.mcp.json` servers. Neither is `mcp-server/index.ts`: that
-file has not been the production entry since `.mcp.json` was pointed at
-`mcp-server-core`, and `grep PRIME_BACKEND|IS_V3` over the wired path returns 0.
+Six tools across two `.mcp.json` servers. The parent repo's legacy `mcp-server/`
+entry and its copy `release/prime-corpus-frontend-design/app/mcp-server-frontend/`
+were **deleted in round 13** (lane L13-E). They had already stopped being the
+production entry when `.mcp.json` was pointed at `mcp-server-core` — `grep
+PRIME_BACKEND|IS_V3` over the wired path returned 0 — and their five orphaned
+`prime_query` scopes (`template` `mandate` `checklist` `gallery` `scout`) are
+recorded in `docs/analysis/legacy-scope-spec.md` before removal.
 
 | Server | Entry | Tools |
 |---|---|---|

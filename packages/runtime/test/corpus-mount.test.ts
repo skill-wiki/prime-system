@@ -95,32 +95,67 @@ describe("mountCorpus", () => {
     expect(outcome.mount.diagnostics).toEqual([]);
   }));
 
-  it("warns but keeps serving when the manifest and declaration disagree", () => withRoot((root) => {
-    // The live case: the bundle's manifest says `compiled-v3-final` while the
-    // declaration says a formal namespace. Default `namespaceSource: "manifest"`
-    // must not silently rewrite the identity that reaches a public prime:// URI.
+  it("adopts the declared namespace by default, and says which value it served", () => withRoot((root) => {
+    // The live case at the moment of the cutover: the bundle's manifest still
+    // says `compiled-v3-final` while the declaration says a formal namespace.
+    // The declared value is what reaches a public prime:// URI now, and the
+    // divergence is still reported so a stale artifact cannot hide.
     const dir = bundle(root, "bundle-a", "compiled-v3-final", "2026-08-29");
     const declaration = declarationAt(root, "pkg-a", "com.github.skill-wiki/frontend-design");
     const outcome = mountCorpus({ path: dir, declarationRoot: declaration });
     expect(outcome.ok).toBe(true);
     if (!outcome.ok) return;
-    expect(outcome.mount.namespace).toBe("compiled-v3-final");
+    expect(outcome.mount.namespace).toBe("com.github.skill-wiki/frontend-design");
     expect(outcome.mount.declaredNamespace).toBe("com.github.skill-wiki/frontend-design");
+    // The manifest's own value is kept, not overwritten: it is the evidence that
+    // the bundle on disk was built from a different declaration.
+    expect(outcome.mount.manifestCorpus).toBe("compiled-v3-final");
+    expect(outcome.mount.key).toBe(corpusMountKey("com.github.skill-wiki/frontend-design", "2026-08-29"));
     const mismatch = outcome.mount.diagnostics.find(d => d.code === "MOUNT_NAMESPACE_MISMATCH");
     expect(mismatch?.severity).toBe("warning");
+    expect(mismatch?.context?.["served"]).toBe("com.github.skill-wiki/frontend-design");
+    expect(mismatch?.context?.["namespaceSource"]).toBe("declaration");
   }));
 
-  it("lets the declaration win when asked, and refuses a non-formal namespace then", () => withRoot((root) => {
+  it("stops warning once the manifest carries the declared namespace", () => withRoot((root) => {
+    // What MOUNT_NAMESPACE_MISMATCH means after the cutover. Before it, the
+    // manifest held a directory basename that could never match a formal
+    // namespace, so the warning fired on every mount that read a declaration at
+    // all — i.e. it reported "a declaration exists". Now the compiler stamps the
+    // declared value, so a warning means the two authorities really disagree.
+    const dir = bundle(root, "bundle-a", "com.github.skill-wiki/frontend-design", "2026-08-29");
+    const declaration = declarationAt(root, "pkg-a", "com.github.skill-wiki/frontend-design");
+    const outcome = mountCorpus({ path: dir, declarationRoot: declaration });
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+    expect(outcome.mount.namespace).toBe("com.github.skill-wiki/frontend-design");
+    expect(outcome.mount.diagnostics).toEqual([]);
+  }));
+
+  it("keeps the manifest value verbatim, unchecked, only when asked", () => withRoot((root) => {
     const dir = bundle(root, "bundle-a", "compiled-v3-final", "2026-08-29");
     const declaration = declarationAt(root, "pkg-a", "com.github.skill-wiki/frontend-design");
-    const adopted = mountCorpus({ path: dir, declarationRoot: declaration }, { namespaceSource: "declaration" });
-    expect(adopted.ok).toBe(true);
-    if (adopted.ok) expect(adopted.mount.namespace).toBe("com.github.skill-wiki/frontend-design");
-    // With no declaration to draw from, `declaration` mode has only the
-    // manifest's directory-shaped value, which is not a namespace.
-    const bare = mountCorpus({ path: dir }, { namespaceSource: "declaration" });
+    const kept = mountCorpus({ path: dir, declarationRoot: declaration }, { namespaceSource: "manifest" });
+    expect(kept.ok).toBe(true);
+    if (!kept.ok) return;
+    // The escape hatch for reading a bundle whose identity predates the grammar.
+    // `compiled-v3-final` fails NAMESPACE and is served anyway, which is the
+    // whole point of the mode and the reason it is not the default.
+    expect(kept.mount.namespace).toBe("compiled-v3-final");
+    expect(kept.mount.diagnostics.find(d => d.code === "MOUNT_NAMESPACE_MISMATCH")?.context?.["served"])
+      .toBe("compiled-v3-final");
+  }));
+
+  it("fails closed by default when nothing supplies a formal namespace", () => withRoot((root) => {
+    // No declaration to draw from, and the manifest carries a directory basename.
+    // Under the default there is no value here that may be published, so the
+    // mount is rejected rather than quietly keyed on a renameable directory name.
+    const dir = bundle(root, "bundle-a", "compiled-v3-final", "2026-08-29");
+    const bare = mountCorpus({ path: dir });
     expect(bare.ok).toBe(false);
-    if (!bare.ok) expect(bare.failure.diagnostics[0]?.code).toBe("MOUNT_NAMESPACE_INVALID");
+    if (bare.ok) return;
+    expect(bare.failure.diagnostics[0]?.code).toBe("MOUNT_NAMESPACE_INVALID");
+    expect(bare.failure.diagnostics[0]?.context?.["source"]).toBe("manifest");
   }));
 
   it("rejects a declaration that does not load", () => withRoot((root) => {

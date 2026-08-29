@@ -83,6 +83,11 @@ export function loadCorpusPackage(path: string): CorpusPackageLoadResult {
   const diagnostics: CorpusDiagnostic[] = validateDeclarationSemantics(declaration).map(problem => error(problem.code, problem.message, problem.subject));
   const root = realpathSync(resolve(absolute, ".."));
   for (const source of declaration.sources) if (source.path !== undefined) checkContainedPath(root, source.path, `source:${source.id}`, diagnostics);
+  // Asset paths are not optional, so every one of them is checked. This is the
+  // half of §8.3's `assets/` that can be verified without a compiler: bytes the
+  // declaration promises to publish must actually be on disk here.
+  for (const asset of declaration.assets) checkContainedPath(root, asset.path, `asset:${asset.id}`, diagnostics);
+  for (const citation of declaration.citations) if (citation.path !== undefined) checkContainedPath(root, citation.path, `citation:${citation.id}`, diagnostics);
   if (declaration.eval.path !== undefined) checkContainedPath(root, declaration.eval.path, "eval", diagnostics);
   if (declaration.dist !== undefined) checkContainedPath(root, declaration.dist, "dist", diagnostics);
 
@@ -111,7 +116,9 @@ export interface ResolvedCorpusPackage {
   readonly declaration: CorpusPackageDeclaration;
   readonly models: readonly ResolvedModelBinding[];
   readonly licenses: readonly ResolvedSourceLicense[];
-  /** Every distinct SPDX id the corpus's source sets mention, sorted. */
+  /** Per-asset-set licence verdicts (§4.3's `assets/`), evaluated under the same policy. */
+  readonly assetLicenses: readonly ResolvedSourceLicense[];
+  /** Every distinct SPDX id the corpus's source AND asset sets mention, sorted. */
   readonly licenseIds: readonly string[];
   readonly effectiveProfile: string;
   readonly diagnostics: readonly CorpusDiagnostic[];
@@ -183,13 +190,29 @@ export function resolveCorpusPackage(
     });
     if (!verdict.ok) diagnostics.push(error(verdict.code, `source set ${source.id}: ${verdict.message}`, source.id));
   }
+  // Assets go through the identical gate. Keeping them out of it was the shape
+  // that let the licence hole exist in the first place: material the corpus
+  // *publishes verbatim* is the material whose terms matter most, and it would
+  // have been the one kind the policy never saw.
+  const assetLicenses: ResolvedSourceLicense[] = [];
+  for (const asset of declaration.assets) {
+    const expression = parseLicenseExpression(asset.license);
+    for (const id of collectIds(expression)) ids.add(id);
+    const verdict = evaluateLicense(expression, policy);
+    assetLicenses.push({
+      sourceId: asset.id, expression, verdictOk: verdict.ok,
+      ...(verdict.ok ? {} : { verdictMessage: verdict.message }),
+    });
+    if (!verdict.ok) diagnostics.push(error(verdict.code, `asset set ${asset.id}: ${verdict.message}`, asset.id));
+  }
   const corpusExpression = parseLicenseExpression(declaration.license.expression);
   const corpusVerdict = evaluateLicense(corpusExpression, policy);
   if (!corpusVerdict.ok) diagnostics.push(error(corpusVerdict.code, `corpus license: ${corpusVerdict.message}`, declaration.namespace));
-  // The corpus-level expression must actually cover what the source sets carry;
-  // otherwise the declared licence is a claim rather than a summary.
+  // The corpus-level expression must actually cover what the declared material
+  // carries — source sets and assets alike; otherwise the declared licence is a
+  // claim rather than a summary.
   for (const id of [...ids].sort()) if (!collectIds(corpusExpression).includes(id))
-    diagnostics.push(warning("CORPUS_LICENSE_INCOMPLETE", `source sets carry ${id} but the corpus license expression (${formatLicenseExpression(corpusExpression)}) does not mention it`, id));
+    diagnostics.push(warning("CORPUS_LICENSE_INCOMPLETE", `declared material carries ${id} but the corpus license expression (${formatLicenseExpression(corpusExpression)}) does not mention it`, id));
 
   if (options.declaredProfiles !== undefined) {
     const declared = new Set(options.declaredProfiles);
@@ -201,6 +224,7 @@ export function resolveCorpusPackage(
 
   return {
     declaration, models, licenses, licenseIds: [...ids].sort(),
+    assetLicenses,
     effectiveProfile: declaration.retrieval.defaultProfile,
     diagnostics,
   };

@@ -84,4 +84,37 @@ describe("createPrimeResourceUri", () => {
     expect(parsed.ok).toBe(true);
     if (parsed.ok) expect(parsed.value.release).toBe("index:abc");
   });
+
+  /**
+   * The shape the frontend-design corpus actually publishes after the §4.3
+   * namespace cutover, pinned as a literal rather than as a property.
+   *
+   * `identity.corpus` used to be `compiled-v3-final` — the *bundle directory's*
+   * basename — so every published URI read
+   * `prime://local/compiled-v3-final@2026-08-29/units/…`. It is now the namespace
+   * declared in `prime-corpus.yaml` and stamped into `corpus.manifest.json`, and
+   * that value contains a `/`. This case exists because that slash is the whole
+   * risk in the change: it must arrive percent-encoded *before* the corpus value
+   * is placed between path separators, or the seven-segment grammar gains an
+   * eighth segment and nothing can parse its own output back.
+   */
+  it("emits the adopted corpus namespace with its slash percent-encoded", () => {
+    const identity = {
+      tenant: "local",
+      corpus: "com.github.skill-wiki/frontend-design",
+      release: "2026-08-29",
+    };
+    const uri = createPrimeResourceUri(identity, "@impeccable/persona-stripe-fintech", "core", "summary");
+    expect(uri).toBe(
+      "prime://local/com.github.skill-wiki%2Ffrontend-design@2026-08-29" +
+        "/units/%40impeccable%2Fpersona-stripe-fintech/projections/core/summary",
+    );
+    // No raw slash may survive inside the corpus segment: that is the failure the
+    // encoding prevents, and asserting the literal above alone would not catch a
+    // future emitter that split the segment differently.
+    expect(uri.slice("prime://local/".length).split("/")).toHaveLength(6);
+    const parsed = parseProjectionUri(uri);
+    expect(parsed.ok).toBe(true);
+    if (parsed.ok) expect(parsed.value.corpus).toBe("com.github.skill-wiki/frontend-design");
+  });
 });

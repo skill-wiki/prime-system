@@ -15,11 +15,19 @@
  * | §4.3 requirement                  | field            |
  * |-----------------------------------|------------------|
  * | which models, and version *range* | `models[]`       |
- * | data provenance and licence       | `sources[]`, `license` |
+ * | data provenance and licence       | `sources[]`, `assets[]`, `citations[]`, `license` |
  * | corpus namespace                  | `namespace`      |
  * | default retrieval profile         | `retrieval`      |
  * | publication policy and visibility | `publication`    |
  * | eval and golden queries           | `eval`           |
+ *
+ * §4.3's package layout is `sources/ assets/ citations/ eval/ dist/`, and each of
+ * those five now has a declaration that names it. The three provenance kinds are
+ * deliberately three fields rather than one, because §8.3 gives them three
+ * different fates in the built bundle: sources compile into `units.pack`, assets
+ * are copied into the bundle's own `assets/`, and citations appear nowhere in
+ * §8.3 at all because the material is never redistributed. See `AssetSetSchema`
+ * and `CitationSchema`.
  *
  * Every one of them is required, not optional. An optional declaration is how
  * the previous shape lost the licence: a field nobody must fill is a field the
@@ -36,12 +44,14 @@ const SEMVER = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z.-]
  *
  * The authority is a dotted, reverse-DNS-style label and the remainder is one or
  * more slash-separated names. The grammar exists to make a directory basename
- * *unrepresentable*: `compiled-v3-final` — the value currently sitting in
+ * *unrepresentable*: `compiled-v3-final` — the value that used to sit in
  * `manifest.corpus`, and therefore in every outward-facing
  * `prime://local/compiled-v3-final@…/units/…` URI — has no `/` and no dot in its
  * first segment, so it fails this pattern. That is deliberate. §11.3 puts the
  * corpus into the public URI, and a machine-local, renameable directory name is
- * not an identity that can survive being published.
+ * not an identity that can survive being published. Since the namespace cutover
+ * this pattern is enforced at mount time (`mountCorpus`, `MOUNT_NAMESPACE_INVALID`)
+ * rather than only describing an aspiration.
  */
 export const NAMESPACE = /^[a-z0-9]+(?:[.-][a-z0-9]+)*\.[a-z0-9]+(?:[.-][a-z0-9]+)*\/[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)*$/;
 
@@ -82,6 +92,99 @@ export const SourceSetSchema = z.object({
   /** Free-text obligations that a bare SPDX id does not carry (attribution wording, notice files). */
   attribution: z.string().min(1).optional(),
   unitCount: z.number().int().nonnegative().optional(),
+}).strict();
+
+/**
+ * One asset set — §4.3's `assets/`.
+ *
+ * Kept separate from `sources[]` because §8.3 treats the two differently: the
+ * CorpusBundle layout has an `assets/` directory and no `sources/` one. Source
+ * material is *compiled away* into `units.pack`/`projections/`, while an asset is
+ * copied through as bytes and is still there to be served after the compile. So
+ * an asset is the only declared material a consumer can receive verbatim, which
+ * is why `path` is required here but optional on a source set: a set of bytes
+ * that ships must say where the bytes are.
+ *
+ * `license` is required for the same reason it is on a source set, and it bites
+ * harder: an asset is redistributed as-is, so its terms cannot be diluted by the
+ * DSL re-encoding argument that covers a transcribed source.
+ */
+export const AssetSetSchema = z.object({
+  id: z.string().min(1),
+  /** Root-relative path inside the corpus package. Required: an asset is bytes on disk. */
+  path: z.string().min(1),
+  /**
+   * What kind of bytes, so a consumer can decide whether it can serve them at
+   * all. Closed on purpose — an open string here would make `assets/` a second
+   * uncheckable dumping ground next to `sources/`.
+   */
+  kind: z.enum(["image", "font", "video", "audio", "archive", "data", "binary"]),
+  /** SPDX expression covering the bytes as redistributed. `NOASSERTION` if genuinely unknown. */
+  license: z.string().min(1),
+  attribution: z.string().min(1).optional(),
+  /**
+   * Whether these bytes are emitted into the bundle's §8.3 `assets/`. `false`
+   * declares build-time-only material (a source PSD, an unminified original)
+   * that is tracked and licence-checked but never published.
+   */
+  emit: z.boolean().default(true),
+  fileCount: z.number().int().nonnegative().optional(),
+}).strict();
+
+/**
+ * One citation — §4.3's `citations/`.
+ *
+ * The distinguishing fact, and the reason this is not just another source set:
+ * **§8.3's CorpusBundle has no `citations/` directory.** Assets ship, sources
+ * compile into the bundle, citations do neither. A citation names an external
+ * work the corpus *restates without redistributing* — the shape the `@w3c` and
+ * `@nielsen` units already have, where the atom carries an `attributed_to:` URL
+ * and the material itself stays with its copyright holder. Nothing here is
+ * emitted; a citation is an obligation and a provenance record.
+ *
+ * That is also why `license` is absent from this shape and present on the other
+ * two. A licence answers "under what terms may I pass these bytes on", and the
+ * answer for a citation is "you may not, because they are not here". The terms
+ * that do apply belong to the *source set* that does the restating, which is
+ * what `appliesTo` points back at — the two `LicenseRef-*-Citation-Only` ids in
+ * this repo's declaration are exactly that, and today they carry the citation as
+ * prose in `attribution` because there was no field for it.
+ */
+export const CitationSchema = z.object({
+  id: z.string().min(1),
+  /** The cited work as a human would name it, e.g. "Web Content Accessibility Guidelines (WCAG) 2.2". */
+  work: z.string().min(1),
+  /** Who holds rights in the cited work. Required: an unattributed citation is not one. */
+  rightsHolder: z.string().min(1),
+  /**
+   * Canonical online location, when the work has one.
+   *
+   * Optional, and the reason is in this repo's own data: `@nielsen/source-nielsen-1994`
+   * cites a printed book by ISBN. Requiring a URL would have forced either a
+   * fabricated link or a dropped citation, so a locator is required in the
+   * *semantics* (`url` or `identifier`, checked in `validateDeclarationSemantics`)
+   * rather than by making one of the two shapes mandatory here.
+   */
+  url: z.string().url().optional(),
+  /** A non-URL locator: `isbn:978-0125184069`, `doi:10.1145/191666.191729`, `w3c:REC-wcag22`. */
+  identifier: z.string().min(1).optional(),
+  /**
+   * When the cited text was read. Meaningful for a living document, meaningless
+   * for a 1994 book — so this or `publishedOn` is required, not both.
+   */
+  retrievedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "must be an ISO-8601 calendar date").optional(),
+  /** When the cited edition was published: `YYYY`, `YYYY-MM` or `YYYY-MM-DD`. */
+  publishedOn: z.string().regex(/^\d{4}(?:-\d{2}(?:-\d{2})?)?$/, "must be YYYY, YYYY-MM or YYYY-MM-DD").optional(),
+  /**
+   * `sources[].id` values whose units restate this work. Cross-checked in
+   * `validateDeclarationSemantics`: a citation nothing relies on, or one that
+   * names a source set that does not exist, is a dangling obligation.
+   */
+  appliesTo: z.array(z.string().min(1)).min(1),
+  /** Root-relative path holding local citation records, if the package keeps any. */
+  path: z.string().min(1).optional(),
+  /** How the corpus uses the work: a restatement is not a quotation. */
+  use: z.enum(["restatement", "quotation", "reference"]),
 }).strict();
 
 export const LicensePolicySchema = z.object({
@@ -149,6 +252,15 @@ export const CorpusPackageDeclarationSchema = z.object({
   description: z.string().min(1),
   models: z.array(ModelBindingSchema).min(1),
   sources: z.array(SourceSetSchema).min(1),
+  /**
+   * §4.3's `assets/`. Defaults to empty rather than being required: a corpus of
+   * pure text legitimately ships no bytes, and forcing `assets: []` to be written
+   * out would make the field noise. `sources` is `.min(1)` because the opposite
+   * is true there — a corpus with no material is not a corpus.
+   */
+  assets: z.array(AssetSetSchema).default([]),
+  /** §4.3's `citations/`. Empty is legitimate: a wholly original corpus cites nothing. */
+  citations: z.array(CitationSchema).default([]),
   license: CorpusLicenseSchema,
   retrieval: RetrievalSchema,
   publication: PublicationSchema,
@@ -159,6 +271,8 @@ export const CorpusPackageDeclarationSchema = z.object({
 
 export type ModelBinding = z.infer<typeof ModelBindingSchema>;
 export type SourceSet = z.infer<typeof SourceSetSchema>;
+export type AssetSet = z.infer<typeof AssetSetSchema>;
+export type Citation = z.infer<typeof CitationSchema>;
 export type CorpusLicense = z.infer<typeof CorpusLicenseSchema>;
 export type RetrievalDeclaration = z.infer<typeof RetrievalSchema>;
 export type PublicationDeclaration = z.infer<typeof PublicationSchema>;
@@ -186,6 +300,43 @@ export function validateDeclarationSemantics(declaration: CorpusPackageDeclarati
   }
   if (parseLicenseExpression(declaration.license.expression).kind === "unparsable" && declaration.license.policy.requireDeclared)
     problems.push({ code: "CORPUS_LICENSE_UNPARSABLE", message: `corpus license "${declaration.license.expression}" is not an SPDX expression and requireDeclared is true` });
+
+  // Assets are checked against the same licence bar as sources, and one step
+  // further: `path` collisions matter here in a way they do not for sources,
+  // because two asset sets that emit the same directory would each claim their
+  // own terms over the same published bytes.
+  const assetIds = new Set<string>();
+  const emittedPaths = new Map<string, string>();
+  for (const asset of declaration.assets) {
+    if (assetIds.has(asset.id)) problems.push({ code: "DUPLICATE_ASSET_SET", message: "an asset set id appears more than once", subject: asset.id });
+    assetIds.add(asset.id);
+    if (sourceIds.has(asset.id)) problems.push({ code: "ASSET_ID_COLLIDES_WITH_SOURCE", message: "an asset set and a source set share an id, so a licence finding cannot name which one it is about", subject: asset.id });
+    if (declaration.license.policy.requireDeclared && parseLicenseExpression(asset.license).kind === "unparsable")
+      problems.push({ code: "ASSET_LICENSE_UNPARSABLE", message: `license "${asset.license}" is not an SPDX expression and requireDeclared is true`, subject: asset.id });
+    if (!asset.emit) continue;
+    const claimant = emittedPaths.get(asset.path);
+    if (claimant !== undefined)
+      problems.push({ code: "ASSET_PATH_CLAIMED_TWICE", message: `two emitted asset sets claim ${asset.path}, so the licence of the published bytes is ambiguous (also claimed by ${claimant})`, subject: asset.id });
+    else emittedPaths.set(asset.path, asset.id);
+  }
+
+  // A citation is an obligation, so both ends must exist: an obligation attached
+  // to a source set that is not declared cannot be discharged, and a source set
+  // is the only thing that can carry one.
+  const citationIds = new Set<string>();
+  for (const citation of declaration.citations) {
+    if (citationIds.has(citation.id)) problems.push({ code: "DUPLICATE_CITATION", message: "a citation id appears more than once", subject: citation.id });
+    citationIds.add(citation.id);
+    for (const target of citation.appliesTo) if (!sourceIds.has(target))
+      problems.push({ code: "CITATION_TARGET_UNKNOWN", message: `citation applies to source set "${target}", which is not declared`, subject: citation.id });
+    // A citation a reader cannot follow is not a citation. Either shape of
+    // locator satisfies this; neither does not.
+    if (citation.url === undefined && citation.identifier === undefined)
+      problems.push({ code: "CITATION_NOT_LOCATABLE", message: "a citation must carry a url or an identifier, or a reader cannot reach the cited work", subject: citation.id });
+    // And a restatement is only checkable against a fixed version of the work.
+    if (citation.retrievedAt === undefined && citation.publishedOn === undefined)
+      problems.push({ code: "CITATION_NOT_ANCHORED", message: "a citation must carry retrievedAt or publishedOn: a restatement can only be checked against a fixed version of the cited work", subject: citation.id });
+  }
 
   const profiles = new Set(declaration.retrieval.additionalProfiles);
   if (profiles.has(declaration.retrieval.defaultProfile))

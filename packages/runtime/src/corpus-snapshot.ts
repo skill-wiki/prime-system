@@ -418,28 +418,40 @@ export interface CorpusMountDiagnostic {
 }
 
 /**
- * How a mount's namespace is decided when the bundle's manifest and the corpus
- * package declaration disagree.
+ * Where a mount's namespace comes from.
  *
- * - `manifest` (default): the snapshot keeps `manifest.corpus`. The declaration
- *   is still read and a mismatch is reported, so the divergence is visible
- *   without changing a single outward-facing `prime://` URI.
- * - `declaration`: the declared namespace wins and becomes the registry key.
+ * - `declaration` (default): the namespace declared in `prime-corpus.yaml` is
+ *   the corpus's identity, and it is checked against `NAMESPACE` before it can
+ *   become a registry key or reach a `prime://` URI. When no declaration is
+ *   supplied there is nothing to draw from, so the manifest value is used and
+ *   must itself be a formal namespace — a directory basename fails closed.
+ * - `manifest`: the snapshot keeps `manifest.corpus` verbatim, unchecked. This
+ *   is the escape hatch for reading a bundle whose identity predates the
+ *   grammar; it is not a shape anything published should be served under.
  *
- * The default is `manifest` because `manifest.corpus` currently flows straight
- * into the public resource URI (§11.3). Flipping the default would rewrite every
- * URI a client has seen, which is a release decision and not a loader decision.
+ * The default used to be `manifest`, because `manifest.corpus` flows straight
+ * into the public resource URI (§11.3) and the live bundle carried the bundle
+ * *directory's* basename there. That made the declaration decorative: it could
+ * be read and diffed but never served. Adopting the declared namespace is the
+ * whole point of §4.3 owning identity, so `declaration` is now the default and
+ * the compiler stamps the same value into the manifest — the two agree rather
+ * than one silently overriding the other.
  */
 export type NamespaceSource = "manifest" | "declaration";
+
+/** See `NamespaceSource`: identity comes from the §4.3 declaration by default. */
+const DEFAULT_NAMESPACE_SOURCE: NamespaceSource = "declaration";
 
 export interface CorpusMountRequest {
   /** Directory holding the compiled bundle (`_index.xml` + `corpus.manifest.json`). */
   readonly path: string;
   /**
-   * Directory holding this corpus's `prime-corpus.yaml`. When given, the declared
-   * namespace is the authoritative source of the corpus's identity — that is the
-   * §4.3 answer to "where does a namespace come from", as opposed to the current
-   * answer, which is the basename of `path`.
+   * Directory holding this corpus's `prime-corpus.yaml`. The declared namespace
+   * is the authoritative source of the corpus's identity — that is the §4.3
+   * answer to "where does a namespace come from", as opposed to the pre-cutover
+   * answer, which was the basename of `path` sitting in `manifest.corpus`.
+   * Omitting it leaves only the manifest, which must then already carry a formal
+   * namespace (see `NamespaceSource`).
    */
   readonly declarationRoot?: string;
   readonly expectedSchemaDigest?: string;
@@ -591,10 +603,11 @@ export class CorpusRegistry {
 /**
  * Validate one bundle and pair it with its §4.3 declaration.
  *
- * The declaration is what makes a namespace legitimate: without it the only
- * available identity is `manifest.corpus`, whose current value in this repo is
- * the bundle directory's basename. Reading the declaration does not by itself
- * change any URI — see `NamespaceSource`.
+ * The declaration is what makes a namespace legitimate, and since the cutover it
+ * is also what is *served*: the declared namespace becomes the registry key and
+ * the corpus segment of every §11.3 `prime://` URI. Passing
+ * `namespaceSource: "manifest"` opts back out and takes `manifest.corpus`
+ * verbatim — see `NamespaceSource`.
  */
 export function mountCorpus(
   request: CorpusMountRequest,
@@ -623,6 +636,7 @@ export function mountCorpus(
   }
 
   const manifestCorpus = loaded.snapshot.corpus;
+  const namespaceSource = options.namespaceSource ?? DEFAULT_NAMESPACE_SOURCE;
   let declaredNamespace: string | undefined;
   let defaultProfile: string | undefined;
   if (request.declarationRoot !== undefined) {
@@ -645,19 +659,34 @@ export function mountCorpus(
     defaultProfile = declaration.value.declaration.retrieval.defaultProfile;
     if (declaredNamespace !== manifestCorpus) {
       diagnostics.push({
-        // Warning, not error: with `namespaceSource: "manifest"` the mount is
-        // still correct and serving continues on the manifest's identity. The
-        // divergence is reported so it cannot be discovered only by reading a
-        // published URI.
+        // Narrowed by the namespace cutover: this used to fire on every mount
+        // that supplied a declaration at all, because the live manifest carried
+        // the bundle directory's basename and could never match a formal
+        // namespace. Now that the compiler stamps the declared value, a mismatch
+        // means the two authorities genuinely disagree — the bundle on disk was
+        // built from a different declaration than the one mounted beside it.
+        //
+        // Still a warning rather than an error: the mount is serving a namespace
+        // that is grammatically valid and explicitly declared, so failing closed
+        // would take down a corpus over a stale artifact field. `served` names
+        // which value won, so the diagnostic says what is happening rather than
+        // only that something is off.
         code: "MOUNT_NAMESPACE_MISMATCH", severity: "warning",
-        message: "Corpus declaration and bundle manifest disagree about the corpus namespace.",
-        context: { declared: declaredNamespace, manifest: manifestCorpus, namespaceSource: options.namespaceSource ?? "manifest" },
+        message: namespaceSource === "declaration"
+          ? "Corpus declaration and bundle manifest disagree about the corpus namespace; serving the declared one. Recompile the bundle from this declaration."
+          : "Corpus declaration and bundle manifest disagree about the corpus namespace; serving the manifest one.",
+        context: {
+          declared: declaredNamespace,
+          manifest: manifestCorpus,
+          namespaceSource,
+          served: namespaceSource === "declaration" ? declaredNamespace : manifestCorpus,
+        },
       });
     }
   }
 
-  const namespace = options.namespaceSource === "declaration" && declaredNamespace !== undefined ? declaredNamespace : manifestCorpus;
-  if (options.namespaceSource === "declaration" && !NAMESPACE.test(namespace)) {
+  const namespace = namespaceSource === "declaration" && declaredNamespace !== undefined ? declaredNamespace : manifestCorpus;
+  if (namespaceSource === "declaration" && !NAMESPACE.test(namespace)) {
     return {
       ok: false,
       failure: {
@@ -665,7 +694,10 @@ export function mountCorpus(
         diagnostics: [{
           code: "MOUNT_NAMESPACE_INVALID", severity: "error",
           message: "Corpus namespace is not a formal namespace.",
-          context: { namespace, path: request.path },
+          context: {
+            namespace, path: request.path,
+            source: declaredNamespace === undefined ? "manifest" : "declaration",
+          },
         }],
       },
     };

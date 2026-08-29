@@ -18,7 +18,14 @@ export {
   type BudgetResult,
   type ProjectionAssignment,
 } from "./budget.ts";
-export { SCORE_PRECISION, quantize } from "./deterministic.ts";
+// `compareStrings` and `orderedRecord` are public for the same reason `quantize`
+// is: a third-party `CandidateGenerator` has to produce byte-stable output to be
+// admissible, and the two operations that make it so are the engine's tie-break
+// and its key ordering. Withholding them did not keep them private — it made every
+// out-of-tree generator write its own copy (`design-ranker`, `scout-catalog`),
+// which is a second definition of "deterministic" that can drift from the one the
+// engine enforces downstream.
+export { SCORE_PRECISION, compareStrings, orderedRecord, quantize } from "./deterministic.ts";
 export { RERANKER_NOT_IMPLEMENTED, detectCapabilityGaps } from "./capabilities.ts";
 export {
   degradeToFit,

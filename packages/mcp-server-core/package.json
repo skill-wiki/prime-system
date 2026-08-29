@@ -4,14 +4,15 @@
   "description": "Generic MCP server for any compiled Prime corpus. Exposes one tool — prime_query — that browses atoms, traverses the edge graph, and returns projection-level paths for the agent to Read.",
   "license": "Apache-2.0",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "src/index.ts",
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./src/index.ts"
   },
   "bin": {
     "prime-mcp-core": "dist/index.js"
   },
   "files": [
+    "src",
     "dist",
     "README.md",
     "LICENSE"

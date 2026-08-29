@@ -129,9 +129,39 @@ persona Stripe {
 
 ---
 
-## §5 · MCP 工具（前端设计包装器）
+## §5 · MCP 工具
 
-`mcp-server/index.ts` 在服务器名称 `prime-wiki` 下注册的 5 个工具（早期草案称"6 个"——延期工具已规划但从未发布）：
+### §5.1 · 生产工具面
+
+两个 `.mcp.json` server，共 6 个工具。父仓的 legacy 入口 `mcp-server/` 与它那份拷贝
+`release/prime-corpus-frontend-design/app/mcp-server-frontend/` 已在**第 13 轮（车道
+L13-E）删除**。它们在 `.mcp.json` 切向 `mcp-server-core` 时就已不是生产入口——对已接线
+路径 `grep PRIME_BACKEND|IS_V3` 返回 0——删除前，它们那五个无对应物的 `prime_query`
+scope（`template` `mandate` `checklist` `gallery` `scout`）已记录在
+`docs/analysis/legacy-scope-spec.md`。
+
+| Server | 入口 | 工具 |
+|---|---|---|
+| `prime-wiki` | `release/prime-system/packages/mcp-server-core/src/index.ts` | `prime_query`（`scope=atoms\|related\|show`）、`prime_plan`、`prime_resource` |
+| `prime-design` | `domains/prime-frontend-design/mcp/src/server.ts` | `prime_design_plan`、`prime_design_resolve`、`prime_design_validate` |
+
+三个 `prime_design_*` 工具不是手写的：它们由 `sdk-codegen` 的 `emitMcpTools` 从
+`domains/prime-frontend-design/model/tools/` 投影而来，因此名称、入参 schema 与
+annotation 都来自模型包（§11.2）。用两个 server 而非一个，是因为 §15.4 是单向的——
+内核不能 import 领域，聚合进程只能由领域包拥有。
+
+`prime_design_*` 的入参键刻意与它们替代的已退役工具保持一致（`design-actions.yaml`），
+且在 `scripts/shadow-mcp/run.ts` 跑过的那些 brief 上，`prime_design_plan` 与已退役的
+`prime_intent` 逐字节相同。
+
+### §5.2 · 已退役的 v1 工具面（历史记录）
+
+以下全部描述的是切换前 `mcp-server/index.ts` 的 5 个工具（早期草案称"6 个"——延期工具
+已规划但从未发布）。保留它只为溯源，**不是**任何在运行的 server 的描述。其中两处描述对
+那个 server 本身也是错的：`prime_validate` 的入参是 `(html_path, brief)` 而非
+`(html_path, register, contract)`；`prime_resolve` 接收 `brief` 并返回带类型的设计规格，
+而"把原子 id 解析到某个投影层级的内容"是当前 `prime_query scope=show` 与
+`prime_resource` 做的事。
 
 ### `prime_compile`
 主要入口。Brief → 6 轴原子检索计划。
