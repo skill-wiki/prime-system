@@ -1,0 +1,71 @@
+{
+  "name": "incident-ops-model/roomy-ranked",
+  "domain": "incident-ops-model",
+  "path": "planSelection",
+  "snapshot": {
+    "modelRelease": "1.0.0",
+    "modelDigest": "model:incident-ops",
+    "corpusRelease": "1.0.0",
+    "corpusDigest": "corpus:incident-ops-min"
+  },
+  "request": {
+    "profile": "triage-default",
+    "principalId": "conformance-reader",
+    "maxTokens": 100000,
+    "text": "checkout latency payment gateway",
+    "seeds": [
+      "@ops/incident-checkout-latency"
+    ],
+    "limit": null,
+    "fallbackProjections": null
+  },
+  "topK": [
+    "@ops/service-checkout",
+    "@ops/service-payments",
+    "@ops/incident-stale-cache",
+    "@ops/incident-checkout-latency",
+    "@ops/incident-payment-timeout",
+    "@ops/postmortem-payment-outage",
+    "@ops/runbook-scale-out"
+  ],
+  "conflicts": [
+    {
+      "code": "RERANKER_NOT_IMPLEMENTED",
+      "severity": "warning",
+      "message": "Retrieval profile 'triage-default' declares reranker 'weighted-blend-v2', which this engine does not implement. The returned order is the feature-scored order with no reranking applied; treat any ranking-sensitive decision accordingly."
+    },
+    {
+      "code": "RELATION_EXCLUSION",
+      "severity": "error",
+      "message": "relation 'contends-with' declares mutual exclusion between '@ops/runbook-failover' and '@ops/runbook-scale-out'"
+    }
+  ],
+  "budget": {
+    "maxTokens": 100000,
+    "consumedTokens": 195,
+    "state": null,
+    "shortfall": null
+  },
+  "projectionLoads": [
+    {
+      "projectionRef": "triage",
+      "unitIds": [
+        "@ops/service-checkout",
+        "@ops/service-payments",
+        "@ops/incident-stale-cache",
+        "@ops/incident-checkout-latency",
+        "@ops/incident-payment-timeout",
+        "@ops/postmortem-payment-outage",
+        "@ops/runbook-scale-out"
+      ]
+    }
+  ],
+  "rejections": [
+    {
+      "unitId": "@ops/runbook-failover",
+      "reasons": [
+        "excluded by relation 'contends-with': conflicts with higher-ranked '@ops/runbook-scale-out' (score 0.06125 vs 0.040833)"
+      ]
+    }
+  ]
+}

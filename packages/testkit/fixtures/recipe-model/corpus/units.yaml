@@ -1,0 +1,129 @@
+kind: corpus
+name: recipe-kitchen-min
+version: 1.0.0
+model: recipes
+units:
+  - id: "@kitchen/dish-base-risotto"
+    version: 1.0.0
+    typeRef: Dish
+    license: Apache-2.0
+    tokens: { card: 14, plate: 38, kitchen: 92 }
+    fields:
+      name: Base Risotto
+      cuisine: italian
+      minutes: 30
+      notes: Toast the rice, then add stock one ladle at a time.
+    relations:
+      - { relation: needs-ingredient, to: "@kitchen/ingredient-arborio-rice" }
+      - { relation: uses-technique, to: "@kitchen/technique-toasting" }
+
+  - id: "@kitchen/dish-lemon-risotto"
+    version: 1.0.0
+    typeRef: Dish
+    license: Apache-2.0
+    tokens: { card: 16, plate: 44, kitchen: 108 }
+    fields:
+      name: Lemon Risotto
+      cuisine: italian
+      minutes: 40
+      notes: Finish off the heat with lemon zest and cold butter.
+    relations:
+      - { relation: builds-on, to: "@kitchen/dish-base-risotto" }
+      - { relation: needs-ingredient, to: "@kitchen/ingredient-butter" }
+      - { relation: uses-technique, to: "@kitchen/technique-mantecatura" }
+
+  - id: "@kitchen/dish-saffron-risotto"
+    version: 1.0.0
+    typeRef: Dish
+    license: Apache-2.0
+    tokens: { card: 15, plate: 41, kitchen: 100 }
+    fields:
+      name: Saffron Risotto
+      cuisine: italian
+      minutes: 45
+    relations:
+      - { relation: builds-on, to: "@kitchen/dish-base-risotto" }
+
+  - id: "@kitchen/ingredient-arborio-rice"
+    version: 1.0.0
+    typeRef: Ingredient
+    license: Apache-2.0
+    tokens: { card: 10, plate: 24, kitchen: 52 }
+    fields: { name: Arborio Rice, pantryStaple: true, potency: 2 }
+    relations:
+      - { relation: swaps-with, to: "@kitchen/ingredient-carnaroli-rice" }
+
+  - id: "@kitchen/ingredient-carnaroli-rice"
+    version: 1.0.0
+    typeRef: Ingredient
+    license: Apache-2.0
+    tokens: { card: 10, plate: 25, kitchen: 54 }
+    fields: { name: Carnaroli Rice, pantryStaple: false, potency: 3 }
+    relations: []
+
+  - id: "@kitchen/ingredient-butter"
+    version: 1.0.0
+    typeRef: Ingredient
+    license: Apache-2.0
+    tokens: { card: 9, plate: 22, kitchen: 48 }
+    fields: { name: Cold Butter, pantryStaple: true, potency: 5 }
+    relations:
+      - { relation: contains-allergen, to: "@kitchen/allergen-dairy" }
+
+  - id: "@kitchen/allergen-dairy"
+    version: 1.0.0
+    typeRef: Allergen
+    license: Apache-2.0
+    tokens: { card: 8, plate: 18, kitchen: 36 }
+    fields: { name: Dairy, reactionRisk: 3 }
+    relations: []
+
+  - id: "@kitchen/technique-toasting"
+    version: 1.0.0
+    typeRef: Technique
+    license: Apache-2.0
+    tokens: { card: 11, plate: 28, kitchen: 60 }
+    fields:
+      name: Toasting
+      skillLevel: 1
+      summary: Warm the grain in fat until it turns translucent at the edges.
+    relations: []
+
+  - id: "@kitchen/technique-mantecatura"
+    version: 1.0.0
+    typeRef: Technique
+    license: Apache-2.0
+    tokens: { card: 12, plate: 30, kitchen: 66 }
+    fields:
+      name: Mantecatura
+      skillLevel: 4
+      summary: Beat cold fat into the starch off the heat to emulsify the sauce.
+    relations: []
+
+  - id: "@kitchen/tasting-spring-panel"
+    version: 1.0.0
+    typeRef: Tasting
+    license: Apache-2.0
+    tokens: { card: 13, plate: 34, kitchen: 70 }
+    fields:
+      name: Spring Panel
+      impression: Bright, slightly loose, salt held back too far.
+      panelScore: 7
+      tastedDish: "@kitchen/dish-lemon-risotto"
+    relations:
+      - { relation: rates, to: "@kitchen/dish-lemon-risotto" }
+
+  # The ACL subject. A principal without `menu-embargo` must not observe this unit
+  # nor learn its id from any other unit's plan entry.
+  - id: "@kitchen/dish-unreleased-tasting-menu"
+    version: 1.0.0
+    typeRef: Dish
+    license: Apache-2.0
+    visibility: private
+    tokens: { card: 17, plate: 46, kitchen: 112 }
+    fields:
+      name: Unreleased Tasting Menu
+      cuisine: italian
+      minutes: 180
+    relations:
+      - { relation: builds-on, to: "@kitchen/dish-lemon-risotto" }

@@ -142,90 +142,6 @@ describe("checker-l1", () => {
     });
   });
 
-  describe("Method missing required fields", () => {
-    test("reports error when steps field is missing", () => {
-      const ast: PrimeAST = {
-        type: "PrimeDeclaration",
-        name: "BadMethod",
-        extends: "Method",
-        decorators: [],
-        body: [
-          makeField("name", makeString("bad-method", 2)),
-          makeField("version", makeString("1.0.0", 3)),
-          makeField("input", makeArray([{
-            type: "ParameterShorthand" as const,
-            name: "task",
-            paramType: "string",
-            loc: loc(4),
-          }], 4)),
-          makeField("output", makeArray([{
-            type: "ParameterShorthand" as const,
-            name: "result",
-            paramType: "string",
-            loc: loc(5),
-          }], 5)),
-          // No steps field!
-        ],
-        loc: loc(1),
-      };
-
-      const diags = checkL1(ast);
-      const errors = diags.filter((d) => d.level === "error");
-      expect(errors.length).toBeGreaterThanOrEqual(1);
-      expect(errors.some((d) => d.message.includes("steps"))).toBe(true);
-    });
-
-    test("reports error when input is missing", () => {
-      const ast: PrimeAST = {
-        type: "PrimeDeclaration",
-        name: "NoInput",
-        extends: "Method",
-        decorators: [],
-        body: [
-          makeField("name", makeString("no-input", 2)),
-          makeField("version", makeString("1.0.0", 3)),
-          makeField("output", makeArray([{
-            type: "ParameterShorthand" as const,
-            name: "result",
-            paramType: "string",
-            loc: loc(5),
-          }], 5)),
-          makeField("steps", makeArray([makeStep("DO", 10)], 8)),
-        ],
-        loc: loc(1),
-      };
-
-      const diags = checkL1(ast);
-      const errors = diags.filter((d) => d.level === "error");
-      expect(errors.some((d) => d.message.includes("input"))).toBe(true);
-    });
-
-    test("reports error when output is missing", () => {
-      const ast: PrimeAST = {
-        type: "PrimeDeclaration",
-        name: "NoOutput",
-        extends: "Method",
-        decorators: [],
-        body: [
-          makeField("name", makeString("no-output", 2)),
-          makeField("version", makeString("1.0.0", 3)),
-          makeField("input", makeArray([{
-            type: "ParameterShorthand" as const,
-            name: "task",
-            paramType: "string",
-            loc: loc(4),
-          }], 4)),
-          makeField("steps", makeArray([makeStep("DO", 10)], 8)),
-        ],
-        loc: loc(1),
-      };
-
-      const diags = checkL1(ast);
-      const errors = diags.filter((d) => d.level === "error");
-      expect(errors.some((d) => d.message.includes("output"))).toBe(true);
-    });
-  });
-
   describe("Step missing error handler", () => {
     test("reports error when a step has no error handler or @safe", () => {
       const badStep = makeStep("RISKY", 10, { hasError: false });
@@ -303,46 +219,6 @@ describe("checker-l1", () => {
         (d) => d.level === "error" && d.message.includes("strictly increasing")
       );
       expect(errors).toHaveLength(1);
-    });
-  });
-
-  describe("Knowledge required fields", () => {
-    test("reports error when Knowledge has no definitions, categories, or facts", () => {
-      const ast: PrimeAST = {
-        type: "PrimeDeclaration",
-        name: "EmptyKnowledge",
-        extends: "Knowledge",
-        decorators: [],
-        body: [
-          makeField("name", makeString("empty-knowledge", 2)),
-          makeField("version", makeString("1.0.0", 3)),
-        ],
-        loc: loc(1),
-      };
-
-      const diags = checkL1(ast);
-      const errors = diags.filter((d) => d.level === "error");
-      expect(errors.some((d) => d.message.includes("Knowledge"))).toBe(true);
-    });
-  });
-
-  describe("Rule required fields", () => {
-    test("reports error when Rule has no checks", () => {
-      const ast: PrimeAST = {
-        type: "PrimeDeclaration",
-        name: "EmptyRule",
-        extends: "Rule",
-        decorators: [],
-        body: [
-          makeField("name", makeString("empty-rule", 2)),
-          makeField("version", makeString("1.0.0", 3)),
-        ],
-        loc: loc(1),
-      };
-
-      const diags = checkL1(ast);
-      const errors = diags.filter((d) => d.level === "error");
-      expect(errors.some((d) => d.message.includes("checks"))).toBe(true);
     });
   });
 

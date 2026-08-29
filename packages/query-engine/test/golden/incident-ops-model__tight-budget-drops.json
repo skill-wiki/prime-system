@@ -1,0 +1,96 @@
+{
+  "name": "incident-ops-model/tight-budget-drops",
+  "domain": "incident-ops-model",
+  "path": "planSelection",
+  "snapshot": {
+    "modelRelease": "1.0.0",
+    "modelDigest": "model:incident-ops",
+    "corpusRelease": "1.0.0",
+    "corpusDigest": "corpus:incident-ops-min"
+  },
+  "request": {
+    "profile": "triage-default",
+    "principalId": "conformance-reader",
+    "maxTokens": 60,
+    "text": "checkout latency payment gateway",
+    "seeds": [
+      "@ops/incident-checkout-latency"
+    ],
+    "limit": null,
+    "fallbackProjections": null
+  },
+  "topK": [
+    "@ops/service-checkout",
+    "@ops/service-payments"
+  ],
+  "conflicts": [
+    {
+      "code": "RERANKER_NOT_IMPLEMENTED",
+      "severity": "warning",
+      "message": "Retrieval profile 'triage-default' declares reranker 'weighted-blend-v2', which this engine does not implement. The returned order is the feature-scored order with no reranking applied; treat any ranking-sensitive decision accordingly."
+    },
+    {
+      "code": "RELATION_EXCLUSION",
+      "severity": "error",
+      "message": "relation 'contends-with' declares mutual exclusion between '@ops/runbook-failover' and '@ops/runbook-scale-out'"
+    }
+  ],
+  "budget": {
+    "maxTokens": 60,
+    "consumedTokens": 41,
+    "state": null,
+    "shortfall": null
+  },
+  "projectionLoads": [
+    {
+      "projectionRef": "triage",
+      "unitIds": [
+        "@ops/service-checkout",
+        "@ops/service-payments"
+      ]
+    }
+  ],
+  "rejections": [
+    {
+      "unitId": "@ops/incident-checkout-latency",
+      "reasons": [
+        "token budget exhausted: cheapest projection 'triage' needs 34 tokens, 19 of 60 remain",
+        "projection costs considered: triage=34"
+      ]
+    },
+    {
+      "unitId": "@ops/incident-payment-timeout",
+      "reasons": [
+        "token budget exhausted: cheapest projection 'triage' needs 36 tokens, 19 of 60 remain",
+        "projection costs considered: triage=36"
+      ]
+    },
+    {
+      "unitId": "@ops/incident-stale-cache",
+      "reasons": [
+        "token budget exhausted: cheapest projection 'triage' needs 30 tokens, 19 of 60 remain",
+        "projection costs considered: triage=30"
+      ]
+    },
+    {
+      "unitId": "@ops/postmortem-payment-outage",
+      "reasons": [
+        "token budget exhausted: cheapest projection 'triage' needs 26 tokens, 19 of 60 remain",
+        "projection costs considered: triage=26"
+      ]
+    },
+    {
+      "unitId": "@ops/runbook-failover",
+      "reasons": [
+        "excluded by relation 'contends-with': conflicts with higher-ranked '@ops/runbook-scale-out' (score 0.06125 vs 0.040833)"
+      ]
+    },
+    {
+      "unitId": "@ops/runbook-scale-out",
+      "reasons": [
+        "token budget exhausted: cheapest projection 'triage' needs 28 tokens, 19 of 60 remain",
+        "projection costs considered: triage=28"
+      ]
+    }
+  ]
+}

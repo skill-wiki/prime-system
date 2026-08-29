@@ -1,0 +1,121 @@
+{
+  "name": "incident-ops-model/solved-starved-budget",
+  "domain": "incident-ops-model",
+  "path": "planWithConstraints",
+  "snapshot": {
+    "modelRelease": "1.0.0",
+    "modelDigest": "model:incident-ops",
+    "corpusRelease": "1.0.0",
+    "corpusDigest": "corpus:incident-ops-min"
+  },
+  "request": {
+    "profile": "triage-default",
+    "principalId": "conformance-reader",
+    "maxTokens": 15,
+    "text": "checkout latency payment gateway",
+    "seeds": [
+      "@ops/incident-checkout-latency"
+    ],
+    "limit": null,
+    "fallbackProjections": null
+  },
+  "topK": [
+    "@ops/incident-checkout-latency",
+    "@ops/incident-payment-timeout"
+  ],
+  "conflicts": [
+    {
+      "code": "RERANKER_NOT_IMPLEMENTED",
+      "severity": "warning",
+      "message": "Retrieval profile 'triage-default' declares reranker 'weighted-blend-v2', which this engine does not implement. The returned order is the feature-scored order with no reranking applied; treat any ranking-sensitive decision accordingly."
+    },
+    {
+      "code": "BUDGET_EXCEEDED_AT_CHEAPEST_PROJECTION",
+      "severity": "error",
+      "message": "Selection of 2 unit(s) costs 70 at the cheapest projection 'triage' against a budget of 15; short by 55. No unit was dropped: membership is a constraint decision, not a budget decision."
+    }
+  ],
+  "budget": {
+    "maxTokens": 15,
+    "consumedTokens": 70,
+    "state": "exceeded-at-cheapest-projection",
+    "shortfall": 55
+  },
+  "projectionLoads": [
+    {
+      "projectionRef": "triage",
+      "unitIds": [
+        "@ops/incident-checkout-latency",
+        "@ops/incident-payment-timeout"
+      ]
+    }
+  ],
+  "rejections": [
+    {
+      "unitId": "@ops/incident-stale-cache",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@ops/postmortem-payment-outage",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@ops/postmortem-payment-outage",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@ops/runbook-failover",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@ops/runbook-failover",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@ops/runbook-scale-out",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@ops/runbook-scale-out",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@ops/service-checkout",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@ops/service-checkout",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@ops/service-payments",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@ops/service-payments",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    }
+  ]
+}

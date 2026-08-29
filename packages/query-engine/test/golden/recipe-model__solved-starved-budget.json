@@ -1,0 +1,116 @@
+{
+  "name": "recipe-model/solved-starved-budget",
+  "domain": "recipe-model",
+  "path": "planWithConstraints",
+  "snapshot": {
+    "modelRelease": "1.0.0",
+    "modelDigest": "model:recipes",
+    "corpusRelease": "1.0.0",
+    "corpusDigest": "corpus:recipe-kitchen-min"
+  },
+  "request": {
+    "profile": "kitchen-default",
+    "principalId": "conformance-reader",
+    "maxTokens": 20,
+    "text": "lemon risotto rice",
+    "seeds": [
+      "@kitchen/dish-lemon-risotto"
+    ],
+    "limit": null,
+    "fallbackProjections": null
+  },
+  "topK": [
+    "@kitchen/dish-base-risotto",
+    "@kitchen/dish-lemon-risotto"
+  ],
+  "conflicts": [
+    {
+      "code": "BUDGET_EXCEEDED_AT_CHEAPEST_PROJECTION",
+      "severity": "error",
+      "message": "Selection of 2 unit(s) costs 82 at the cheapest projection 'plate' against a budget of 20; short by 62. No unit was dropped: membership is a constraint decision, not a budget decision."
+    }
+  ],
+  "budget": {
+    "maxTokens": 20,
+    "consumedTokens": 82,
+    "state": "exceeded-at-cheapest-projection",
+    "shortfall": 62
+  },
+  "projectionLoads": [
+    {
+      "projectionRef": "plate",
+      "unitIds": [
+        "@kitchen/dish-base-risotto",
+        "@kitchen/dish-lemon-risotto"
+      ]
+    }
+  ],
+  "rejections": [
+    {
+      "unitId": "@kitchen/dish-saffron-risotto",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@kitchen/ingredient-arborio-rice",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@kitchen/ingredient-arborio-rice",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@kitchen/ingredient-butter",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@kitchen/ingredient-butter",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@kitchen/ingredient-carnaroli-rice",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@kitchen/tasting-spring-panel",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@kitchen/technique-mantecatura",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@kitchen/technique-mantecatura",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@kitchen/technique-toasting",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@kitchen/technique-toasting",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    }
+  ]
+}

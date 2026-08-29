@@ -1,0 +1,58 @@
+kind: definitions
+version: 1.0.0
+definitions:
+  - kind: projection
+    name: card
+    version: 1.0.0
+    targetTokens: 40
+    include: [name]
+    typeGroups: &groups
+      edible: [Dish, Ingredient]
+      craft: [Technique]
+      caution: [Allergen]
+      panel: [Tasting]
+    rules:
+      - { layer: card, typeRef: "Dish", include: [cuisine] }
+      - { layer: card, typeRef: "Ingredient", include: [pantryStaple] }
+      - { layer: card, typeRef: "group:craft", include: [skillLevel] }
+      - { layer: card, typeRef: "Allergen", include: [reactionRisk] }
+      - { layer: card, typeRef: "Tasting", include: [impression] }
+
+  - kind: projection
+    name: plate
+    version: 1.0.0
+    targetTokens: 150
+    include: [name]
+    typeGroups: *groups
+    rules:
+      - { layer: plate, typeRef: "Dish", include: [cuisine, minutes] }
+      - { layer: plate, typeRef: "Ingredient", include: [pantryStaple, potency] }
+      - { layer: plate, typeRef: "Technique", include: [skillLevel, summary] }
+      - { layer: plate, typeRef: "Allergen", include: [reactionRisk] }
+      - { layer: plate, typeRef: "Tasting", include: [impression, panelScore, tastedDish] }
+
+  - kind: projection
+    name: kitchen
+    version: 1.0.0
+    targetTokens: 520
+    include: ["*"]
+    typeGroups: *groups
+    rules:
+      - { layer: kitchen, typeRef: "group:edible", include: ["*"] }
+      - { layer: kitchen, typeRef: "group:craft", include: ["*"] }
+      - { layer: kitchen, typeRef: "group:caution", include: ["*"] }
+      - { layer: kitchen, typeRef: "group:panel", include: ["*"] }
+
+  # No `reranker` key: this domain declares no reranking stage, so the engine must
+  # NOT emit RERANKER_NOT_IMPLEMENTED here while it does emit it for security-model.
+  # That asymmetry is the assertion — the diagnostic follows the model, not a default.
+  - kind: retrieval-profile
+    name: kitchen-default
+    version: 1.0.0
+    projection: plate
+    candidateGenerators:
+      - { name: text-match, weight: 0.6 }
+      - { name: pantry-neighbors, weight: 0.25 }
+      - { name: time-ordered, weight: 0.15 }
+    features: { textScore: 0.6, pantryAffinity: 0.25, timeWeight: 0.15 }
+    constraints: [swap-exclusions, dish-closure]

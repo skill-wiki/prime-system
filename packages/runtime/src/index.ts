@@ -5,7 +5,6 @@
  * Components:
  * - corpus-snapshot — immutable bundle activation, manifest and digest validation
  * - atom-loader     — global index / atom metadata reads and projection resolution
- * - domain-plugin / domain-config — data-driven domain discovery and registration
  *
  * What this package deliberately does NOT own:
  * - Execution and evaluation belong to `packages/action-runtime` (plan §2.3, §9.7, §18.4).
@@ -19,25 +18,18 @@
  * have produced a fourth implementation of narrowing logic that the three generic engines
  * above already own (D-3). It carried every one of this package's model-declared closed-set
  * literals; nothing outside this package consumed it in production.
+ *
+ * `domain-plugin` / `domain-config` (DomainRegistry, discoverDomains, AxisDef, …) went the
+ * same way, for the same reason plus a harder one: they were this package's only
+ * `@skill-wiki/types` importers and they walked `PrimeAST.body` as `FieldNode[]` to read
+ * `domain:` and `tags:`. That is the exact SyntaxAST leak plan §7.1 forbids Runtime to have
+ * ("Runtime 只能读取 ArtifactIR"), and Phase 2 acceptance names it: "Runtime 包不 import
+ * Parser AST". They had zero consumers outside this package's own tests, so there was no
+ * behaviour to preserve — the `domain.yaml` axis/tag vocabulary they loaded is now declared
+ * by a Model Package (`@skill-wiki/model-schema`: TypeDefinition, RetrievalProfileSchema),
+ * which is where §4.2 puts it. Rewriting them onto UnitIR would have kept a second,
+ * unreachable narrowing implementation alive.
  */
-
-export {
-  DomainRegistry,
-  type DomainPlugin,
-  type DomainDiagnostic,
-} from "./domain-plugin";
-export {
-  loadDomainFromFile,
-  discoverDomains,
-  registerAll,
-  createConfigDrivenRegistry,
-  MAX_DISCOVERY_DEPTH,
-  type DomainConfig,
-  type AxisDef,
-  type ContractField,
-  type ValidatorDef,
-  type LoadedDomainPlugin,
-} from "./domain-config";
 
 // ─── Projection-based runtime (v3) ───────────────────────────────────────────
 export {
@@ -64,6 +56,7 @@ export {
   CORPUS_INDEX_FILE,
   SUPPORTED_CORPUS_PROTOCOL_MAJOR,
   SUPPORTED_CORPUS_IR_VERSION,
+  SUPPORTED_CORPUS_EMITTER_VERSION,
   type PrimeBundleErrorCode,
   type BundleDiagnostic,
   type CorpusManifest,

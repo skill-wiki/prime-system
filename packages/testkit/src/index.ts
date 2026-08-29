@@ -12,7 +12,7 @@ export {
   type CorpusPackage, type CorpusUnitRecord, type CorpusRelationRecord, type CorpusLoadResult, type CorpusLoadDiagnostic,
 } from "./corpus.ts";
 
-export { runCorpusConformance, type CorpusConformanceOptions, type GoldenQuery } from "./corpus-conformance.ts";
+export { runCorpusConformance, type CorpusConformanceOptions, type GoldenQuery, type GoldenQueryObservation } from "./corpus-conformance.ts";
 
 export { corpusFromV1Sources, type V1CorpusOptions, type V1CorpusResult } from "./corpus-adapter.ts";
 

@@ -42,7 +42,12 @@
         "prime": "dist/index.js",
       },
       "dependencies": {
+        "@skill-wiki/action-runtime": "workspace:*",
+        "@skill-wiki/bundle": "workspace:*",
         "@skill-wiki/compiler": "workspace:*",
+        "@skill-wiki/event-store": "workspace:*",
+        "@skill-wiki/ir": "workspace:*",
+        "@skill-wiki/model-schema": "workspace:*",
         "@skill-wiki/parser": "workspace:*",
         "@skill-wiki/runtime": "workspace:*",
         "@skill-wiki/types": "workspace:*",

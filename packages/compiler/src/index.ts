@@ -43,7 +43,7 @@ export { buildGlobalIndexXml } from "./global-index-emitter";
 export type { AtomMeta } from "./global-index-emitter";
 export { normalizeUnit, normalizePrimeV1Atom, applyV1SyntaxMacro, deriveV1AtomId } from "./normalizer";
 export type { NormalizeContext, NormalizeDiagnostic, NormalizeResult } from "./normalizer";
-export { compileUnit, compileNormalizedUnit, emitCompiledUnit, computeCompiledUnitContentDigest } from "./generic-unit";
+export { compileUnit, compileNormalizedUnit, emitCompiledUnit, computeCompiledUnitContentDigest, EMITTER_VERSION } from "./generic-unit";
 export type { CompileUnitOptions, CompileUnitDiagnostic, CompileUnitResult, EmitCompiledUnitResult } from "./generic-unit";
 
 // ─── Imports ───────────────────────────────────────────────────────────────

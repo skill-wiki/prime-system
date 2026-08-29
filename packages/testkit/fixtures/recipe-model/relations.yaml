@@ -1,0 +1,63 @@
+# The five semantics fields carry every selection decision this domain makes.
+# Two values here differ deliberately from `security-model`, so the conformance
+# suite proves the engine reads them rather than defaulting:
+#   `swaps-with`  conflictSeverity: warning   (security uses error)
+#   `builds-on`   cyclePolicy: reject         (same as security, kept as control)
+kind: definitions
+version: 1.0.0
+definitions:
+  - kind: relation
+    name: builds-on
+    version: 1.0.0
+    from: Dish
+    to: Dish
+    cardinality: many-to-many
+    directional: true
+    semantics: { traversal: transitive, selection: closure, loadOrder: before, cyclePolicy: reject, conflictSeverity: none }
+
+  - kind: relation
+    name: needs-ingredient
+    version: 1.0.0
+    from: Dish
+    to: Ingredient
+    cardinality: one-to-many
+    directional: true
+    semantics: { traversal: one-hop, selection: expand, loadOrder: after, cyclePolicy: allow, conflictSeverity: none }
+
+  - kind: relation
+    name: uses-technique
+    version: 1.0.0
+    from: Dish
+    to: Technique
+    cardinality: many-to-many
+    directional: true
+    semantics: { traversal: one-hop, selection: expand, loadOrder: before, cyclePolicy: allow, conflictSeverity: none }
+
+  # Non-directional exclusion at `warning` severity: both sides must survive.
+  - kind: relation
+    name: swaps-with
+    version: 1.0.0
+    from: Ingredient
+    to: Ingredient
+    cardinality: many-to-many
+    directional: false
+    aliases: [swaps_with]
+    semantics: { traversal: one-hop, selection: exclude, loadOrder: none, cyclePolicy: allow, conflictSeverity: warning }
+
+  - kind: relation
+    name: contains-allergen
+    version: 1.0.0
+    from: Ingredient
+    to: Allergen
+    cardinality: many-to-many
+    directional: true
+    semantics: { traversal: one-hop, selection: informational, loadOrder: none, cyclePolicy: allow, conflictSeverity: none }
+
+  - kind: relation
+    name: rates
+    version: 1.0.0
+    from: Tasting
+    to: Dish
+    cardinality: many-to-one
+    directional: true
+    semantics: { traversal: one-hop, selection: informational, loadOrder: none, cyclePolicy: allow, conflictSeverity: none }

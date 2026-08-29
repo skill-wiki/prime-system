@@ -1,0 +1,53 @@
+# The `custom-ticket` domain named in plan §16 Phase 3. Deliberately *adjacent*
+# to `ticket-model` in subject matter but sharing no identifier with it, so this
+# fixture cannot accidentally pass by reusing a name some other suite already
+# taught the engine about.
+kind: definitions
+version: 1.0.0
+definitions:
+  - kind: type
+    name: Incident
+    version: 1.0.0
+    additionalFields: reject
+    fields:
+      - { name: name, typeRef: string, required: true }
+      - { name: impactSummary, typeRef: string, required: true }
+      - { name: urgency, typeRef: integer, required: true, description: 1 (deferrable) to 5 (page now) }
+      - { name: detectedAt, typeRef: string }
+
+  - kind: type
+    name: Runbook
+    version: 1.0.0
+    additionalFields: reject
+    fields:
+      - { name: name, typeRef: string, required: true }
+      - { name: steps, typeRef: string, required: true }
+      - { name: automated, typeRef: boolean, required: true }
+      - { name: confidence, typeRef: integer }
+
+  - kind: type
+    name: Service
+    version: 1.0.0
+    additionalFields: reject
+    fields:
+      - { name: name, typeRef: string, required: true }
+      - { name: tier, typeRef: string, required: true }
+      - { name: oncallRotation, typeRef: string }
+
+  - kind: type
+    name: Owner
+    version: 1.0.0
+    additionalFields: reject
+    fields:
+      - { name: name, typeRef: string, required: true }
+      - { name: handle, typeRef: string, required: true }
+
+  - kind: type
+    name: Postmortem
+    version: 1.0.0
+    additionalFields: reject
+    extensions: { requiresCitation: true }
+    fields:
+      - { name: name, typeRef: string, required: true }
+      - { name: rootCause, typeRef: string, required: true }
+      - { name: actionItems, typeRef: string }

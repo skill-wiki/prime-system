@@ -1,0 +1,63 @@
+{
+  "name": "recipe-model/roomy-ranked",
+  "domain": "recipe-model",
+  "path": "planSelection",
+  "snapshot": {
+    "modelRelease": "1.0.0",
+    "modelDigest": "model:recipes",
+    "corpusRelease": "1.0.0",
+    "corpusDigest": "corpus:recipe-kitchen-min"
+  },
+  "request": {
+    "profile": "kitchen-default",
+    "principalId": "conformance-reader",
+    "maxTokens": 100000,
+    "text": "lemon risotto rice",
+    "seeds": [
+      "@kitchen/dish-lemon-risotto"
+    ],
+    "limit": null,
+    "fallbackProjections": null
+  },
+  "topK": [
+    "@kitchen/tasting-spring-panel",
+    "@kitchen/ingredient-carnaroli-rice",
+    "@kitchen/technique-mantecatura",
+    "@kitchen/technique-toasting",
+    "@kitchen/dish-base-risotto",
+    "@kitchen/dish-lemon-risotto",
+    "@kitchen/ingredient-arborio-rice",
+    "@kitchen/dish-saffron-risotto",
+    "@kitchen/ingredient-butter"
+  ],
+  "conflicts": [
+    {
+      "code": "RELATION_EXCLUSION",
+      "severity": "warning",
+      "message": "relation 'swaps-with' declares mutual exclusion between '@kitchen/ingredient-arborio-rice' and '@kitchen/ingredient-carnaroli-rice'"
+    }
+  ],
+  "budget": {
+    "maxTokens": 100000,
+    "consumedTokens": 286,
+    "state": null,
+    "shortfall": null
+  },
+  "projectionLoads": [
+    {
+      "projectionRef": "plate",
+      "unitIds": [
+        "@kitchen/tasting-spring-panel",
+        "@kitchen/ingredient-carnaroli-rice",
+        "@kitchen/technique-mantecatura",
+        "@kitchen/technique-toasting",
+        "@kitchen/dish-base-risotto",
+        "@kitchen/dish-lemon-risotto",
+        "@kitchen/ingredient-arborio-rice",
+        "@kitchen/dish-saffron-risotto",
+        "@kitchen/ingredient-butter"
+      ]
+    }
+  ],
+  "rejections": []
+}

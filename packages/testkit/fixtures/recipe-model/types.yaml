@@ -1,0 +1,52 @@
+# Third-domain model package (cooking). It shares no type name, no relation name,
+# no projection name and no feature-axis name with `security-model` or the v1
+# compatibility model, so any domain constant that leaked into the engine would
+# make exactly one of the three conformance domains behave differently.
+kind: definitions
+version: 1.0.0
+definitions:
+  - kind: type
+    name: Dish
+    version: 1.0.0
+    additionalFields: reject
+    fields:
+      - { name: name, typeRef: string, required: true }
+      - { name: cuisine, typeRef: string, required: true }
+      - { name: minutes, typeRef: integer, required: true, description: active cooking minutes }
+      - { name: notes, typeRef: string }
+
+  - kind: type
+    name: Ingredient
+    version: 1.0.0
+    additionalFields: reject
+    fields:
+      - { name: name, typeRef: string, required: true }
+      - { name: pantryStaple, typeRef: boolean, required: true }
+      - { name: potency, typeRef: integer }
+
+  - kind: type
+    name: Technique
+    version: 1.0.0
+    additionalFields: reject
+    fields:
+      - { name: name, typeRef: string, required: true }
+      - { name: skillLevel, typeRef: integer, required: true, description: 1 (trivial) to 5 (expert) }
+      - { name: summary, typeRef: string }
+
+  - kind: type
+    name: Allergen
+    version: 1.0.0
+    additionalFields: reject
+    fields:
+      - { name: name, typeRef: string, required: true }
+      - { name: reactionRisk, typeRef: integer }
+
+  - kind: type
+    name: Tasting
+    version: 1.0.0
+    additionalFields: reject
+    fields:
+      - { name: name, typeRef: string, required: true }
+      - { name: impression, typeRef: string, required: true }
+      - { name: panelScore, typeRef: integer }
+      - { name: tastedDish, typeRef: Dish, required: true }

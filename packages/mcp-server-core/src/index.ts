@@ -188,13 +188,19 @@ export function createPrimeMcpServer(options: PrimeMcpOptions): PrimeMcpInstance
   };
 
   const server = new McpServer({ name: "prime-mcp-core", version: "0.1.0" }, { capabilities: { tools: {} } });
-  server.tool(
+  // `registerTool` with an explicit `inputSchema` is the only form that both
+  // advertises the parameters in `tools/list` and delivers parsed arguments to
+  // the callback. The deprecated `tool(name, description, cb)` overload declares
+  // a ZERO-ARGUMENT tool and hands the callback a `RequestHandlerExtra`, which
+  // carries no `params` — so every call silently collapsed to the default scope.
+  server.registerTool(
     "prime_query",
-    "Browse a compiled Prime corpus. Every result carries a prime:// resource URI; the payload is a projection path, inline content or the URI itself depending on the negotiated transport.",
-    async (extra) => {
-      const raw = (extra as unknown as { params?: { arguments?: unknown } }).params?.arguments ?? {};
-      const parsed = PRIME_QUERY_SCHEMA.safeParse(raw);
-      const args: QueryArguments = parsed.success ? parsed.data : { scope: "atoms", limit: 10 };
+    {
+      description:
+        "Browse a compiled Prime corpus. Every result carries a prime:// resource URI; the payload is a projection path, inline content or the URI itself depending on the negotiated transport.",
+      inputSchema: PRIME_QUERY_SCHEMA,
+    },
+    async (args: QueryArguments) => {
       const outcome = executePrimeQuery(args, serve);
       if ("error" in outcome) return { content: [{ type: "text", text: outcome.error }] };
       return {
@@ -215,14 +221,15 @@ export function createPrimeMcpServer(options: PrimeMcpOptions): PrimeMcpInstance
       };
     },
   );
-  server.tool(
+  server.registerTool(
     "prime_resource",
-    "Resolve a prime:// resource URI to its projection content. This is what makes the URI transport usable for a consumer that cannot read server-local paths (§11.3).",
-    async (extra) => {
-      const raw = (extra as unknown as { params?: { arguments?: unknown } }).params?.arguments ?? {};
-      const parsed = PRIME_RESOURCE_SCHEMA.safeParse(raw);
-      if (!parsed.success) return { content: [{ type: "text", text: "prime_resource requires `uri`." }] };
-      const outcome = resolvePrimeUri(parsed.data.uri, serve);
+    {
+      description:
+        "Resolve a prime:// resource URI to its projection content. This is what makes the URI transport usable for a consumer that cannot read server-local paths (§11.3).",
+      inputSchema: PRIME_RESOURCE_SCHEMA,
+    },
+    async (args: { uri: string }) => {
+      const outcome = resolvePrimeUri(args.uri, serve);
       if ("error" in outcome) return { content: [{ type: "text", text: outcome.error }] };
       return { content: [{ type: "text", text: outcome.content }] };
     },

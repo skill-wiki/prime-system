@@ -1,0 +1,85 @@
+{
+  "name": "security-model/tight-budget-drops",
+  "domain": "security-model",
+  "path": "planSelection",
+  "snapshot": {
+    "modelRelease": "1.0.0",
+    "modelDigest": "model:security-controls",
+    "corpusRelease": "1.0.0",
+    "corpusDigest": "corpus:security-controls-min"
+  },
+  "request": {
+    "profile": "audit-default",
+    "principalId": "conformance-reader",
+    "maxTokens": 120,
+    "text": "multi factor authentication control",
+    "seeds": [
+      "@sec/control-multi-factor"
+    ],
+    "limit": null,
+    "fallbackProjections": null
+  },
+  "topK": [
+    "@sec/assessment-multi-factor-q3",
+    "@sec/threat-injected-query"
+  ],
+  "conflicts": [
+    {
+      "code": "RERANKER_NOT_IMPLEMENTED",
+      "severity": "warning",
+      "message": "Retrieval profile 'audit-default' declares reranker 'stable-linear-v1', which this engine does not implement. The returned order is the feature-scored order with no reranking applied; treat any ranking-sensitive decision accordingly."
+    }
+  ],
+  "budget": {
+    "maxTokens": 120,
+    "consumedTokens": 94,
+    "state": null,
+    "shortfall": null
+  },
+  "projectionLoads": [
+    {
+      "projectionRef": "core",
+      "unitIds": [
+        "@sec/assessment-multi-factor-q3",
+        "@sec/threat-injected-query"
+      ]
+    }
+  ],
+  "rejections": [
+    {
+      "unitId": "@sec/asset-customer-database",
+      "reasons": [
+        "token budget exhausted: cheapest projection 'core' needs 44 tokens, 26 of 120 remain",
+        "projection costs considered: core=44"
+      ]
+    },
+    {
+      "unitId": "@sec/control-identity-provider",
+      "reasons": [
+        "token budget exhausted: cheapest projection 'core' needs 58 tokens, 26 of 120 remain",
+        "projection costs considered: core=58"
+      ]
+    },
+    {
+      "unitId": "@sec/control-multi-factor",
+      "reasons": [
+        "token budget exhausted: cheapest projection 'core' needs 62 tokens, 26 of 120 remain",
+        "projection costs considered: core=62"
+      ]
+    },
+    {
+      "unitId": "@sec/evidence-factor-enrolment-export",
+      "reasons": [
+        "token budget exhausted: cheapest projection 'core' needs 42 tokens, 26 of 120 remain",
+        "projection costs considered: core=42"
+      ]
+    },
+    {
+      "unitId": "@sec/threat-credential-stuffing",
+      "reasons": [
+        "token budget exhausted: cheapest projection 'core' needs 52 tokens, 26 of 120 remain",
+        "projection costs considered: core=52"
+      ]
+    }
+  ]
+}

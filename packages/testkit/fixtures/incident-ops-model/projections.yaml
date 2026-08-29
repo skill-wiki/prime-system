@@ -1,0 +1,56 @@
+kind: definitions
+version: 1.0.0
+definitions:
+  - kind: projection
+    name: stub
+    version: 1.0.0
+    targetTokens: 30
+    include: [name]
+    typeGroups: &groups
+      signal: [Incident]
+      remedy: [Runbook]
+      topology: [Service, Owner]
+      retrospective: [Postmortem]
+    rules:
+      - { layer: stub, typeRef: "Incident", include: [urgency] }
+      - { layer: stub, typeRef: "group:remedy", include: [automated] }
+      - { layer: stub, typeRef: "Service", include: [tier] }
+      - { layer: stub, typeRef: "Owner", include: [handle] }
+      - { layer: stub, typeRef: "Postmortem", include: [rootCause] }
+
+  - kind: projection
+    name: triage
+    version: 1.0.0
+    targetTokens: 110
+    include: [name]
+    typeGroups: *groups
+    rules:
+      - { layer: triage, typeRef: "Incident", include: [impactSummary, urgency] }
+      - { layer: triage, typeRef: "Runbook", include: [steps, automated, confidence] }
+      - { layer: triage, typeRef: "Service", include: [tier, oncallRotation] }
+      - { layer: triage, typeRef: "Owner", include: [handle] }
+      - { layer: triage, typeRef: "Postmortem", include: [rootCause, actionItems] }
+
+  - kind: projection
+    name: dossier
+    version: 1.0.0
+    targetTokens: 400
+    include: ["*"]
+    typeGroups: *groups
+    rules:
+      - { layer: dossier, typeRef: "group:signal", include: ["*"] }
+      - { layer: dossier, typeRef: "group:remedy", include: ["*"] }
+      - { layer: dossier, typeRef: "group:topology", include: ["*"] }
+      - { layer: dossier, typeRef: "group:retrospective", include: ["*"] }
+
+  - kind: retrieval-profile
+    name: triage-default
+    version: 1.0.0
+    projection: triage
+    candidateGenerators:
+      - { name: keyword, weight: 0.4 }
+      - { name: link-walk, weight: 0.35 }
+      - { name: urgency-ranked, weight: 0.25 }
+    features: { keywordScore: 0.4, linkAffinity: 0.35, urgencyWeight: 0.25 }
+    constraints: [contention-exclusions, escalation-closure]
+    reranker: weighted-blend-v2

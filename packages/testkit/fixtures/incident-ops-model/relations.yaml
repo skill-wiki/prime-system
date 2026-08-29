@@ -1,0 +1,60 @@
+# `escalates-to` declares `cyclePolicy: collapse` — the one value neither
+# `security-model` (reject) nor `recipe-model` (reject) uses. A cycle in this
+# domain must therefore be collapsed and reported, not rejected: that is the
+# assertion which fails if the engine ever hardcodes a cycle policy.
+kind: definitions
+version: 1.0.0
+definitions:
+  - kind: relation
+    name: escalates-to
+    version: 1.0.0
+    from: Incident
+    to: Incident
+    cardinality: many-to-many
+    directional: true
+    semantics: { traversal: transitive, selection: closure, loadOrder: before, cyclePolicy: collapse, conflictSeverity: none }
+
+  - kind: relation
+    name: resolved-by
+    version: 1.0.0
+    from: Incident
+    to: Runbook
+    cardinality: many-to-many
+    directional: true
+    semantics: { traversal: one-hop, selection: expand, loadOrder: after, cyclePolicy: allow, conflictSeverity: none }
+
+  - kind: relation
+    name: impacts
+    version: 1.0.0
+    from: Incident
+    to: Service
+    cardinality: many-to-many
+    directional: true
+    semantics: { traversal: one-hop, selection: expand, loadOrder: before, cyclePolicy: allow, conflictSeverity: none }
+
+  - kind: relation
+    name: contends-with
+    version: 1.0.0
+    from: Runbook
+    to: Runbook
+    cardinality: many-to-many
+    directional: false
+    semantics: { traversal: one-hop, selection: exclude, loadOrder: none, cyclePolicy: allow, conflictSeverity: error }
+
+  - kind: relation
+    name: owned-by
+    version: 1.0.0
+    from: Service
+    to: Owner
+    cardinality: many-to-one
+    directional: true
+    semantics: { traversal: one-hop, selection: informational, loadOrder: none, cyclePolicy: allow, conflictSeverity: none }
+
+  - kind: relation
+    name: documented-in
+    version: 1.0.0
+    from: Incident
+    to: Postmortem
+    cardinality: one-to-many
+    directional: true
+    semantics: { traversal: one-hop, selection: expand, loadOrder: after, cyclePolicy: allow, conflictSeverity: none }

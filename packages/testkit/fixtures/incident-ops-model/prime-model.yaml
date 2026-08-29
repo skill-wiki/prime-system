@@ -1,0 +1,7 @@
+protocol: prime/model/v2
+name: incident-ops
+version: 1.0.0
+files:
+  - types.yaml
+  - relations.yaml
+  - projections.yaml

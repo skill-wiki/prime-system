@@ -15,12 +15,31 @@ export const CORPUS_NONARTIFACT_NOISE = [".DS_Store"] as const;
 const EPHEMERAL_BUNDLE_FILE = /^\.prime-bundle-(?:index|manifest)-(?:stage|backup)-\d+-\d+$/;
 export const SUPPORTED_CORPUS_PROTOCOL_MAJOR = 2;
 export const SUPPORTED_CORPUS_IR_VERSION = "2";
+/**
+ * The emitter revision whose artifact bytes this Runtime is willing to serve.
+ *
+ * Plan §16 Phase 2 acceptance: "Emitter 变化一定使相关 artifact 失效重建." Nothing
+ * in this repo builds incrementally, so there is no cache entry to evict — the
+ * only place that sentence can be made true is at activation: a bundle whose
+ * `emitterVersion` is not the one this Runtime understands must fail closed
+ * instead of being served. Bumping `EMITTER_VERSION` in the compiler therefore
+ * invalidates every previously emitted bundle, which is the intended coupling:
+ * an emitter change and the Runtime that accepts its output ship together.
+ *
+ * This is declared here rather than imported from `@skill-wiki/compiler` on
+ * purpose — plan §15.4 forbids the Runtime→Compiler edge. Same shape as
+ * `SUPPORTED_CORPUS_IR_VERSION` above: the producer states what it emitted, the
+ * Runtime states what it accepts, and a mismatch is an error rather than a
+ * silent downgrade.
+ */
+export const SUPPORTED_CORPUS_EMITTER_VERSION = "3";
 
 export type PrimeBundleErrorCode =
   | "MANIFEST_MISSING"
   | "MANIFEST_INVALID"
   | "PROTOCOL_VERSION_UNSUPPORTED"
   | "IR_VERSION_UNSUPPORTED"
+  | "EMITTER_VERSION_UNSUPPORTED"
   | "INDEX_MISSING"
   | "INDEX_DIGEST_MISMATCH"
   | "CONTENT_DIGEST_MISMATCH"
@@ -217,6 +236,11 @@ export function validateCorpusManifest(value: unknown): CorpusManifest {
 /**
  * Phase 0 runtime compatibility policy for emitted corpus manifests.
  * Legacy bundles bypass this because they have no manifest to version-check.
+ *
+ * `compilerVersion` is deliberately NOT gated: the compiler can be rebuilt
+ * without changing a single artifact byte, so rejecting on it would invalidate
+ * artifacts that are still exactly what this Runtime expects. `emitterVersion`
+ * is the opposite — it names the artifact layout itself.
  */
 export function validateCorpusManifestCompatibility(manifest: CorpusManifest): void {
   const protocolMajor = /^([0-9]+)(?:\.[0-9]+){0,2}$/.exec(manifest.protocolVersion)?.[1];
@@ -232,6 +256,13 @@ export function validateCorpusManifestCompatibility(manifest: CorpusManifest): v
       "IR_VERSION_UNSUPPORTED",
       `Unsupported corpus irVersion \"${manifest.irVersion}\"; runtime supports \"${SUPPORTED_CORPUS_IR_VERSION}\".`,
       { context: { actual: manifest.irVersion, supported: SUPPORTED_CORPUS_IR_VERSION } },
+    );
+  }
+  if (manifest.emitterVersion !== SUPPORTED_CORPUS_EMITTER_VERSION) {
+    throw new PrimeBundleError(
+      "EMITTER_VERSION_UNSUPPORTED",
+      `Corpus was emitted by emitterVersion \"${manifest.emitterVersion}\"; runtime serves \"${SUPPORTED_CORPUS_EMITTER_VERSION}\". Recompile the corpus.`,
+      { context: { actual: manifest.emitterVersion, supported: SUPPORTED_CORPUS_EMITTER_VERSION } },
     );
   }
 }

@@ -3,12 +3,23 @@
  * Level 1: Structural checker — deterministic, no AI, runs offline.
  *
  * Performs all checks that can be done with pure code analysis:
- * - Required fields per base class
  * - Step error handlers
  * - Threshold ordering
  * - Reference existence
  * - Decorator constraints (@sealed, @abstract)
  * - Inheritance depth limits
+ *
+ * Required-field checking is deliberately NOT here. It used to be three
+ * hardcoded `extends`-base-class branches (`Knowledge`/`Method`/`Rule`), which
+ * made the engine own a piece of the domain ontology and — measurably — assert
+ * the opposite of the external model: `compat/prime-v1-model/types.yaml`
+ * declares `method`'s `input`/`output`/`steps` and `rule`'s `checks` as
+ * `required: false`, so a model author could not relax a rule the engine
+ * enforced. The model-driven implementation of the same capability already
+ * exists and is the one on the production compile path:
+ * `normalizer.ts` emits `MISSING_REQUIRED_FIELD` from
+ * `TypeDefinition.fields[].required`. Two implementations of one rule, one of
+ * them hardcoded, is what plan §3.1 forbids.
  */
 
 import type {
@@ -42,26 +53,6 @@ function isPrimeAST(ast: AnyAST): ast is PrimeAST {
  */
 function findField(ast: AnyAST, key: string): FieldNode | undefined {
   return ast.body.find((f) => f.key === key);
-}
-
-/**
- * Check if a field exists and has a non-empty value.
- */
-function hasField(ast: AnyAST, key: string): boolean {
-  const field = findField(ast, key);
-  if (!field) return false;
-  // Arrays must have at least one item
-  if (field.value.type === "Array") {
-    return (field.value as ArrayNode).items.length > 0;
-  }
-  return true;
-}
-
-/**
- * Get the base class from the `extends` keyword on the AST.
- */
-function getBaseClass(ast: AnyAST): string | undefined {
-  return isPrimeAST(ast) ? ast.extends : undefined;
 }
 
 /**
@@ -275,62 +266,7 @@ export function checkL1(
     }
   }
 
-  // ── 3. Required fields per base class ─────────────────────────────────
-  const baseClass = getBaseClass(ast);
-
-  if (baseClass === "Knowledge") {
-    const hasDefs = hasField(ast, "definitions");
-    const hasCats = hasField(ast, "categories");
-    const hasFacts = hasField(ast, "facts");
-    if (!hasDefs && !hasCats && !hasFacts) {
-      push(
-        "error",
-        ast.loc.line,
-        "Knowledge must have at least one of: definitions, categories, facts",
-        "Add definitions, categories, or facts to the Knowledge body"
-      );
-    }
-  }
-
-  if (baseClass === "Method") {
-    if (!hasField(ast, "input")) {
-      push(
-        "error",
-        ast.loc.line,
-        "Method must have 'input' field",
-        "Add input: [...] to the Method body"
-      );
-    }
-    if (!hasField(ast, "output")) {
-      push(
-        "error",
-        ast.loc.line,
-        "Method must have 'output' field",
-        "Add output: [...] to the Method body"
-      );
-    }
-    if (!hasField(ast, "steps")) {
-      push(
-        "error",
-        ast.loc.line,
-        "Method must have 'steps' field",
-        "Add steps: [...] to the Method body"
-      );
-    }
-  }
-
-  if (baseClass === "Rule") {
-    if (!hasField(ast, "checks")) {
-      push(
-        "error",
-        ast.loc.line,
-        "Rule must have 'checks' field",
-        "Add checks: [...] to the Rule body"
-      );
-    }
-  }
-
-  // ── 4. Every Step must have error_handler or @safe ────────────────────
+  // ── 3. Every Step must have error_handler or @safe ────────────────────
   const steps = getSteps(ast);
   for (const step of steps) {
     if (!stepHasErrorHandler(step)) {
@@ -343,7 +279,7 @@ export function checkL1(
     }
   }
 
-  // ── 5. Threshold values must be strictly increasing: block < warn < pass
+  // ── 4. Threshold values must be strictly increasing: block < warn < pass
   const thresholds = getThresholds(ast);
   for (const threshold of thresholds) {
     const levels = threshold.levels;
@@ -367,7 +303,7 @@ export function checkL1(
     }
   }
 
-  // ── 6. Check references exist in installed primes ─────────────────────
+  // ── 5. Check references exist in installed primes ─────────────────────
   const useRefs = getUseReferences(ast);
   for (const ref of useRefs) {
     // Normalize: PascalCase → kebab-case for lookup (TestCoverageStandard → test-coverage-standard)
@@ -421,7 +357,7 @@ export function checkL1(
     }
   }
 
-  // ── 7. @sealed must not be inherited ──────────────────────────────────
+  // ── 6. @sealed must not be inherited ──────────────────────────────────
   if (isPrimeAST(ast) && ast.extends) {
     const parent = installedPrimes.get(ast.extends);
     if (parent?.decorators?.includes("@sealed")) {
@@ -434,7 +370,7 @@ export function checkL1(
     }
   }
 
-  // ── 8. @abstract must not be directly instantiated ────────────────────
+  // ── 7. @abstract must not be directly instantiated ────────────────────
   // Check if any use[] reference targets an @abstract Prime directly
   for (const ref of useRefs) {
     const target = installedPrimes.get(ref.name);
@@ -448,7 +384,7 @@ export function checkL1(
     }
   }
 
-  // ── 9. Inheritance depth must not exceed 3 ────────────────────────────
+  // ── 8. Inheritance depth must not exceed 3 ────────────────────────────
   if (isPrimeAST(ast) && ast.extends) {
     const depth = getInheritanceDepth(ast, installedPrimes);
     if (depth > 3) {

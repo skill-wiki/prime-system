@@ -4,7 +4,7 @@ import { mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSyn
 import { join } from "path";
 import { tmpdir } from "os";
 import { spawnSync } from "node:child_process";
-import { computeCorpusContentDigest, loadCorpusSnapshot, PrimeBundleError, validateCorpusManifest } from "../src/corpus-snapshot";
+import { computeCorpusContentDigest, loadCorpusSnapshot, PrimeBundleError, SUPPORTED_CORPUS_EMITTER_VERSION, validateCorpusManifest } from "../src/corpus-snapshot";
 
 const digest = (text: string) => `sha256:${createHash("sha256").update(text).digest("hex")}`;
 const index = '<prime_index version="1.0" total="0" total_tokens="0"></prime_index>';
@@ -116,4 +116,43 @@ describe("loadCorpusSnapshot", () => {
     expect(() => validateCorpusManifest({ ...manifest(), createdAt: "not-a-date" })).toThrow("ISO-8601");
     expect(() => validateCorpusManifest({ ...manifest(), createdAt: "2026-02-30T00:00:00Z" })).toThrow("ISO-8601");
   });
+
+  /**
+   * Plan §16 Phase 2 acceptance 4 — "Emitter 变化一定使相关 artifact 失效重建".
+   * Nothing here builds incrementally, so activation is the only place that can
+   * be true: a bundle emitted by a different emitter must not be served. Before
+   * this gate existed, `emitterVersion` was validated for shape and then only
+   * echoed into reports, so a v4 emitter's Runtime happily served v3 artifacts.
+   */
+  it("fails closed when the corpus was emitted by an unsupported emitter", () => withCorpus((dir) => {
+    writeFileSync(join(dir, "_index.xml"), index);
+    const contentDigest = computeCorpusContentDigest(dir);
+    writeFileSync(join(dir, "corpus.manifest.json"), JSON.stringify({ ...manifest(digest(index), contentDigest), emitterVersion: "4" }));
+    try {
+      loadCorpusSnapshot(dir);
+      throw new Error("expected unsupported emitter version");
+    } catch (error) {
+      expect(error).toBeInstanceOf(PrimeBundleError);
+      expect((error as PrimeBundleError).code).toBe("EMITTER_VERSION_UNSUPPORTED");
+    }
+  }));
+
+  it("accepts the supported emitter version and reports it on the snapshot", () => withCorpus((dir) => {
+    writeFileSync(join(dir, "_index.xml"), index);
+    const contentDigest = computeCorpusContentDigest(dir);
+    writeFileSync(join(dir, "corpus.manifest.json"), JSON.stringify({ ...manifest(digest(index), contentDigest), emitterVersion: SUPPORTED_CORPUS_EMITTER_VERSION }));
+    expect(loadCorpusSnapshot(dir).snapshot.emitterVersion).toBe(SUPPORTED_CORPUS_EMITTER_VERSION);
+  }));
+
+  /**
+   * A legacy v0.1 bundle has no manifest, so it cannot claim an emitter at all;
+   * its `emitterVersion` is the sentinel "unknown". The gate must not reject it,
+   * otherwise adding the gate silently drops legacy support.
+   */
+  it("does not apply the emitter gate to legacy bundles", () => withCorpus((dir) => {
+    writeFileSync(join(dir, "_index.xml"), index);
+    const loaded = loadCorpusSnapshot(dir);
+    expect(loaded.snapshot.kind).toBe("legacy");
+    expect(loaded.snapshot.emitterVersion).toBe("unknown");
+  }));
 });

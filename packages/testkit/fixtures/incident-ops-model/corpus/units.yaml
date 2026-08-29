@@ -1,0 +1,138 @@
+kind: corpus
+name: incident-ops-min
+version: 1.0.0
+model: incident-ops
+units:
+  - id: "@ops/incident-checkout-latency"
+    version: 1.0.0
+    typeRef: Incident
+    license: Apache-2.0
+    tokens: { stub: 12, triage: 34, dossier: 78 }
+    fields:
+      name: Checkout Latency Spike
+      impactSummary: Checkout p99 latency tripled for logged-in shoppers.
+      urgency: 4
+      detectedAt: "2026-08-20T09:12:00Z"
+    relations:
+      - { relation: escalates-to, to: "@ops/incident-payment-timeout" }
+      - { relation: impacts, to: "@ops/service-checkout" }
+      - { relation: resolved-by, to: "@ops/runbook-scale-out" }
+
+  - id: "@ops/incident-payment-timeout"
+    version: 1.0.0
+    typeRef: Incident
+    license: Apache-2.0
+    tokens: { stub: 13, triage: 36, dossier: 84 }
+    fields:
+      name: Payment Gateway Timeout
+      impactSummary: Card authorisation calls time out at the upstream gateway.
+      urgency: 5
+      detectedAt: "2026-08-20T09:20:00Z"
+    relations:
+      - { relation: impacts, to: "@ops/service-payments" }
+      - { relation: resolved-by, to: "@ops/runbook-failover" }
+      - { relation: documented-in, to: "@ops/postmortem-payment-outage" }
+      # Closes a 2-cycle with `incident-checkout-latency`. Legal here and only
+      # here: `escalates-to` declares cyclePolicy `collapse`, so the engine must
+      # stop walking without reporting a conflict. The other two conformance
+      # domains declare `reject` on their closure relation, so the same shape
+      # would be an error there — which is the assertion.
+      - { relation: escalates-to, to: "@ops/incident-checkout-latency" }
+
+  - id: "@ops/incident-stale-cache"
+    version: 1.0.0
+    typeRef: Incident
+    license: Apache-2.0
+    tokens: { stub: 11, triage: 30, dossier: 70 }
+    fields:
+      name: Stale Catalogue Cache
+      impactSummary: Product prices served from an expired cache tier.
+      urgency: 2
+      detectedAt: "2026-08-18T22:05:00Z"
+    relations:
+      - { relation: impacts, to: "@ops/service-checkout" }
+
+  - id: "@ops/runbook-scale-out"
+    version: 1.0.0
+    typeRef: Runbook
+    license: Apache-2.0
+    tokens: { stub: 10, triage: 28, dossier: 64 }
+    fields:
+      name: Horizontal Scale Out
+      steps: Raise the replica floor, drain the hot shard, verify queue depth.
+      automated: true
+      confidence: 4
+    relations:
+      - { relation: contends-with, to: "@ops/runbook-failover" }
+
+  - id: "@ops/runbook-failover"
+    version: 1.0.0
+    typeRef: Runbook
+    license: Apache-2.0
+    tokens: { stub: 10, triage: 29, dossier: 66 }
+    fields:
+      name: Regional Failover
+      steps: Shift traffic to the secondary region, freeze writes, reconcile after.
+      automated: false
+      confidence: 3
+    relations: []
+
+  - id: "@ops/service-checkout"
+    version: 1.0.0
+    typeRef: Service
+    license: Apache-2.0
+    tokens: { stub: 8, triage: 20, dossier: 44 }
+    fields: { name: Checkout, tier: critical, oncallRotation: storefront-primary }
+    relations:
+      - { relation: owned-by, to: "@ops/owner-storefront" }
+
+  - id: "@ops/service-payments"
+    version: 1.0.0
+    typeRef: Service
+    license: Apache-2.0
+    tokens: { stub: 8, triage: 21, dossier: 46 }
+    fields: { name: Payments, tier: critical, oncallRotation: payments-primary }
+    relations:
+      - { relation: owned-by, to: "@ops/owner-payments" }
+
+  - id: "@ops/owner-storefront"
+    version: 1.0.0
+    typeRef: Owner
+    license: Apache-2.0
+    tokens: { stub: 6, triage: 14, dossier: 30 }
+    fields: { name: Storefront Team, handle: "#storefront" }
+    relations: []
+
+  - id: "@ops/owner-payments"
+    version: 1.0.0
+    typeRef: Owner
+    license: Apache-2.0
+    tokens: { stub: 6, triage: 15, dossier: 32 }
+    fields: { name: Payments Team, handle: "#payments" }
+    relations: []
+
+  - id: "@ops/postmortem-payment-outage"
+    version: 1.0.0
+    typeRef: Postmortem
+    license: Apache-2.0
+    citations: ["https://example.invalid/postmortems/2026-08-20-payments"]
+    tokens: { stub: 9, triage: 26, dossier: 58 }
+    fields:
+      name: Payments Outage Review
+      rootCause: An upstream TLS renegotiation storm exhausted the connection pool.
+      actionItems: Pin the cipher suite, add pool saturation alerting.
+    relations: []
+
+  # The ACL subject for this domain.
+  - id: "@ops/incident-insider-access"
+    version: 1.0.0
+    typeRef: Incident
+    license: Apache-2.0
+    visibility: private
+    tokens: { stub: 12, triage: 33, dossier: 76 }
+    fields:
+      name: Insider Access Review
+      impactSummary: An employee account read records outside its assigned scope.
+      urgency: 5
+    relations:
+      - { relation: escalates-to, to: "@ops/incident-payment-timeout" }

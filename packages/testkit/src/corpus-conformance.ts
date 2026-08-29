@@ -9,6 +9,38 @@ export interface GoldenQuery {
   readonly request: Readonly<Record<string, unknown>>;
   /** Expected result ids, in rank order. */
   readonly expectedUnitIds: readonly string[];
+  /**
+   * Expected diagnostic codes on the plan's `conflicts`, in the order the plan
+   * reports them. Only checked when `runQueryPlan` is the injected implementation:
+   * `runQuery` returns ids alone and has nothing to say about conflicts.
+   */
+  readonly expectedConflictCodes?: readonly string[];
+  /**
+   * Expected budget verdict. `state` is the explicit over-budget marker coordinator
+   * decision D-2 requires — freezing it here is what stops a later change from
+   * turning a reported over-budget plan back into a silent one.
+   */
+  readonly expectedBudget?: {
+    readonly maxTokens: number;
+    readonly consumedTokens?: number;
+    readonly state?: string;
+    readonly shortfall?: number;
+  };
+}
+
+/**
+ * What a query implementation reports back. Richer than `runQuery`'s id list
+ * because §16 Phase 3 names three dimensions, not one: top-k, conflicts, budget.
+ */
+export interface GoldenQueryObservation {
+  readonly unitIds: readonly string[];
+  readonly conflictCodes: readonly string[];
+  readonly budget: {
+    readonly maxTokens: number;
+    readonly consumedTokens?: number;
+    readonly state?: string;
+    readonly shortfall?: number;
+  };
 }
 
 export interface CorpusConformanceOptions {
@@ -22,6 +54,12 @@ export interface CorpusConformanceOptions {
   readonly goldenQueries?: readonly GoldenQuery[];
   /** Injected so the suite never imports a query engine. */
   readonly runQuery?: (request: Readonly<Record<string, unknown>>) => readonly string[];
+  /**
+   * Injected for the same reason as `runQuery`, but reports conflicts and budget
+   * as well. Takes precedence when both are supplied, because it can answer every
+   * expectation a `GoldenQuery` may carry while `runQuery` can only answer one.
+   */
+  readonly runQueryPlan?: (request: Readonly<Record<string, unknown>>) => GoldenQueryObservation;
   /** Ids that are legitimately outside this corpus (cross-corpus references). */
   readonly externalIds?: readonly string[];
 }
@@ -207,16 +245,36 @@ function budgetCheck(units: readonly CorpusUnitRecord[], projections: readonly P
 }
 
 function goldenQueryCheck(options: CorpusConformanceOptions): CheckOutcome {
-  const { goldenQueries, runQuery } = options;
+  const { goldenQueries, runQuery, runQueryPlan } = options;
   if (goldenQueries === undefined || goldenQueries.length === 0)
     return skipped("CC-GOLDEN-QUERY", "Golden queries return the expected ranking", "no golden queries supplied");
-  if (runQuery === undefined)
+  if (runQuery === undefined && runQueryPlan === undefined)
     return skipped("CC-GOLDEN-QUERY", "Golden queries return the expected ranking", "no query implementation injected");
   const findings: Finding[] = [];
   for (const q of goldenQueries) {
-    const actual = runQuery(q.request);
+    const observation = runQueryPlan?.(q.request);
+    const actual = observation?.unitIds ?? runQuery!(q.request);
     if (actual.length !== q.expectedUnitIds.length || actual.some((id, i) => id !== q.expectedUnitIds[i]))
       findings.push(finding("GOLDEN_QUERY_MISMATCH", `expected [${q.expectedUnitIds.join(", ")}] got [${actual.join(", ")}]`, "error", { subject: q.name }));
+    // An expectation the injected implementation cannot answer is reported, never
+    // silently satisfied — §17.5 forbids a skip that reads as a pass, and a golden
+    // whose conflict expectation was never evaluated is exactly that.
+    if (q.expectedConflictCodes !== undefined) {
+      if (observation === undefined)
+        findings.push(finding("GOLDEN_QUERY_CONFLICTS_UNCHECKED", "expectedConflictCodes requires the runQueryPlan implementation", "error", { subject: q.name }));
+      else if (observation.conflictCodes.length !== q.expectedConflictCodes.length || observation.conflictCodes.some((code, i) => code !== q.expectedConflictCodes![i]))
+        findings.push(finding("GOLDEN_QUERY_CONFLICT_MISMATCH", `expected conflicts [${q.expectedConflictCodes.join(", ")}] got [${observation.conflictCodes.join(", ")}]`, "error", { subject: q.name }));
+    }
+    if (q.expectedBudget !== undefined) {
+      if (observation === undefined)
+        findings.push(finding("GOLDEN_QUERY_BUDGET_UNCHECKED", "expectedBudget requires the runQueryPlan implementation", "error", { subject: q.name }));
+      else {
+        const differs = (["maxTokens", "consumedTokens", "state", "shortfall"] as const)
+          .filter(field => q.expectedBudget![field] !== undefined && observation.budget[field] !== q.expectedBudget![field]);
+        if (differs.length > 0)
+          findings.push(finding("GOLDEN_QUERY_BUDGET_MISMATCH", `budget field(s) [${differs.join(", ")}] differ: expected ${JSON.stringify(q.expectedBudget)} got ${JSON.stringify(observation.budget)}`, "error", { subject: q.name }));
+      }
+    }
   }
   return check("CC-GOLDEN-QUERY", "Golden queries return the expected ranking", findings);
 }

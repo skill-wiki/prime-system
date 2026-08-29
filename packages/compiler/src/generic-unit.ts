@@ -9,6 +9,24 @@ import { buildChunkProjectionRules, chunkNamedLayers, estimateTokens, usesSectio
 import { normalizeUnit, type NormalizeContext, type NormalizeDiagnostic } from "./normalizer";
 
 export interface CompileUnitOptions { readonly projections?: readonly string[]; }
+/**
+ * The revision of the artifact layout this emitter produces.
+ *
+ * Plan §16 Phase 2 acceptance: "Emitter 变化一定使相关 artifact 失效重建." That
+ * sentence needs a bumpable number that lives *with* the emitter, and this is
+ * it. Bump it whenever `emitCompiledUnit` changes what it writes — file set,
+ * file layout, digest framing, or `meta.yaml` shape — and every previously
+ * emitted bundle then fails `validateCorpusManifestCompatibility` in
+ * `@skill-wiki/runtime` (`SUPPORTED_CORPUS_EMITTER_VERSION`) instead of being
+ * served as if it matched. Do not bump it for a refactor that leaves the bytes
+ * identical: the point is artifact identity, not source churn.
+ *
+ * Every producer of a release manifest must read this instead of writing a
+ * literal. `scripts/build-atom-dirs.ts` and `packages/cli/src/audit/report.ts`
+ * still write `"3"` by hand — both are outside this lane's write scope and are
+ * listed as coordinator rewiring in `docs/lanes/W9-B-PHASE2-RESIDUAL.md`.
+ */
+export const EMITTER_VERSION = "3";
 export type CompileUnitDiagnostic = NormalizeDiagnostic | { readonly code: string; readonly message: string; readonly source?: { readonly filename?: string; readonly loc: { readonly line: number; readonly column: number; readonly offset: number } } };
 export type CompileUnitResult = { readonly ok: true; readonly value: CompiledUnitIR } | { readonly ok: false; readonly diagnostics: readonly CompileUnitDiagnostic[] };
 export interface EmitCompiledUnitResult { readonly directory: string; readonly meta: AtomMeta; readonly files: readonly string[]; }

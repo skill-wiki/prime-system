@@ -1,0 +1,99 @@
+{
+  "name": "recipe-model/tight-budget-drops",
+  "domain": "recipe-model",
+  "path": "planSelection",
+  "snapshot": {
+    "modelRelease": "1.0.0",
+    "modelDigest": "model:recipes",
+    "corpusRelease": "1.0.0",
+    "corpusDigest": "corpus:recipe-kitchen-min"
+  },
+  "request": {
+    "profile": "kitchen-default",
+    "principalId": "conformance-reader",
+    "maxTokens": 80,
+    "text": "lemon risotto rice",
+    "seeds": [
+      "@kitchen/dish-lemon-risotto"
+    ],
+    "limit": null,
+    "fallbackProjections": null
+  },
+  "topK": [
+    "@kitchen/tasting-spring-panel",
+    "@kitchen/ingredient-carnaroli-rice"
+  ],
+  "conflicts": [
+    {
+      "code": "RELATION_EXCLUSION",
+      "severity": "warning",
+      "message": "relation 'swaps-with' declares mutual exclusion between '@kitchen/ingredient-arborio-rice' and '@kitchen/ingredient-carnaroli-rice'"
+    }
+  ],
+  "budget": {
+    "maxTokens": 80,
+    "consumedTokens": 59,
+    "state": null,
+    "shortfall": null
+  },
+  "projectionLoads": [
+    {
+      "projectionRef": "plate",
+      "unitIds": [
+        "@kitchen/tasting-spring-panel",
+        "@kitchen/ingredient-carnaroli-rice"
+      ]
+    }
+  ],
+  "rejections": [
+    {
+      "unitId": "@kitchen/dish-base-risotto",
+      "reasons": [
+        "token budget exhausted: cheapest projection 'plate' needs 38 tokens, 21 of 80 remain",
+        "projection costs considered: plate=38"
+      ]
+    },
+    {
+      "unitId": "@kitchen/dish-lemon-risotto",
+      "reasons": [
+        "token budget exhausted: cheapest projection 'plate' needs 44 tokens, 21 of 80 remain",
+        "projection costs considered: plate=44"
+      ]
+    },
+    {
+      "unitId": "@kitchen/dish-saffron-risotto",
+      "reasons": [
+        "token budget exhausted: cheapest projection 'plate' needs 41 tokens, 21 of 80 remain",
+        "projection costs considered: plate=41"
+      ]
+    },
+    {
+      "unitId": "@kitchen/ingredient-arborio-rice",
+      "reasons": [
+        "token budget exhausted: cheapest projection 'plate' needs 24 tokens, 21 of 80 remain",
+        "projection costs considered: plate=24"
+      ]
+    },
+    {
+      "unitId": "@kitchen/ingredient-butter",
+      "reasons": [
+        "token budget exhausted: cheapest projection 'plate' needs 22 tokens, 21 of 80 remain",
+        "projection costs considered: plate=22"
+      ]
+    },
+    {
+      "unitId": "@kitchen/technique-mantecatura",
+      "reasons": [
+        "token budget exhausted: cheapest projection 'plate' needs 30 tokens, 21 of 80 remain",
+        "projection costs considered: plate=30"
+      ]
+    },
+    {
+      "unitId": "@kitchen/technique-toasting",
+      "reasons": [
+        "token budget exhausted: cheapest projection 'plate' needs 28 tokens, 21 of 80 remain",
+        "projection costs considered: plate=28"
+      ]
+    }
+  ]
+}

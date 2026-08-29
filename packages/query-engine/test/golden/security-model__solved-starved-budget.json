@@ -1,0 +1,109 @@
+{
+  "name": "security-model/solved-starved-budget",
+  "domain": "security-model",
+  "path": "planWithConstraints",
+  "snapshot": {
+    "modelRelease": "1.0.0",
+    "modelDigest": "model:security-controls",
+    "corpusRelease": "1.0.0",
+    "corpusDigest": "corpus:security-controls-min"
+  },
+  "request": {
+    "profile": "audit-default",
+    "principalId": "conformance-reader",
+    "maxTokens": 30,
+    "text": "multi factor authentication control",
+    "seeds": [
+      "@sec/control-multi-factor"
+    ],
+    "limit": null,
+    "fallbackProjections": null
+  },
+  "topK": [
+    "@sec/control-identity-provider",
+    "@sec/control-multi-factor"
+  ],
+  "conflicts": [
+    {
+      "code": "RERANKER_NOT_IMPLEMENTED",
+      "severity": "warning",
+      "message": "Retrieval profile 'audit-default' declares reranker 'stable-linear-v1', which this engine does not implement. The returned order is the feature-scored order with no reranking applied; treat any ranking-sensitive decision accordingly."
+    },
+    {
+      "code": "BUDGET_EXCEEDED_AT_CHEAPEST_PROJECTION",
+      "severity": "error",
+      "message": "Selection of 2 unit(s) costs 120 at the cheapest projection 'core' against a budget of 30; short by 90. No unit was dropped: membership is a constraint decision, not a budget decision."
+    }
+  ],
+  "budget": {
+    "maxTokens": 30,
+    "consumedTokens": 120,
+    "state": "exceeded-at-cheapest-projection",
+    "shortfall": 90
+  },
+  "projectionLoads": [
+    {
+      "projectionRef": "core",
+      "unitIds": [
+        "@sec/control-identity-provider",
+        "@sec/control-multi-factor"
+      ]
+    }
+  ],
+  "rejections": [
+    {
+      "unitId": "@sec/assessment-multi-factor-q3",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@sec/asset-customer-database",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@sec/asset-customer-database",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@sec/asset-customer-database",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@sec/evidence-factor-enrolment-export",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@sec/evidence-factor-enrolment-export",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@sec/threat-credential-stuffing",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@sec/threat-credential-stuffing",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    },
+    {
+      "unitId": "@sec/threat-injected-query",
+      "reasons": [
+        "budget-exhausted"
+      ]
+    }
+  ]
+}

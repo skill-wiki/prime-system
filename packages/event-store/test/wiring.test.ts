@@ -122,6 +122,24 @@ interface PinnedEventRecord {
   payload: Readonly<Record<string, unknown>>;
 }
 // action-runtime/src/index.ts:8
+interface PinnedAttemptRecord {
+  readonly attempt: number;
+  readonly startedAt: number;
+  readonly durationMs: number;
+  readonly status: "succeeded" | "failed";
+  readonly error?: string;
+}
+interface PinnedStepRecord {
+  readonly nodeId: string;
+  readonly kind: PinnedExecutionPlanNodeIR["kind"];
+  readonly target: string;
+  readonly status: "succeeded" | "failed" | "denied" | "suspended" | "skipped";
+  readonly startedAt: number;
+  readonly durationMs: number;
+  readonly attempts?: readonly PinnedAttemptRecord[];
+  readonly error?: string;
+  readonly skipReason?: string;
+}
 interface PinnedActionRun {
   id: string;
   action: string;
@@ -136,6 +154,13 @@ interface PinnedActionRun {
   policyDecision?: PinnedPolicyDecision;
   evidence: readonly PinnedEvidence[];
   attempts: number;
+  // Added by W9-D so `plan.nodes` can drive execution: a step record per plan node
+  // with its own measured duration, plus the run's own start and total. The store
+  // persists these with everything else (`encode()` walks the whole object rather
+  // than a field list), so the pin exists to make drift a failing test.
+  startedAt: number;
+  durationMs?: number;
+  steps: readonly PinnedStepRecord[];
 }
 // action-runtime/src/index.ts:10
 interface PinnedEventStore {
@@ -254,6 +279,8 @@ function newRun(id: string): PinnedActionRun {
     status: "planned",
     evidence: [],
     attempts: 0,
+    startedAt: 1_700_000_000_000,
+    steps: [],
   };
 }
 
