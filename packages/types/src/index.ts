@@ -1,22 +1,21 @@
 /**
  * @module @skill-wiki/types
- * Core type definitions for the Prime Language system.
+ * Syntax-level type definitions for the Prime language.
  *
- * This is the foundational package that all other Prime packages depend on.
- * It exports types for:
- * - Base primitives (PrimeBase, Identifier, Version, Author, etc.)
- * - Knowledge class (definitions, categories, facts, relations)
- * - Method class (steps, parameters, control flow, error handling)
- * - Rule class (checks, thresholds, severity, exemptions)
- * - Links (relationship graph between Primes)
- * - Evaluation (success/failure criteria, confidence, reports)
- * - AST (parser output before type checking)
+ * This package is deliberately small: it describes the *shape of source text*
+ * and nothing about any domain. It exports
+ * - AST node types (parser output before any model is resolved)
+ * - the two syntax primitives (`Identifier`, `Version`) and the declaration
+ *   decorators those nodes refer to
+ *
+ * It used to also carry the v1 Knowledge / Method / Rule ontology (`PrimeBase`,
+ * `Fact`, `Category`, `Method`, `Rule`, `Evaluation`, `Link`) — 961 lines with
+ * no importer left in the workspace. Plan §3.1 forbids the engine from knowing
+ * what a Fact is, and §15.2 puts a v1 vocabulary in
+ * `adapters/sources/prime-v1/` as an external Model Package, not in Core. The
+ * ontology was therefore deleted rather than re-homed inside the engine; the
+ * live definition of the v1 vocabulary is `compat/prime-v1-model/`.
  */
 
 export * from "./base";
-export * from "./knowledge";
-export * from "./method";
-export * from "./rule";
-export * from "./links";
-export * from "./evaluation";
 export * from "./ast";

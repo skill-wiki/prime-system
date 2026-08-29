@@ -62,6 +62,36 @@ export interface RelationIndex {
    * judgement the model never declared. See the lane report §5.
    */
   required(verb: string): boolean;
+  /**
+   * Whether selecting the source also pulls the target in — `semantics.selection`
+   * of `expand`. Weaker than `required`: the target belongs to the selection but
+   * its absence is not fatal, which is the distinction `checker-l1` used to draw
+   * by testing the two verb spellings `requires` and `enhances` by hand.
+   */
+  expands(verb: string): boolean;
+  /**
+   * Whether the relation points at a single ancestor: `cardinality: many-to-one`
+   * on a `directional: true` relation. "Many instances, one target" *is* the
+   * parent-pointer shape, so this reads a declaration rather than guessing.
+   *
+   * `checker-l3-cross` used it to suppress near-duplicate reports between two
+   * atoms that share a parent, by hardcoding the single verb `specializes`. In
+   * the v1 model `extends` and `derived-from` declare the same shape and were
+   * silently excluded.
+   */
+  parentward(verb: string): boolean;
+  /**
+   * The relation the model declares as the hard-dependency closure, i.e. the
+   * unique relation with `semantics.selection: closure`, or `undefined` when the
+   * model declares none — or more than one, in which case the choice is the
+   * model author's to disambiguate and not ours to guess.
+   *
+   * This is what a v1 `use[]` field desugars to. `RelationDefinition` has no
+   * field that says "this is the `use` shorthand's relation", so the closure
+   * selection is the closest thing the model actually declares; the alternative
+   * was to keep the literal `"requires"` in `resolver.ts`.
+   */
+  readonly closureRelation: string | undefined;
 }
 
 function spellingsOf(definition: RelationDefinition): readonly string[] {
@@ -79,6 +109,8 @@ export function buildRelationIndex(model: LoadedModel): RelationIndex {
 
   const definition = (verb: string): RelationDefinition | undefined => bySpelling.get(verb);
 
+  const closures = definitions.filter(d => d.semantics.selection === "closure");
+
   return {
     names: definitions.map(d => d.name),
     keys: [...bySpelling.keys()],
@@ -90,6 +122,12 @@ export function buildRelationIndex(model: LoadedModel): RelationIndex {
     },
     excludes: verb => definition(verb)?.semantics.selection === "exclude",
     required: verb => definition(verb)?.semantics.selection === "closure",
+    expands: verb => definition(verb)?.semantics.selection === "expand",
+    parentward: verb => {
+      const d = definition(verb);
+      return d?.directional === true && d.cardinality === "many-to-one";
+    },
+    closureRelation: closures.length === 1 ? closures[0]!.name : undefined,
   };
 }
 

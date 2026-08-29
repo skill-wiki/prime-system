@@ -29,6 +29,7 @@ import type {
   ValueNode,
 } from "@skill-wiki/types";
 import type { Diagnostic } from "./types";
+import { defaultRelationIndex, type RelationIndex } from "./relation-semantics";
 
 type AnyAST = PrimeAST | AtomDeclaration;
 
@@ -104,28 +105,30 @@ function extractTagSet(ast: AnyAST): Set<string> {
  *
  * LinkShorthand nodes appearing anywhere still count because the parser
  * only emits them in link-declaration contexts (e.g. `links: [...]`).
+ *
+ * Which field keys name a link is `relations.keys` — every canonical relation
+ * name the model declares plus its declared `aliases`. The hand-written
+ * `LINK_VERBS` set this replaces listed six of them, so `related`, `includes`,
+ * `see-also`, `conflicts`, `compatible`, `derived-from`, `relationships` and
+ * `extends` edges were invisible to C2 and C4: a dead `includes` target was not
+ * reported, and an atom reachable only by `related` still counted as an orphan.
  */
-const LINK_VERBS = new Set([
-  "requires",
-  "enhances",
-  "validates_with",
-  "supplies_to",
-  "contradicts",
-  "specializes",
-]);
-
-function extractLinkTargets(ast: AnyAST): Array<{ verb: string; target: string }> {
+function extractLinkTargets(
+  ast: AnyAST,
+  relations: RelationIndex
+): Array<{ verb: string; target: string }> {
   const out: Array<{ verb: string; target: string }> = [];
+  const isLinkVerb = (verb: string): boolean => relations.definition(verb) !== undefined;
 
   function push(verb: string, target: unknown): void {
-    if (!LINK_VERBS.has(verb)) return;
+    if (!isLinkVerb(verb)) return;
     if (typeof target !== "string" || target.length === 0) return;
     out.push({ verb, target });
   }
 
   // Top-level fields only.
   for (const field of ast.body) {
-    if (LINK_VERBS.has(field.key)) {
+    if (isLinkVerb(field.key)) {
       if (field.value.type === "String") {
         push(field.key, (field.value as StringNode).value);
       } else if (field.value.type === "Array") {
@@ -212,7 +215,8 @@ function descWordSet(s: string | undefined): Set<string> {
 
 export function checkL3Cross(
   asts: AnyAST[],
-  options: L3CrossOptions = {}
+  options: L3CrossOptions = {},
+  relations: RelationIndex = defaultRelationIndex()
 ): L3CrossFinding[] {
   const jaccardThreshold = options.jaccardThreshold ?? 0.85;
   const minTagsForDupCheck = options.minTagsForDupCheck ?? 3;
@@ -275,7 +279,7 @@ export function checkL3Cross(
   for (const ast of asts) {
     const name = fieldAsString(ast, "name") ?? ast.name;
     if (!name) continue;
-    const links = extractLinkTargets(ast);
+    const links = extractLinkTargets(ast, relations);
     if (links.length > 0) atomsWithOutgoing++;
     for (const { verb, target } of links) {
       // Targets can be either short names (legacy AST `name` field) or
@@ -293,7 +297,11 @@ export function checkL3Cross(
             { peer: target }
           )
         );
-      } else if (verb !== "contradicts") {
+      } else if (!relations.excludes(verb)) {
+        // An incoming edge only counts as "someone endorses this atom" when the
+        // relation is not an exclusion: being contradicted is not being cited.
+        // Reading `semantics.selection: exclude` instead of testing the single
+        // spelling `contradicts` is why `conflicts` now behaves the same way.
         incomingCount.set(target, (incomingCount.get(target) ?? 0) + 1);
       }
     }
@@ -307,7 +315,7 @@ export function checkL3Cross(
     for (const ast of asts) {
       const name = fieldAsString(ast, "name") ?? ast.name;
       if (!name) continue;
-      const hasOutgoing = extractLinkTargets(ast).length > 0;
+      const hasOutgoing = extractLinkTargets(ast, relations).length > 0;
       const incoming = incomingCount.get(name) ?? 0;
       if (incoming !== 0 || hasOutgoing) continue;
 
@@ -358,8 +366,12 @@ export function checkL3Cross(
     const description = fieldAsString(ast, "description");
     const parents = new Set<string>();
     const outgoing = new Map<string, Set<string>>();
-    for (const { verb, target } of extractLinkTargets(ast)) {
-      if (verb === "specializes") parents.add(target);
+    for (const { verb, target } of extractLinkTargets(ast, relations)) {
+      // "Shares a parent" needs to know which relations point at an ancestor.
+      // `cardinality: many-to-one` on a directional relation IS that shape, and
+      // it is declared; the previous test was the single spelling `specializes`,
+      // which silently excluded `extends` and `derived-from`.
+      if (relations.parentward(verb)) parents.add(target);
       const set = outgoing.get(verb) ?? new Set<string>();
       set.add(target);
       outgoing.set(verb, set);
@@ -375,11 +387,21 @@ export function checkL3Cross(
   }
 
   function alreadyLinked(a: Eligible, b: Eligible): boolean {
-    // a→b direction
-    for (const verb of ["enhances", "specializes", "requires"]) {
-      if (a.outgoing.get(verb)?.has(b.name)) return true;
-      if (b.outgoing.get(verb)?.has(a.name)) return true;
-    }
+    // "Already peered" has to mean the declared relation ACCOUNTS for the
+    // similarity, not merely that some edge exists. A relation that brings the
+    // target into the selection (`closure`/`expand`) or points at an ancestor
+    // (`many-to-one` + directional) does; a bare association does not — and
+    // `related` is 88 of the 136 edges in the example corpora, so suppressing on
+    // it would silence C3 wherever it matters most.
+    //
+    // On the v1 model this admits requires, enhances, extends, supplies-to,
+    // includes, specializes and derived-from — a superset of the hardcoded
+    // ["enhances", "specializes", "requires"] that contains no verb the model
+    // does not declare as selection-bearing or parentward.
+    const accountsFor = (verb: string): boolean =>
+      relations.required(verb) || relations.expands(verb) || relations.parentward(verb);
+    for (const [verb, targets] of a.outgoing) if (accountsFor(verb) && targets.has(b.name)) return true;
+    for (const [verb, targets] of b.outgoing) if (accountsFor(verb) && targets.has(a.name)) return true;
     return false;
   }
 

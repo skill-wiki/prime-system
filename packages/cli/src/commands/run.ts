@@ -101,6 +101,11 @@ export function runCommand(args: string[]): number {
         events: replayed.events.length,
         lossy: replayed.lossy,
         run: replayed.run,
+        // `replayEquivalence` compares the folded bytes against a *live* object,
+        // so across a restart there is nothing to compare and it answers false.
+        // Reporting that as "not equivalent" would be a false alarm, so the
+        // comparability of the reading travels with the reading.
+        comparable: equivalence.live !== undefined,
         equivalence,
       }, null, 2));
       return replayed.run === undefined ? 1 : 0;

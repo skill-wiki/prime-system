@@ -38,18 +38,14 @@ import type {
 import { type Token, TokenType } from "./lexer.ts";
 import { ParseError } from "./errors.ts";
 
-// ─── Link verbs for shorthand detection ─────────────────────────────────────
-
-const LINK_VERBS = new Set([
-  "requires",
-  "enhances",
-  "validates_with",
-  "contradicts",
-  "specializes",
-  "supplies_to",
-]);
-
 // ─── Parser Class ───────────────────────────────────────────────────────────
+//
+// Link shorthand is marked by an explicit arrow — `verb -> "target"` — and never
+// by the verb's spelling.  The grammar therefore needs no verb vocabulary: the
+// shape `IDENT ARROW STRING` is a relation and the shape `IDENT STRING` is a
+// category shorthand, for every identifier alike.  Whether a verb names a real
+// relation is a Model Resolver question (plan §6.4), not a grammar question, so
+// keeping a verb list here would have made the parser decide it (plan §15.4).
 
 export class Parser {
   private tokens: Token[];
@@ -577,6 +573,19 @@ export class Parser {
       };
     }
 
+    // IDENT -> "target" — link shorthand as a bare body statement.  Supported
+    // here too so the relation form is identical in all three positions
+    // (field value, array item, body statement) rather than position-dependent.
+    if (this.check(TokenType.ARROW)) {
+      const link = this.parseLinkShorthand(keyTok);
+      return {
+        type: "Field",
+        key: keyTok.value,
+        value: link,
+        loc: this.loc(keyTok),
+      };
+    }
+
     // IDENT followed by IDENT STRING — parameter shorthand: task(string) "desc"
     // But without parens, this is: IDENT STRING — category shorthand
     if (this.check(TokenType.STRING)) {
@@ -816,13 +825,6 @@ export class Parser {
    * link shorthand, or `until` / `max` loop syntax.
    */
   private parseIdentValue(): ValueNode {
-    const startTok = this.current();
-
-    // Check for link shorthand: requires/enhances/etc. "target"
-    if (LINK_VERBS.has(startTok.value)) {
-      return this.parseLinkShorthand();
-    }
-
     // Type-union expression starting with an ident (e.g. `URL | null`,
     // `string | number | object`, `string[]`).  Captured as a raw string
     // for downstream tools.  We detect by peeking forward past whitespace.
@@ -850,6 +852,11 @@ export class Parser {
     // Read the identifier
     const identTok = this.advance();
     this.skipTrivia();
+
+    // Link shorthand: IDENT -> "target" [( modifiers )]
+    if (this.check(TokenType.ARROW)) {
+      return this.parseLinkShorthand(identTok);
+    }
 
     // Check for dotted path: IDENT.IDENT.IDENT
     if (this.check(TokenType.DOT)) {
@@ -1056,12 +1063,13 @@ export class Parser {
   }
 
   /**
-   * Parse a link shorthand: `requires "target-name"`.
+   * Parse a link shorthand: `requires -> "target-name"`.
+   * The verb identifier has already been consumed; the cursor is on the arrow.
    */
-  private parseLinkShorthand(): LinkShorthandNode {
-    const verbTok = this.advance();
+  private parseLinkShorthand(verbTok: Token): LinkShorthandNode {
+    this.advance(); // consume '->'
     this.skipTrivia();
-    const targetTok = this.expect(TokenType.STRING, "Expected string target after link verb");
+    const targetTok = this.expect(TokenType.STRING, "Expected string target after '->'");
 
     let modifiers: ObjectNode | undefined;
     this.skipTrivia();
@@ -1347,11 +1355,6 @@ export class Parser {
   private parseArrayIdentItem(): ValueNode {
     const tok = this.current();
 
-    // Link shorthand: requires "target"
-    if (LINK_VERBS.has(tok.value)) {
-      return this.parseLinkShorthand();
-    }
-
     // Pseudocode-line heuristic: if this IDENT is followed *on the same
     // line* by another IDENT or a comparison/numeric operator, treat the
     // whole line as a raw expression.  This covers free-form lines inside
@@ -1391,6 +1394,11 @@ export class Parser {
 
     const identTok = this.advance();
     this.skipTrivia();
+
+    // Link shorthand: NAME -> "target" [( modifiers )]
+    if (this.check(TokenType.ARROW)) {
+      return this.parseLinkShorthand(identTok);
+    }
 
     // Step shorthand: NAME { ... }
     if (this.check(TokenType.LBRACE)) {

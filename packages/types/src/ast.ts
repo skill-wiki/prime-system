@@ -6,7 +6,7 @@
  * They mirror the concrete syntax of .prime files.
  */
 
-import type { PrimeType, PrimeDecorator, Identifier, Version } from "./base";
+import type { PrimeDecorator, Identifier, Version } from "./base";
 
 // ─── Atom Kind (opaque) ───────────────────────────────────────────────────────
 
@@ -56,8 +56,6 @@ export interface PrimeAST extends ASTNodeBase {
   name: string;
   /** Parent class name after `extends` keyword, if any */
   extends?: string;
-  /** The Prime class type inferred from extends chain (Knowledge, Method, Rule) */
-  class?: PrimeType;
   /** Decorators applied before the `prime` keyword */
   decorators: DecoratorNode[];
   /** All body fields */

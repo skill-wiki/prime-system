@@ -98,6 +98,23 @@ definitions:
       - { name: subject, typeRef: string, required: true }
     output: Verdict
 
+  # Side-effect-free like the two above, but gated on policy rather than on
+  # nothing. It exists so the §9.6 policy step can be *observed*: this repo has no
+  # policy-engine package yet (plan §15.2 lists it as not-yet-existing), so the
+  # runtime's correct behaviour here is to fail closed with a recorded decision —
+  # which is the evidence, rather than a fake allow.
+  - kind: action
+    name: ReviewCorpus
+    version: 1.0.0
+    sideEffects: none
+    idempotency: idempotent
+    approval: conditional
+    provider: evaluator/default
+    capabilities: [corpus.read]
+    inputs:
+      - { name: subject, typeRef: string, required: true }
+    output: integer
+
   # Present so the CLI's refusal of effectful actions can be tested against a
   # real declaration rather than a hand-built object.
   - kind: action

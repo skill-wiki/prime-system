@@ -64,39 +64,56 @@ interface RawDependency {
  * already drifted: they still returned `before` for `supplies_to` after the
  * model declared `after` (D-7).
  */
-function extractDependencies(ast: AnyAST, relations: RelationIndex): RawDependency[] {
+function extractDependencies(
+  ast: AnyAST,
+  relations: RelationIndex,
+  report: (line: number, message: string, suggestion: string) => void
+): RawDependency[] {
   const deps: RawDependency[] = [];
 
   // Extract from use[]
   //
   // `use[]` is v1 shorthand for the dependency relation. Which relation that is
-  // cannot be read off the model today: nothing in `RelationDefinition` says
-  // "this is the relation the `use` field desugars to". So the NAME below is a
-  // residual hardcode (lane report §5), but its SEMANTICS are not — direction
-  // and the required flag go through `relations` like every other verb, so a
-  // model that declares `requires` differently is still obeyed here.
-  const useVerb = "requires";
+  // is not spelled out by any field of `RelationDefinition`, so it is read from
+  // the closest thing the model does declare: the relation whose
+  // `semantics.selection` is `closure`, i.e. the one whose targets are a
+  // mandatory part of the selection. That is what a dependency shorthand means.
+  //
+  // When the model declares no such relation — or declares several, so the
+  // choice belongs to the model author — `use[]` cannot be desugared and saying
+  // so is the only honest outcome. Guessing a name here is what plan §3.1
+  // forbids, and defaulting to one silently is how `supplies_to` kept a stale
+  // direction for four rounds (D-7).
+  const useVerb = relations.closureRelation;
   const useField = ast.body.find((f) => f.key === "use");
   if (useField && useField.value.type === "Array") {
-    for (const item of (useField.value as ArrayNode).items) {
-      if (item.type === "Reference") {
-        const ref = item as ReferenceNode;
-        deps.push({
-          to: ref.path[0],
-          type: relations.canonical(useVerb),
-          required: relations.required(useVerb),
-          direction: relations.direction(useVerb),
-          line: item.loc.line,
-          version: ref.path.length > 1 ? ref.path[1] : undefined,
-        });
-      } else if (item.type === "String") {
-        deps.push({
-          to: (item as StringNode).value,
-          type: relations.canonical(useVerb),
-          required: relations.required(useVerb),
-          direction: relations.direction(useVerb),
-          line: item.loc.line,
-        });
+    if (useVerb === undefined) {
+      report(
+        useField.loc.line,
+        "Cannot resolve use[]: the model package declares no single relation with `semantics.selection: closure`",
+        "declare exactly one closure relation in the model package, or write the relation explicitly in links[]"
+      );
+    } else {
+      for (const item of (useField.value as ArrayNode).items) {
+        if (item.type === "Reference") {
+          const ref = item as ReferenceNode;
+          deps.push({
+            to: ref.path[0],
+            type: relations.canonical(useVerb),
+            required: relations.required(useVerb),
+            direction: relations.direction(useVerb),
+            line: item.loc.line,
+            version: ref.path.length > 1 ? ref.path[1] : undefined,
+          });
+        } else if (item.type === "String") {
+          deps.push({
+            to: (item as StringNode).value,
+            type: relations.canonical(useVerb),
+            required: relations.required(useVerb),
+            direction: relations.direction(useVerb),
+            line: item.loc.line,
+          });
+        }
       }
     }
   }
@@ -320,8 +337,12 @@ export function resolve(
   const queue: Array<{ name: string; deps: RawDependency[] }> = [];
   const versionMap = new Map<string, { version: string; requiredBy: string; line: number }>();
 
+  const reportUnresolvableUse = (line: number, message: string, suggestion: string): void => {
+    diagnostics.push({ level: "error", line, message, suggestion, source: "resolver" });
+  };
+
   // Extract direct dependencies from the root AST
-  const rootDeps = extractDependencies(ast, relations);
+  const rootDeps = extractDependencies(ast, relations, reportUnresolvableUse);
   queue.push({ name: rootName, deps: rootDeps });
   visited.add(rootName);
 
@@ -400,7 +421,7 @@ export function resolve(
           visited.add(dep.to);
           // If the installed Prime has its own AST, extract its dependencies
           if (installed.ast) {
-            const transitiveDeps = extractDependencies(installed.ast as PrimeAST, relations);
+            const transitiveDeps = extractDependencies(installed.ast as PrimeAST, relations, reportUnresolvableUse);
             queue.push({ name: dep.to, deps: transitiveDeps });
           } else if (installed.links) {
             // Use the pre-extracted links if available

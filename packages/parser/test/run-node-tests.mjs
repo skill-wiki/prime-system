@@ -470,9 +470,9 @@ ok('link shorthand requires/validates_with', () => {
   const src = `
 prime Foo extends Method {
   links: [
-    requires "owasp-top-10"
-    validates_with "security-audit-checklist"
-    specializes "base-code-review"
+    requires -> "owasp-top-10"
+    validates_with -> "security-audit-checklist"
+    specializes -> "base-code-review"
   ]
 }
 `;

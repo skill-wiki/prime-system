@@ -383,11 +383,11 @@ prime SecurityCodeReview extends Method {
   version: "1.0.0"
 
   links: [
-    requires "owasp-top-10"
-    requires "security-stride"
-    validates_with "security-audit-checklist"
-    specializes "base-code-review"
-    contradicts "naive-trust-model"
+    requires -> "owasp-top-10"
+    requires -> "security-stride"
+    validates_with -> "security-audit-checklist"
+    specializes -> "base-code-review"
+    contradicts -> "naive-trust-model"
   ]
 }
 `;
@@ -410,6 +410,69 @@ prime SecurityCodeReview extends Method {
     const third = arr.items[2] as LinkShorthandNode;
     expect(third.verb).toBe("validates_with");
     expect(third.target).toBe("security-audit-checklist");
+  });
+
+  // ── The de-domaining property ───────────────────────────────────────────
+  // The arrow, not the verb's spelling, is what makes a relation a relation.
+  // These tests fail if a verb vocabulary is ever reintroduced into the
+  // grammar, which is the one thing the parser must never know (plan §6.4).
+
+  test("a verb the grammar has never seen parses identically to a prime-v1 one", () => {
+    const known = parse(`prime F extends M { links: [ requires -> "@a/b" ] }`);
+    const unknown = parse(`prime F extends M { links: [ frobnicates -> "@a/b" ] }`);
+    expect(known.errors).toHaveLength(0);
+    expect(unknown.errors).toHaveLength(0);
+
+    const k = (findField(known.ast.body, "links")!.value as ArrayNode)
+      .items[0] as LinkShorthandNode;
+    const u = (findField(unknown.ast.body, "links")!.value as ArrayNode)
+      .items[0] as LinkShorthandNode;
+    expect(k.type).toBe("LinkShorthand");
+    expect(u.type).toBe("LinkShorthand");
+    expect(u.verb).toBe("frobnicates");
+    expect(u.target).toBe(k.target);
+  });
+
+  test("link modifiers work for any verb, not just prime-v1 ones", () => {
+    const { ast, errors } = parse(
+      `prime F extends M { links: [ frobnicates -> "@a/b" (strength: 0.5) ] }`
+    );
+    expect(errors).toHaveLength(0);
+    const link = (findField(ast.body, "links")!.value as ArrayNode)
+      .items[0] as LinkShorthandNode;
+    expect(link.type).toBe("LinkShorthand");
+    expect(link.modifiers).toBeDefined();
+    expect(link.modifiers!.fields[0]!.key).toBe("strength");
+  });
+
+  test("the arrow form is available in all three positions", () => {
+    const arrayPos = parse(`prime F extends M { links: [ requires -> "@a/b" ] }`);
+    const fieldPos = parse(`prime F extends M { rel: requires -> "@a/b" }`);
+    const bodyPos = parse(`prime F extends M { requires -> "@a/b" }`);
+    for (const r of [arrayPos, fieldPos, bodyPos]) {
+      expect(r.errors).toHaveLength(0);
+    }
+    const fromArray = (findField(arrayPos.ast.body, "links")!.value as ArrayNode)
+      .items[0] as LinkShorthandNode;
+    const fromField = findField(fieldPos.ast.body, "rel")!.value as LinkShorthandNode;
+    const fromBody = findField(bodyPos.ast.body, "requires")!.value as LinkShorthandNode;
+    for (const n of [fromArray, fromField, fromBody]) {
+      expect(n.type).toBe("LinkShorthand");
+      expect(n.verb).toBe("requires");
+      expect(n.target).toBe("@a/b");
+    }
+  });
+
+  test("IDENT STRING is category shorthand for every identifier, verbs included", () => {
+    const { ast, errors } = parse(
+      `prime F extends M { caps: [ Foo "does a thing"\n    requires "not a relation" ] }`
+    );
+    expect(errors).toHaveLength(0);
+    const items = (findField(ast.body, "caps")!.value as ArrayNode).items;
+    expect(items.map((i) => i.type)).toEqual([
+      "ParameterShorthand",
+      "ParameterShorthand",
+    ]);
   });
 
   const useSource = `
@@ -979,9 +1042,9 @@ prime TDDRedGreenRefactor extends Method {
   ]
 
   links: [
-    validates_with "test-coverage-standard"
-    enhances "mutation-testing"
-    contradicts "waterfall-testing"
+    validates_with -> "test-coverage-standard"
+    enhances -> "mutation-testing"
+    contradicts -> "waterfall-testing"
   ]
 
   success_criteria: {

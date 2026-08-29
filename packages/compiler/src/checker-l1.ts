@@ -26,6 +26,7 @@ import type {
   DecoratorNode,
 } from "@skill-wiki/types";
 import type { Diagnostic, InstalledPrime } from "./types";
+import { defaultRelationIndex, type RelationIndex } from "./relation-semantics";
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -226,7 +227,8 @@ function toKebabCase(name: string): string {
  */
 export function checkL1(
   ast: AnyAST,
-  installedPrimes: Map<string, InstalledPrime> = new Map()
+  installedPrimes: Map<string, InstalledPrime> = new Map(),
+  relations: RelationIndex = defaultRelationIndex()
 ): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
 
@@ -382,26 +384,40 @@ export function checkL1(
 
   const linkTargets = getLinkTargets(ast);
   for (const link of linkTargets) {
-    // REQUIRES must exist; ENHANCES is just a warning
     const linkKebab = toKebabCase(link.to);
-    if (link.type === "requires" || link.type === "REQUIRES") {
-      if (!installedPrimes.has(link.to) && !installedPrimes.has(linkKebab) && !installedPrimes.has(link.to.toLowerCase())) {
-        push(
-          "error",
-          link.line,
-          `Required dependency "${link.to}" not found in installed primes`,
-          `Install "${link.to}" or remove the requires link`
-        );
-      }
-    } else if (link.type === "enhances" || link.type === "ENHANCES") {
-      if (!installedPrimes.has(link.to) && !installedPrimes.has(linkKebab) && !installedPrimes.has(link.to.toLowerCase())) {
-        push(
-          "warn",
-          link.line,
-          `Enhanced dependency "${link.to}" not installed — optional but recommended`,
-          `Install "${link.to}" for enhanced functionality`
-        );
-      }
+    const missing =
+      !installedPrimes.has(link.to) &&
+      !installedPrimes.has(linkKebab) &&
+      !installedPrimes.has(link.to.toLowerCase());
+    if (!missing) continue;
+
+    // Whether a missing target is fatal is `semantics.selection` in the model,
+    // not a verb spelling. `closure` means the target is a mandatory part of the
+    // selection, so its absence is an error; `expand` means it would be pulled
+    // in if present, so its absence is a warning; `informational` and `exclude`
+    // relations do not need their target to exist at all.
+    //
+    // This replaces `link.type === "requires" || link.type === "REQUIRES"` and
+    // the matching `enhances` branch. Case is normalised because v1 sources
+    // wrote link verbs in both cases — that is a spelling question, and the
+    // model's own `aliases` cover the rest.
+    const verb = relations.definition(link.type) ? link.type : link.type.toLowerCase();
+    const canonical = relations.canonical(verb);
+
+    if (relations.required(verb)) {
+      push(
+        "error",
+        link.line,
+        `Required dependency "${link.to}" not found in installed primes`,
+        `Install "${link.to}" or remove the ${canonical} link`
+      );
+    } else if (relations.expands(verb)) {
+      push(
+        "warn",
+        link.line,
+        `${canonical} target "${link.to}" not installed — optional but recommended`,
+        `Install "${link.to}" so the ${canonical} relation can be expanded`
+      );
     }
   }
 
