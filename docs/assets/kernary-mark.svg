@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Kernary</title>
+  <path fill="#6366F1" d="M72 48h112v176h36v64h-36v176H72z"/>
+  <path fill="#06B6D4" d="m168 256 168-192h128L256 288h-48z"/>
+  <path fill="#4F46E5" d="m208 272 64-48 192 224H336L208 304z"/>
+  <rect x="168" y="224" width="64" height="64" rx="10" fill="#22D3EE"/>
+</svg>

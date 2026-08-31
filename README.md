@@ -1,5 +1,7 @@
 # Kernary
 
+<img src="docs/assets/kernary-logo.svg" alt="Kernary" width="540">
+
 Kernary compiles domain models and corpora into versioned runtimes for agents.
 An agent can query an immutable snapshot, receive a constrained selection plan,
 and call policy-gated actions through an embedded SDK, MCP, or HTTP.
