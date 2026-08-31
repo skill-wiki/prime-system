@@ -11,6 +11,7 @@ import { mkdtempSync, rmSync, writeFileSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { loadServeModel, resolveModelRoot } from "../src/model-context";
+import { createModelLock } from "@skill-wiki/model-schema";
 import {
   MODEL_LOCK_FILE,
   ModelLockError,
@@ -22,15 +23,11 @@ import {
 const CORPUS = resolve(join(import.meta.dir, "../../../examples/hello-world/primes/compiled"));
 const MODEL = loadServeModel(resolveModelRoot(CORPUS, {}));
 const SCHEMA_DIGEST = computeModelSchemaDigest(MODEL.model.definitions);
+const GENERATED_ENTRY = createModelLock(MODEL.model).models[0]!;
 
 function lockEntry(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
-    name: MODEL.model.manifest.name,
-    version: MODEL.model.manifest.version,
-    protocol: MODEL.model.manifest.protocol,
-    schemaDigest: SCHEMA_DIGEST,
-    files: [{ path: "types.yaml", digest: `sha256:${"a".repeat(64)}` }],
-    manifestDigest: `sha256:${"b".repeat(64)}`,
+    ...GENERATED_ENTRY,
     ...overrides,
   };
 }

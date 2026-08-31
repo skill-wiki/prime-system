@@ -78,6 +78,10 @@ export interface CompiledUnitMetaIR {
   readonly tokens: Readonly<Record<string, number>>;
   readonly projection: Readonly<Record<string, string>>;
   readonly contentDigest: string;
+  /** Protocol-level redistribution terms, carried outside domain fields. */
+  readonly license?: string;
+  /** Stable provenance attributes emitted beside the runtime artifact. */
+  readonly provenance?: Readonly<Record<string, ValueIR>>;
 }
 export interface CompiledUnitIR {
   readonly kind: "compiled-unit";

@@ -150,6 +150,13 @@ fact WcagFocusContrast {
   });
 });
 
+test("a declaration keyword remains legal corpus data inside an array", () => {
+  const atom = asAtom('principle TestPyramid { tags: [testing, unit, integration] }');
+  const tags = field(atom.body, "tags")?.value;
+  expect(tags?.type).toBe("Array");
+  if (tags?.type === "Array") expect(tags.items.map(item => "value" in item ? item.value : undefined)).toEqual(["testing", "unit", "integration"]);
+});
+
 describe("step — signature + effect + errors + body", () => {
   const src = `
 step LoadArtifact {

@@ -1,6 +1,6 @@
 {
   "name": "@skill-wiki/mcp-server-core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Generic MCP server for any compiled Prime corpus. Exposes one tool — prime_query — that browses atoms, traverses the edge graph, and returns projection-level paths for the agent to Read.",
   "license": "Apache-2.0",
   "type": "module",

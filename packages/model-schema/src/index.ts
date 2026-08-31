@@ -13,7 +13,7 @@ const ExtensionMap = z.record(z.string(), z.unknown());
  * `typeRef` is a grammar, not a name: `T`, `T[]`, `T[][]`. Before this existed a
  * field holding a list had to be declared `unknown` (which emits the empty JSON
  * Schema `{}` — every shape accepted) or smuggled through a comma-separated
- * `string`, and both were load-bearing in `domains/prime-frontend-design`. The
+ * `string`, and both were load-bearing in `projects/prime-frontend-design`. The
  * suffix is chosen over a sibling `items:` key because the ref stays a single
  * string, so `SchemaIR.TypeRef` (an opaque string) carries the arity with no IR
  * change and no second place to look.
@@ -113,3 +113,15 @@ export function loadModel(root: string): LoadResult {
   validateLinks(definitions, diagnostics); return diagnostics.length ? { ok: false, diagnostics } : { ok: true, value: { root: rootReal, manifest: manifestResult.data, definitions } };
 }
 export function loadModelOrThrow(root: string): LoadedModel { const result = loadModel(root); if (!result.ok) throw new ModelLoadError(result.diagnostics); return result.value; }
+
+export {
+  MODEL_LOCK_FILE,
+  MODEL_LOCK_VERSION,
+  computeModelSchemaDigest,
+  createModelLock,
+  writeModelLock,
+  sha256 as computeModelFileDigest,
+  type ModelLock,
+  type ModelLockEntry,
+  type ModelLockFileEntry,
+} from "./model-lock.ts";

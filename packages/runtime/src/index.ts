@@ -75,3 +75,15 @@ export {
   type FailedMount,
   type NamespaceSource,
 } from "./corpus-snapshot";
+export {
+  CORPUS_SIGNATURE_FILE,
+  CORPUS_SIGNATURE_VERSION,
+  CORPUS_SIGNATURE_ALGORITHM,
+  CorpusSignatureError,
+  createCorpusSignature,
+  parseCorpusSignature,
+  verifyCorpusSignature,
+  writeCorpusSignature,
+  type CorpusSignature,
+  type CorpusSignatureCode,
+} from "./corpus-signature.ts";

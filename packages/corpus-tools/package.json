@@ -1,6 +1,6 @@
 {
   "name": "@skill-wiki/corpus-tools",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Corpus reconciliation: three-way ancestry mapping between a legacy source tree, a migrated tree, and a compiled bundle",
   "main": "src/reconcile.ts",
   "types": "src/reconcile.ts",

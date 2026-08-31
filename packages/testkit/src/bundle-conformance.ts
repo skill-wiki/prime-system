@@ -18,7 +18,7 @@ import { basename, dirname, join, relative, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
 import { NAMESPACE } from "@skill-wiki/corpus-schema";
 import {
-  CORPUS_INDEX_FILE, CORPUS_MANIFEST_FILE, PrimeBundleError, loadCorpusSnapshot,
+  CORPUS_INDEX_FILE, CORPUS_MANIFEST_FILE, PrimeBundleError, loadCorpusSnapshot, verifyCorpusSignature,
   type LoadedCorpusSnapshot,
 } from "@skill-wiki/runtime";
 import { check, finding, report, skipped, type CheckOutcome, type Finding, type SuiteReport } from "./diagnostics.ts";
@@ -35,6 +35,8 @@ export interface BundleConformanceOptions {
   readonly allowedLicenses?: readonly string[];
   /** Key in a unit's artifact that carries its license. Defaults to `license`. */
   readonly licenseField?: string;
+  /** Require a valid detached signature over the exact release manifest. */
+  readonly requireSignature?: boolean;
 }
 
 interface BundleUnit {
@@ -233,6 +235,19 @@ function licenseCheck(units: readonly BundleUnit[], options: BundleConformanceOp
   return check("BC-LICENSE", "Published units declare redistribution terms", findings);
 }
 
+function signatureCheck(root: string, required: boolean): CheckOutcome {
+  try {
+    const signature = verifyCorpusSignature(root, { required });
+    return signature === undefined
+      ? skipped("BC-SIGNATURE", "Release manifest carries a valid detached signature", "signature policy is optional and no signature is present")
+      : check("BC-SIGNATURE", "Release manifest carries a valid detached signature", []);
+  } catch (cause) {
+    return check("BC-SIGNATURE", "Release manifest carries a valid detached signature", [
+      finding("BUNDLE_SIGNATURE_INVALID", cause instanceof Error ? cause.message : String(cause), "error", { path: root }),
+    ]);
+  }
+}
+
 /** Run every artifact-level check against one compiled bundle directory. */
 export function runBundleConformance(bundleDir: string, options: BundleConformanceOptions = {}): SuiteReport {
   const root = resolve(bundleDir);
@@ -254,5 +269,6 @@ export function runBundleConformance(bundleDir: string, options: BundleConforman
     projectionCheck(root, units),
     relationTargetCheck(units),
     licenseCheck(units, options),
+    signatureCheck(root, options.requireSignature === true),
   ]);
 }

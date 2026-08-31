@@ -119,6 +119,9 @@
         "@skill-wiki/runtime": "workspace:*",
         "@skill-wiki/sdk": "workspace:*",
       },
+      "devDependencies": {
+        "@skill-wiki/model-schema": "workspace:*",
+      },
     },
     "packages/ir": {
       "name": "@skill-wiki/ir",
@@ -261,6 +264,7 @@
         "@skill-wiki/model-schema": "workspace:*",
         "@skill-wiki/parser": "workspace:*",
         "@skill-wiki/runtime": "workspace:*",
+        "@skill-wiki/sdk": "workspace:*",
         "@skill-wiki/sdk-codegen": "workspace:*",
         "@skill-wiki/types": "workspace:*",
         "yaml": "^2.8.3",

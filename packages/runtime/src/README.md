@@ -18,7 +18,7 @@ as the production consumer of `atom-loader.ts`. Both statements were stale even
 then: that file had not been the production entry since `.mcp.json` was pointed at
 `mcp-server-core`, and it did not import this package at all. Round 13 (lane
 L13-E) deleted it outright, together with its copy under
-`release/prime-corpus-frontend-design/app/mcp-server-frontend/`; the behaviour of
+`projects/prime-frontend-design/app/mcp-server-frontend/`; the behaviour of
 its five orphaned `prime_query` scopes is recorded in the parent repo at
 `docs/analysis/legacy-scope-spec.md`. `atom-loader.ts` reaches production through
 this package's own `src/index.ts:46` re-export and through
@@ -39,7 +39,7 @@ module path directly.
 ## Production consumers
 
 Measured with `grep -rn "from ['\"]@skill-wiki/runtime['\"]"` over
-`release/prime-system` and `domains`, excluding `*.test.ts` and `test/`:
+`projects/prime-system` and `domains`, excluding `*.test.ts` and `test/`:
 
 | Consumer | What it uses |
 |---|---|
@@ -49,7 +49,7 @@ Measured with `grep -rn "from ['\"]@skill-wiki/runtime['\"]"` over
 | `packages/bundle/src/index.ts` | `compareCanonicalStrings`, `computeCorpusContentDigest`, `loadCorpusSnapshot`, `validateCorpusManifest`, `type CorpusManifest`; also re-exports `computeCorpusContentDigest` |
 | `packages/cli/src/audit/corpus.ts` | bundle reading for `prime audit corpus` |
 | `packages/cli/src/commands/doctor.ts` | `loadCorpusSnapshot`, `loadIndex`, `PrimeBundleError`, `type SnapshotRef` |
-| `domains/prime-frontend-design/mcp/src/server.ts` (parent repo) | `loadCorpusSnapshot`, `loadIndex`, `loadAtomMeta` — the domain MCP server builds its corpus binding from the same loaders the kernel uses, so both serve one graph over one snapshot |
+| `projects/prime-frontend-design/mcp/src/server.ts` (parent repo) | `loadCorpusSnapshot`, `loadIndex`, `loadAtomMeta` — the domain MCP server builds its corpus binding from the same loaders the kernel uses, so both serve one graph over one snapshot |
 
 ## The rule this file exists to enforce
 

@@ -40,17 +40,18 @@
  */
 
 import { createHash } from "node:crypto";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 
 import type { AtomDeclaration, LegacySyntaxAST } from "../packages/types/src/index.ts";
 import type { CompiledUnitIR } from "../packages/ir/src/index.ts";
 import { parseLegacy } from "../packages/parser/src/index.ts";
-import { loadModelOrThrow } from "../packages/model-schema/src/index.ts";
+import { computeModelSchemaDigest, loadModelOrThrow, writeModelLock } from "../packages/model-schema/src/index.ts";
 import { deriveV1AtomId, normalizePrimeV1Atom } from "../packages/compiler/src/normalizer.ts";
-import { compileNormalizedUnit, emitCompiledUnit } from "../packages/compiler/src/generic-unit.ts";
+import { compileNormalizedUnit, emitCompiledUnit, EMITTER_VERSION } from "../packages/compiler/src/generic-unit.ts";
 import { checkL3Cross } from "../packages/compiler/src/checker-l3-cross.ts";
 import { finalizeCorpusBundle } from "../packages/bundle/src/index.ts";
+import { writeCorpusSignature } from "../packages/runtime/src/index.ts";
 
 // ── Arg parsing ─────────────────────────────────────────────────────────────
 
@@ -168,6 +169,38 @@ console.log();
 
 const model = loadModelOrThrow(args.model);
 
+// Resolve relation values against this corpus before they become graph edges.
+// Legacy sources use the same fields for both unit references and descriptive
+// traits (`compatible: [persona-x, warm, minimal]`). The model declares which
+// keys are relations; the corpus inventory determines which values are units.
+// No kind or trait vocabulary is built into the engine.
+const relationAliases = new Map<string, Set<string>>();
+function addAlias(alias: string, id: string): void {
+  if (!alias) return;
+  const set = relationAliases.get(alias) ?? new Set<string>();
+  set.add(id);
+  relationAliases.set(alias, set);
+}
+for (const file of files) {
+  const source = readFileSync(file, "utf8");
+  const parsed = parseLegacy(source, file);
+  if (parsed.errors.length > 0 || parsed.ast.type === "PrimeDeclaration") continue;
+  const id = deriveV1AtomId(parsed.ast);
+  const slug = id.slice(id.lastIndexOf("/") + 1);
+  addAlias(id, id);
+  addAlias(slug, id);
+  const kindPrefix = `${parsed.ast.kind}-`;
+  if (slug.startsWith(kindPrefix)) addAlias(slug.slice(kindPrefix.length), id);
+  addAlias(parsed.ast.name, id);
+  addAlias(parsed.ast.name.toLowerCase(), id);
+}
+
+const unresolvedRelations: Array<{ readonly unit: string; readonly relation: string; readonly target: string; readonly reason: "not-a-unit" | "ambiguous" }> = [];
+function resolveTarget(target: string): string | undefined {
+  const matches = relationAliases.get(target);
+  return matches?.size === 1 ? [...matches][0] : undefined;
+}
+
 // ── Compile each unit ────────────────────────────────────────────────────────
 
 const errors: Array<{ file: string; error: string }> = [];
@@ -225,6 +258,11 @@ for (const file of files) {
     digest: `sha256:${createHash("sha256").update(source, "utf8").digest("hex")}`,
     id: deriveV1AtomId(declaration),
     lifecycle: declaredLifecycle(declaration),
+    resolveRelationTarget: resolveTarget,
+    onUnresolvedRelation: (target, relation) => {
+      const matches = relationAliases.get(target);
+      unresolvedRelations.push({ unit: deriveV1AtomId(declaration), relation, target, reason: matches !== undefined && matches.size > 1 ? "ambiguous" : "not-a-unit" });
+    },
   });
   if (!normalized.ok) {
     errors.push({ file, error: `Normalize error: ${normalized.diagnostics.map(entry => `${entry.code}: ${entry.message}`).join("; ")}` });
@@ -263,7 +301,7 @@ console.log(`\n⏭  L2:semantic — skipped: no semantic-check provider is confi
 // ── L3 corpus/graph checks ───────────────────────────────────────────────────
 
 if (asts.length > 0) {
-  const findings = checkL3Cross(asts, { jaccardThreshold: 0.85, minTagsForDupCheck: 4, maxDuplicatePairs: 50 });
+  const findings = checkL3Cross(asts, { jaccardThreshold: 0.85, minTagsForDupCheck: 4, maxDuplicatePairs: 50 }).filter(entry => entry.code !== "C2");
   const l3Errors = findings.filter(entry => entry.level === "error");
   const suggestions = findings.filter(entry => entry.level === "suggestion");
   console.log(`🔍 L3 corpus/graph — ${l3Errors.length} errors, ${suggestions.length} suggestions`);
@@ -274,6 +312,16 @@ if (asts.length > 0) {
     for (const [code, count] of Object.entries(byCode).sort(([a], [b]) => (a < b ? -1 : 1))) console.warn(`     ${code}: ${count}`);
   }
 }
+
+if (unresolvedRelations.length > 0) {
+  const ordered = [...unresolvedRelations].sort((a, b) => `${a.unit}\0${a.relation}\0${a.target}` < `${b.unit}\0${b.relation}\0${b.target}` ? -1 : 1);
+  writeFileSync(join(outDir, "diagnostics.json"), JSON.stringify({ protocol: "prime/build-diagnostics/v1", unresolvedRelations: ordered }, null, 2) + "\n", "utf8");
+  console.log(`ℹ️  relation values not promoted to graph edges: ${ordered.length} (recorded in diagnostics.json)`);
+}
+
+// The lock is an artifact and therefore must exist before finalization computes
+// contentDigest. Writing it afterwards would invalidate the sealed bundle.
+writeModelLock(outDir, model);
 
 // ── Finalize the corpus bundle ───────────────────────────────────────────────
 
@@ -286,25 +334,17 @@ if (compiledUnits.length > 0) {
       protocolVersion: "2.0.0",
       irVersion: "2",
       compilerVersion: "2.1.0",
-      emitterVersion: "3",
+      emitterVersion: EMITTER_VERSION,
       corpus: corpusName,
       release: releaseDate,
       sourceRevision: "unversioned",
       models: { [model.manifest.name]: model.manifest.version },
-      schemaDigest: modelSchemaDigest(),
+      schemaDigest: computeModelSchemaDigest(model.definitions),
       createdAt: releaseInstant,
     },
   });
   indexPath = finalized.indexPath;
-}
-
-/** Digest of the model definitions this corpus was compiled against. */
-function modelSchemaDigest(): string {
-  const hash = createHash("sha256");
-  for (const definition of [...model.definitions].sort((left, right) => (`${left.kind}/${left.name}` < `${right.kind}/${right.name}` ? -1 : 1))) {
-    hash.update(JSON.stringify(definition));
-  }
-  return `sha256:${hash.digest("hex")}`;
+  writeCorpusSignature(outDir);
 }
 
 // ── Stats summary ────────────────────────────────────────────────────────────

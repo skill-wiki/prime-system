@@ -20,7 +20,7 @@ function bundle(root: string, name: string, corpus: string, release: string): st
   const index = `<prime_index version="1.0" total="0" total_tokens="0" release="${release}"></prime_index>`;
   writeFileSync(join(dir, "_index.xml"), index);
   writeFileSync(join(dir, "corpus.manifest.json"), JSON.stringify({
-    protocolVersion: "2.0.0", irVersion: "2", compilerVersion: "2.1.0", emitterVersion: "3",
+    protocolVersion: "2.0.0", irVersion: "2", compilerVersion: "2.1.0", emitterVersion: "4",
     corpus, release, sourceRevision: "git:abc123", models: { "prime-v1-compatibility": "1.0.0" },
     schemaDigest: digest("schema"), contentDigest: computeCorpusContentDigest(dir),
     indexDigest: digest(index), createdAt: "2026-08-29T00:00:00Z",
@@ -239,7 +239,7 @@ describe("CorpusRegistry", () => {
     mkdirSync(broken);
     writeFileSync(join(broken, "_index.xml"), "<prime_index/>");
     writeFileSync(join(broken, "corpus.manifest.json"), JSON.stringify({
-      protocolVersion: "2.0.0", irVersion: "2", compilerVersion: "2.1.0", emitterVersion: "3",
+      protocolVersion: "2.0.0", irVersion: "2", compilerVersion: "2.1.0", emitterVersion: "4",
       corpus: "org.example/alpha", release: "r2", sourceRevision: "git:abc", models: {},
       schemaDigest: digest("s"), contentDigest: digest("wrong"), indexDigest: digest("<prime_index/>"),
       createdAt: "2026-08-29T00:00:00Z",

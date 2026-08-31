@@ -2,7 +2,7 @@
   "protocolVersion": "2.0.0",
   "irVersion": "2",
   "compilerVersion": "2.1.0",
-  "emitterVersion": "3",
+  "emitterVersion": "4",
   "corpus": "org.example/test",
   "release": "2026.08.28.1",
   "sourceRevision": "git:abc123",

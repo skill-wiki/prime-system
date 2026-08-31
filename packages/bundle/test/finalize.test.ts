@@ -7,7 +7,7 @@ import { loadCorpusSnapshot, PrimeBundleError } from "@skill-wiki/runtime";
 import { finalizeCorpusBundle } from "../src/index";
 
 const digest = (x: string) => `sha256:${createHash("sha256").update(x).digest("hex")}`;
-const manifest = { protocolVersion: "2.0.0", irVersion: "2", compilerVersion: "2.1.0", emitterVersion: "3", corpus: "org.example/test", release: "r1", sourceRevision: "git:test", models: { tickets: "1.0.0" }, schemaDigest: digest("schema"), createdAt: "2026-08-28T00:00:00Z" };
+const manifest = { protocolVersion: "2.0.0", irVersion: "2", compilerVersion: "2.1.0", emitterVersion: "4", corpus: "org.example/test", release: "r1", sourceRevision: "git:test", models: { tickets: "1.0.0" }, schemaDigest: digest("schema"), createdAt: "2026-08-28T00:00:00Z" };
 const entry = (id: string) => ({ id, kind: "Ticket", version: "1.0.0", description: id, domain: "tickets", tags: ["Ticket"], tokens: { summary: 1, core: 2, full: 3 } });
 function temp(run: (dir: string) => void): void { const dir = mkdtempSync(join(realpathSync(tmpdir()), "prime-bundle-")); try { run(dir); } finally { rmSync(dir, { recursive: true, force: true }); } }
 

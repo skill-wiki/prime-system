@@ -1,6 +1,6 @@
 {
   "name": "@skill-wiki/http-server",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Authenticated HTTP transport over the kernel's snapshot/plan/query/resource surface. Loopback by default, bearer-credentialed, OTLP-traced.",
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -19,5 +19,8 @@
     "@skill-wiki/query-engine": "workspace:*",
     "@skill-wiki/runtime": "workspace:*",
     "@skill-wiki/sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@skill-wiki/model-schema": "workspace:*"
   }
 }

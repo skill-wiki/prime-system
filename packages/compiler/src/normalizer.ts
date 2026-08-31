@@ -1,6 +1,6 @@
 import type { AtomDeclaration, UnitDeclaration, ValueNode } from "@skill-wiki/types";
 import type { LoadedModel, TypeDefinition } from "@skill-wiki/model-schema";
-import type { GraphEdgeIR, SourceRefIR, TypedValueIR, UnitIR } from "@skill-wiki/ir";
+import type { GraphEdgeIR, SourceRefIR, TypedValueIR, UnitIR, ValueIR } from "@skill-wiki/ir";
 import { buildRelationIndex, type RelationIndex } from "./relation-semantics";
 
 export interface NormalizeDiagnostic { readonly code: string; readonly message: string; readonly field?: string; readonly typeRef?: string; readonly source: SourceRefIR }
@@ -14,11 +14,52 @@ export interface NormalizeDiagnostic { readonly code: string; readonly message: 
  * so leaving it to be re-derived downstream is how two paths end up with two
  * different identities for one unit.
  */
-export interface NormalizeContext { readonly corpus: string; readonly version: string; readonly digest: string; readonly id?: string; readonly lifecycle?: UnitIR["lifecycle"]; readonly visibility?: UnitIR["visibility"] }
+export interface NormalizeContext {
+  readonly corpus: string;
+  readonly version: string;
+  readonly digest: string;
+  readonly id?: string;
+  readonly lifecycle?: UnitIR["lifecycle"];
+  readonly visibility?: UnitIR["visibility"];
+  /** Optional corpus-level resolver. `undefined` means the value is not a unit edge. */
+  readonly resolveRelationTarget?: (target: string, relation: string) => string | undefined;
+  readonly onUnresolvedRelation?: (target: string, relation: string) => void;
+}
 export type NormalizeResult = { ok: true; value: UnitIR } | { ok: false; diagnostics: readonly NormalizeDiagnostic[] };
 type ConvertResult = { ok: true; value: TypedValueIR } | { ok: false; code: string };
 const scalarTypes = new Set(["string", "number", "boolean", "integer", "unknown"]);
 const sourceOf = (node: { loc: { line: number; column: number; offset: number } }, filename?: string): SourceRefIR => ({ filename, loc: node.loc });
+
+/**
+ * `_meta` is the protocol envelope, not a field in a domain type.
+ *
+ * Keeping it out of `UnitIR.fields` is what lets a corpus attach licence and
+ * provenance without forcing every external Model Package to repeat those
+ * engine-level declarations on every type. The underscore also prevents a
+ * collision with legitimate domain fields such as Nielsen taxonomy's `source`
+ * relation.
+ */
+const PROTOCOL_META_FIELD = "_meta";
+
+function valueIR(value: ValueNode): ValueIR | undefined {
+  if (value.type === "String" || value.type === "Ident" || value.type === "EnumValue") return value.value;
+  if (value.type === "Number" || value.type === "Boolean") return value.value;
+  if (value.type === "Reference") return value.path.join("/");
+  if (value.type === "Array") {
+    const items = value.items.map(valueIR);
+    return items.some(item => item === undefined) ? undefined : items as ValueIR[];
+  }
+  if (value.type === "Object") {
+    const entries: [string, ValueIR][] = [];
+    for (const field of value.fields) {
+      const converted = valueIR(field.value);
+      if (converted === undefined) return undefined;
+      entries.push([field.key, converted]);
+    }
+    return Object.fromEntries(entries);
+  }
+  return undefined;
+}
 
 /** Build the model-qualified form of a type name: `@<model>/<type>`. */
 export function qualifyTypeRef(modelName: string, typeName: string): string { return `@${modelName}/${typeName}`; }
@@ -102,6 +143,7 @@ function extractRelations(
   body: readonly { key: string; value: ValueNode }[],
   from: string,
   index: RelationIndex,
+  context: NormalizeContext,
 ): GraphEdgeIR[] {
   const edges: GraphEdgeIR[] = [];
   const seen = new Set<string>();
@@ -110,8 +152,10 @@ function extractRelations(
     if (!definition) continue;
     const values = field.value.type === "Array" ? field.value.items : [field.value];
     for (const item of values) {
-      const to = relationTarget(item);
-      if (!to) continue;
+      const raw = relationTarget(item);
+      if (!raw) continue;
+      const to = context.resolveRelationTarget?.(raw, definition.name) ?? (context.resolveRelationTarget === undefined ? raw : undefined);
+      if (to === undefined) { context.onUnresolvedRelation?.(raw, definition.name); continue; }
       const id = `${from}|${definition.name}|${to}`;
       if (seen.has(id)) continue;
       seen.add(id);
@@ -158,11 +202,36 @@ function normalize(name: string, typeRef: string, body: readonly { key: string; 
   const type = model.definitions.find((definition): definition is TypeDefinition => definition.kind === "type" && definition.name === resolved);
   if (!type) return { ok: false, diagnostics: [{ code: "UNKNOWN_TYPE", message: `Unknown model type: ${resolved}`, typeRef: resolved, source: declarationSource }] };
   const definitions = new Map(type.fields.map(field => [field.name, field])); const knownTypes = new Set(model.definitions.filter(d => d.kind === "type").map(d => d.name)); const fields: Record<string, TypedValueIR> = {}; const seen = new Set<string>(); const diagnostics: NormalizeDiagnostic[] = [];
-  for (const field of body) { const fieldSource = sourceOf(field, filename); if (seen.has(field.key)) { diagnostics.push({ code: "DUPLICATE_FIELD", message: `Duplicate field: ${field.key}`, field: field.key, source: fieldSource }); continue; } seen.add(field.key); const definition = definitions.get(field.key); if (!definition && type.additionalFields === "reject") { diagnostics.push({ code: "UNKNOWN_FIELD", message: `Unknown field: ${field.key}`, field: field.key, typeRef: resolved, source: fieldSource }); continue; } const expected = definition?.typeRef ?? "unknown"; const converted = convert(field.value, expected, filename, knownTypes); if (!converted.ok) { diagnostics.push({ code: converted.code, message: `Field '${field.key}' does not match ${expected}`, field: field.key, typeRef: expected, source: fieldSource }); continue; } fields[field.key] = converted.value; }
+  const relationIndex = relationIndexFor(model);
+  let provenanceAttributes: Readonly<Record<string, ValueIR>> | undefined;
+  for (const field of body) {
+    const fieldSource = sourceOf(field, filename);
+    if (seen.has(field.key)) { diagnostics.push({ code: "DUPLICATE_FIELD", message: `Duplicate field: ${field.key}`, field: field.key, source: fieldSource }); continue; }
+    seen.add(field.key);
+    if (field.key === PROTOCOL_META_FIELD) {
+      const converted = valueIR(field.value);
+      if (converted === undefined || converted === null || Array.isArray(converted) || typeof converted !== "object") {
+        diagnostics.push({ code: "INVALID_PROTOCOL_META", message: "Protocol _meta must be an object containing JSON-compatible values", field: field.key, source: fieldSource });
+      } else {
+        provenanceAttributes = converted as Readonly<Record<string, ValueIR>>;
+      }
+      continue;
+    }
+    // Relations are part of the generic Unit envelope, not ordinary domain
+    // fields. A model may declare `extends` without repeating it on every type;
+    // RelationDefinition is the authority for its shape and semantics.
+    if (relationIndex.definition(field.key) !== undefined) continue;
+    const definition = definitions.get(field.key);
+    if (!definition && type.additionalFields === "reject") { diagnostics.push({ code: "UNKNOWN_FIELD", message: `Unknown field: ${field.key}`, field: field.key, typeRef: resolved, source: fieldSource }); continue; }
+    const expected = definition?.typeRef ?? "unknown";
+    const converted = convert(field.value, expected, filename, knownTypes);
+    if (!converted.ok) { diagnostics.push({ code: converted.code, message: `Field '${field.key}' does not match ${expected}`, field: field.key, typeRef: expected, source: fieldSource }); continue; }
+    fields[field.key] = converted.value;
+  }
   for (const definition of type.fields) if (definition.required && !fields[definition.name]) diagnostics.push({ code: "MISSING_REQUIRED_FIELD", message: `Missing required field: ${definition.name}`, field: definition.name, typeRef: resolved, source: declarationSource });
   if (diagnostics.length) return { ok: false, diagnostics };
   const id = context.id ?? name;
-  return { ok: true, value: { identity: { id, version: context.version, digest: context.digest, corpus: context.corpus }, typeRef: resolved as UnitIR["typeRef"], implements: [], fields, relations: extractRelations(body, id, relationIndexFor(model)), citations: [], policyLabels: [], lifecycle: context.lifecycle ?? "active", visibility: context.visibility ?? "shared", provenance: { source: declarationSource }, projections: {} } };
+  return { ok: true, value: { identity: { id, version: context.version, digest: context.digest, corpus: context.corpus }, typeRef: resolved as UnitIR["typeRef"], implements: [], fields, relations: extractRelations(body, id, relationIndex, context), citations: [], policyLabels: [], lifecycle: context.lifecycle ?? "active", visibility: context.visibility ?? "shared", provenance: { source: declarationSource, ...(provenanceAttributes === undefined ? {} : { attributes: provenanceAttributes }) }, projections: {} } };
 }
 export function normalizeUnit(ast: UnitDeclaration, model: LoadedModel, context: NormalizeContext): NormalizeResult { return normalize(ast.name, ast.typeRef.name, ast.body, ast.filename, sourceOf(ast, ast.filename), model, context); }
 

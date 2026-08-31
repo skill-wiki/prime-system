@@ -67,7 +67,7 @@ function build(outDir: string, corpus: string): readonly CompiledUnitIR[] {
       protocolVersion: "2.0.0",
       irVersion: "2",
       compilerVersion: "2.1.0",
-      emitterVersion: "3",
+      emitterVersion: "4",
       corpus,
       release: FIXED_CREATED_AT.slice(0, 10),
       sourceRevision: "git:test",
@@ -160,7 +160,7 @@ test("a bundle whose units disagree with the manifest about their corpus is refu
       outDir: root!,
       units: [compiled.value],
       manifest: {
-        protocolVersion: "2.0.0", irVersion: "2", compilerVersion: "2.1.0", emitterVersion: "3",
+        protocolVersion: "2.0.0", irVersion: "2", compilerVersion: "2.1.0", emitterVersion: "4",
         corpus: "org.example/other", release: FIXED_CREATED_AT.slice(0, 10), sourceRevision: "git:test",
         models: { [model.manifest.name]: model.manifest.version },
         schemaDigest: `sha256:${sha256(Buffer.from("fixed-schema", "utf8"))}`, createdAt: FIXED_CREATED_AT,

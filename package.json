@@ -1,6 +1,6 @@
 {
   "name": "skill-wiki",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Skill Wiki — typed atoms, edge graph, lazy projection. Like Wikipedia, but for AI agents.",
   "license": "Apache-2.0",
   "homepage": "https://github.com/skill-wiki/skill-wiki",

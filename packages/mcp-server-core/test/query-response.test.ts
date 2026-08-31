@@ -4,7 +4,7 @@ import { createPrimeQueryResponse, createPrimeResourceUri, type QueryResult } fr
 
 const SNAPSHOT = {
   kind: "manifest" as const, protocolVersion: "2.0.0", irVersion: "2", compilerVersion: "2.1.0",
-  emitterVersion: "3", corpus: "org.example/test", release: "2026.08.28.1",
+  emitterVersion: "4", corpus: "org.example/test", release: "2026.08.28.1",
   sourceRevision: "git:abc", models: {}, schemaDigest: "sha256:" + "a".repeat(64),
   contentDigest: "sha256:" + "b".repeat(64), indexDigest: "sha256:" + "c".repeat(64),
   createdAt: "2026-08-28T00:00:00Z",

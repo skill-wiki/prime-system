@@ -9,6 +9,7 @@ import {
   loadCorpusSnapshot,
   loadIndex,
   loadAtomMeta,
+  verifyCorpusSignature,
   type BundleDiagnostic,
   type GlobalIndex,
   type SnapshotRef,
@@ -178,6 +179,7 @@ export function createPrimeMcpServer(options: PrimeMcpOptions): PrimeMcpInstance
   const stderr = options.stderr ?? console;
   const environment = options.environment ?? process.env;
   const loaded = loadCorpusSnapshot(options.primeDir, { requireManifest: options.requireManifest });
+  verifyCorpusSignature(options.primeDir);
   for (const diagnostic of loaded.diagnostics) {
     stderr.error(`[prime-mcp-core] ${diagnostic.severity} ${diagnostic.code}: ${diagnostic.message}`);
   }

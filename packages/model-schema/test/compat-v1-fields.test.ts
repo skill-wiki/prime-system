@@ -11,7 +11,7 @@ function fixture(definitions: string): string { const root = mkdtempSync(join(tm
 function types(): readonly TypeDefinition[] { const r = loadModel(compat); if (!r.ok) throw new Error(`compat model failed: ${r.diagnostics.map(d => d.code).join(",")}`); return r.value.definitions.filter((d): d is TypeDefinition => d.kind === "type"); }
 afterEach(() => { while (roots.length) rmSync(roots.pop()!, { recursive: true, force: true }); });
 
-// The 9 kinds that actually occur in release/prime-system/**/*.prime. The other 19 have zero
+// The 9 kinds that actually occur in projects/prime-system/**/*.prime. The other 19 have zero
 // corpus instances, so their kind-specific field sets are unmeasurable rather than empty.
 const ATTESTED = ["anti-pattern", "collection", "fact", "method", "pattern", "principle", "rule", "term", "tradeoff"];
 

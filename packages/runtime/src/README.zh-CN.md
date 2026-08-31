@@ -18,7 +18,7 @@ runtime 包同时导出了**生产级原子加载器**（由 MCP 服务器使用
 两处都已失效：**该领域插件组已于 2026-08-28 连同 Method 执行组一并删除**（见下文
 「已删除」一节与英文版 README），而 `mcp-server/index.ts` 自 `.mcp.json` 切向
 `mcp-server-core` 后就不再是生产入口，且它根本不 import 本包。第 13 轮（车道 L13-E）
-已将它连同 `release/prime-corpus-frontend-design/app/mcp-server-frontend/` 那份拷贝
+已将它连同 `projects/prime-frontend-design/app/mcp-server-frontend/` 那份拷贝
 一起删除；它那五个无对应物的 `prime_query` scope 的行为记录在父仓
 `docs/analysis/legacy-scope-spec.md`。
 

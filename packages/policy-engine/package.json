@@ -1,6 +1,6 @@
 {
   "name": "@skill-wiki/policy-engine",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Declaration-driven policy engine: principal, capability, side-effect and approval decisions read from a declared policy set",
   "main": "src/index.ts",
   "types": "src/index.ts",

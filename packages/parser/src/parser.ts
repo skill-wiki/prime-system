@@ -1326,6 +1326,14 @@ export class Parser {
       return this.parseArrayIdentItem();
     }
 
+    // `unit` is a declaration keyword only in declaration position. Corpus
+    // data may legitimately use the word as a tag (`tags: [testing, unit]`).
+    // parseValue already accepts it outside arrays; array parsing must agree.
+    if (tok.type === TokenType.UNIT) {
+      this.advance();
+      return { type: "Ident", value: tok.value, loc: this.loc(tok) } as IdentNode;
+    }
+
     // Number
     if (tok.type === TokenType.NUMBER || tok.type === TokenType.PERCENT) {
       return this.parseValue();

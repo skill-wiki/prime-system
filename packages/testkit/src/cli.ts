@@ -25,7 +25,7 @@ const USAGE = `prime testkit
                                          (a prime-corpus.yaml declaration runs the §4.3 declaration suite;
                                           a kind: corpus document runs the §17.2 content suite)
   bun packages/testkit/src/cli.ts corpus-v1 <model-root> <sources-dir> [--name=N] [--citation-fields=a,b] [--licenses=A,B]
-  bun packages/testkit/src/cli.ts bundle <bundle-dir> [--licenses=A,B] [--license-field=key]
+  bun packages/testkit/src/cli.ts bundle <bundle-dir> [--licenses=A,B] [--license-field=key] [--require-signature]
                                          (artifact-level: the COMPILED bundle, not its source)
   bun packages/testkit/src/cli.ts scan   [--roots=dir,dir] [--model=<model-root>] [--vocabulary=file.yaml]
                                          [--markdown] [--max-rows=N] [--all-hits] [--closed-sets]
@@ -193,6 +193,7 @@ function runBundle(argv: readonly string[]): number {
   const result = runBundleConformance(resolve(bundleDir), {
     ...(licenses.length > 0 ? { allowedLicenses: licenses } : {}),
     ...(licenseField === undefined ? {} : { licenseField }),
+    requireSignature: flag(argv, "require-signature"),
   });
   console.log(formatReport(result));
   return result.status === "fail" ? 1 : 0;

@@ -17,7 +17,7 @@ test("generic Ticket source compiles into a strict runtime-verified corpus", () 
     const compiled = compileUnit('unit INC-42 : Ticket { title: "Fix login" priority: 1 active: true owner: Owner.alice metadata: { area: "auth" } }', model, { corpus: "org.example/tickets", version: "1.0.0", digest: digest("INC-42") });
     expect(compiled.ok).toBe(true); if (!compiled.ok) throw new Error(compiled.diagnostics.map(x => x.message).join("; "));
     emitCompiledUnit(compiled.value, dir);
-    finalizeCorpusBundle({ outDir: dir, units: [compiled.value], manifest: { protocolVersion: "2.0.0", irVersion: "2", compilerVersion: "2.1.0", emitterVersion: "3", corpus: "org.example/tickets", release: "2026.08.28.1", sourceRevision: "git:test", models: { tickets: "1.0.0" }, schemaDigest: digest("ticket-schema"), createdAt: "2026-08-28T00:00:00Z" } });
+    finalizeCorpusBundle({ outDir: dir, units: [compiled.value], manifest: { protocolVersion: "2.0.0", irVersion: "2", compilerVersion: "2.1.0", emitterVersion: "4", corpus: "org.example/tickets", release: "2026.08.28.1", sourceRevision: "git:test", models: { tickets: "1.0.0" }, schemaDigest: digest("ticket-schema"), createdAt: "2026-08-28T00:00:00Z" } });
     expect(loadCorpusSnapshot(dir, { requireManifest: true }).snapshot.kind).toBe("manifest");
     expect(loadIndex(dir).atoms.map(x => x.id)).toEqual(["INC-42"]);
     expect(loadAtomMeta(dir, "INC-42").kind).toBe("Ticket");

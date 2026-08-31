@@ -67,6 +67,10 @@ export interface AtomMeta {
   projection: { summary: string; core: string; full: string };
   relations: Array<{ type: string; target: string }>;
   quality: Record<string, number>;
+  /** Protocol-level redistribution terms emitted from UnitIR provenance. */
+  license?: string;
+  /** Additional JSON-compatible provenance attributes. */
+  provenance?: Record<string, unknown>;
   /** ISO date when atom was deprecated. Undefined for active atoms. */
   deprecated_at?: string;
   /** Atom id that supersedes this one. */
@@ -274,6 +278,8 @@ export function loadAtomMeta(primeDir: string, atomId: string): AtomMeta {
       ? data.relations.map((r: any) => ({ type: r.type ?? "", target: r.target ?? "" }))
       : [],
     quality: typeof data.quality === "object" && data.quality !== null ? data.quality : {},
+    ...(typeof data.license === "string" ? { license: data.license } : {}),
+    ...(typeof data.provenance === "object" && data.provenance !== null ? { provenance: data.provenance as Record<string, unknown> } : {}),
     ...(deprecated_at ? { deprecated_at: String(deprecated_at) } : {}),
     ...(superseded_by ? { superseded_by: String(superseded_by) } : {}),
   };

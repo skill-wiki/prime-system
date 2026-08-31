@@ -1,178 +1,88 @@
-<p align="center">
-  <img src="./docs/assets/logo.svg" alt="Skill Wiki" width="420" />
-</p>
+# Prime System
 
-# Skill Wiki
+Prime System is the domain-neutral protocol, compiler, runtime and SDK for
+model-driven knowledge engines.
 
-> Typed atoms, edge graph, lazy projection — a protocol layer for AI knowledge.
+It does **not** ship a production ontology or corpus. Atom kinds, fields,
+relations, projections, retrieval profiles, actions and validators come from an
+external Model Package; units and assets come from an external Corpus Package.
 
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](./LICENSE)
-[![Spec](https://img.shields.io/badge/spec-v1.0-green.svg)](./spec/PRIME-PROTOCOL-v1.md)
-[![Node](https://img.shields.io/badge/node-22%2B-brightgreen.svg)](#install)
-[![CI](https://img.shields.io/badge/ci-parser%20%C2%B7%20compiler%20%C2%B7%20runtime-blue.svg)](./.github/workflows/ci.yml)
+```text
+Model Package + Corpus Package + Adapters
+                    │
+                    ▼
+ parser → IR → compiler → immutable bundle
+                    │
+       query · constraint · action runtime
+                    │
+          MCP · HTTP · SDK · CLI
+```
 
-[English](./README.md) · [中文](./README.zh-CN.md) · [Protocol Spec](./spec/PRIME-PROTOCOL-v1.md) · [Architecture](./docs/concept/architecture.md) · [Philosophy](./docs/concept/philosophy.md) · [Docs](./docs)
-
----
-
-Skill Wiki treats domain knowledge — design rules, security checks, writing voice, taxonomies — as **typed atoms with a declared edge graph, retrieved on demand**. Agents see a ~3 KB index of what exists. Specific atoms load only when the brief needs them.
-
-> **Existence ≠ content.** This is the load-bearing line of the whole design.
-
-<p align="center">
-  <img src="./docs/assets/architecture-system.png" alt="Skill Wiki system architecture — 8 layers from entry to model" width="780" />
-</p>
-
----
-
-## Install
-
-Requires **Node 22+**.
+## Install and verify
 
 ```bash
-git clone https://github.com/skill-wiki/prime-system.git
-cd prime-system
-bun install
+bun install --frozen-lockfile
+bun run typecheck
+bun run test
 bun run build
 ```
 
-```bash
-bun run packages/cli/src/index.ts --version
-# prime 0.1.0
-```
+## Build an example
 
----
-
-## Quickstart
+The examples intentionally use small external models and corpora. The v1 model
+under `compat/` is a compatibility fixture, not Core schema.
 
 ```bash
-cd examples/hello-world
-bun ../../scripts/build-atom-dirs.ts --src primes/sources --out primes/compiled
-prime list
-PRIME_DIR=primes/compiled bun ../../packages/mcp-server-core/src/index.ts
+bun scripts/build-atom-dirs.ts \
+  --src examples/hello-world/primes/sources \
+  --out examples/hello-world/primes/compiled \
+  --model compat/prime-v1-model \
+  --corpus org.example/hello-world \
+  --release 2026-08-31
 ```
 
-Wire into Claude Code (see [docs/mcp.md](./docs/guides/mcp.md)):
+Run the generic transport with an explicit bundle and model:
 
-```json
-{
-  "mcpServers": {
-    "skill-wiki": {
-      "command": "bunx",
-      "args": ["@skill-wiki/mcp-server-core"],
-      "env": { "PRIME_DIR": "/abs/path/to/compiled" }
-    }
-  }
-}
+```bash
+PRIME_DIR=examples/hello-world/primes/compiled \
+PRIME_MODEL_DIR=compat/prime-v1-model \
+bun packages/mcp-server-core/src/index.ts
 ```
 
----
+## External declaration boundary
 
-## What an atom looks like
+The engine fixes only the meta-schema, for example `TypeDefinitionSchema` and
+`RelationDefinitionSchema`. It does not enumerate domain types or verbs. Both of
+these parse and compile without an engine change when the loaded model declares
+them:
 
 ```prime
-fact WaterBoilsAt100C {
-  id: "@example/fact-water-boils-at-100c"
-  version: "1.0.0"
-
-  statement: "Pure water boils at 100°C (212°F) at 1 atmosphere of pressure."
-  confidence: 0.99
-  domain: physics
-
-  related: [
-    @example/term-celsius,
-    @example/rule-altitude-affects-boiling,
-  ]
-
-  validates-with: [
-    @example/source-nist-water-properties,
-  ]
-}
+unit INC_42 : Ticket { title: "Database unavailable" }
+Widget DashboardCard { title: "Revenue" }
 ```
 
-The kinds split into a small **core set** that any corpus uses, and a
-larger pool that fits some domains better than others. Pick what's
-useful; ignore the rest.
+`compat/prime-v1-model` currently declares the historical 28 kinds and 14
+relations so older corpora can migrate. A new domain should own its model rather
+than editing that fixture.
 
-| Layer | Kinds |
-|---|---|
-| **Data** | `fact` `term` `value` `category` `example` `counter-example` `source` `metric` |
-| **Behavior** | `step` `check` `transform` `tool` `method` |
-| **Composition** | `rule` `taxonomy` `pattern` `anti-pattern` `type` `constraint` |
-| **Meta** | `collection` `scope` `tradeoff` `principle` `feedback` |
-| **Voice & style** *(design / content / brand corpora)* | `persona` `voice` `template` `provocation` |
+## Packages
 
-The voice-and-style row is where the bundled frontend-design corpus
-spends most of its mass — `persona-stripe-fintech`, `voice-magazine-
-editorial`, `template-card-hover-lift`. A security or compliance corpus
-typically uses the first three rows and skips this one entirely.
+- `model-schema`, `corpus-schema`: external package declarations and resolution
+- `parser`, `ir`, `compiler`, `bundle`: deterministic source-to-bundle pipeline
+- `runtime`, `query-engine`, `constraint-solver`, `projection-engine`
+- `action-runtime`, `policy-engine`, `evaluation-engine`, `event-store`
+- `sdk`, `sdk-codegen`, `language-server`, `plugin-host`
+- `mcp-server-core`, `http-server`, `cli`, `registry`, `observability`
+- `testkit`: model, corpus, bundle, wiring and invariant conformance
 
-14 typed edge verbs: `requires` `enhances` `validates-with` `contradicts`
-`specializes` `conflicts` `extends` `derived-from` `compatible` `supplies-to`
-`see-also` `includes` `related` `relationships`.
+## Non-negotiable invariants
 
-### Adding a kind or a verb your domain needs
+- Runtime loads compiled bundles only; it never compiles source on request.
+- Model and bundle digests are verified at boot.
+- Generated bundle files and locks are never edited by hand.
+- Selection does not grant action capabilities.
+- External writes require Action definitions, policy, preflight, idempotency and
+  event evidence.
+- Domain packages depend on Prime System; Prime System never imports a domain.
 
-The 28 + 14 set is fixed in the parser today. Adding a new kind or verb
-takes a parser-level patch and a Tier-2 RFC (see [docs/community/governance.md](./docs/community/governance.md)).
-The path is documented in [docs/dsl-quickref.md](./docs/reference/dsl-quickref.md#extending) —
-edit `packages/types/src/ast.ts`, add a token in `packages/parser/src/lexer.ts`,
-add a chunker case, write a fixture, ship the PR. The same path covers
-new edge verbs.
-
-A YAML-declared `custom-kind` form that bypasses the parser patch is on
-[the roadmap](./docs/community/roadmap.md).
-
----
-
-## Claude Code slash commands
-
-Five `/prime-*` commands ship in [`.claude/commands/`](./.claude/commands/) so Claude Code users can drive Prime workflows in one keystroke.
-
-- `/prime-resolve <brief>` — resolve a brief into concrete typed atoms via the `prime_resolve` MCP tool.
-- `/prime-compile <src>` — compile a source directory and report atoms, edges, and build errors.
-- `/prime-validate <artifact> <brief>` — validate a built artifact against a Prime brief contract.
-- `/prime-author <kind> <name>` — scaffold a new `.prime` source file with the right fields for the kind.
-- `/prime-publish <src>` — compile a corpus and prep a draft PR against `skill-wiki.github.io`.
-
-Use them at the project level out of the box, or copy globally with `cp -r .claude/commands/prime-*.md ~/.claude/commands/`. See [`.claude/commands/README.md`](./.claude/commands/README.md) for details.
-
----
-
-## Documentation
-
-| | EN | 中文 |
-|---|---|---|
-| Getting started | [getting-started](./docs/getting-started.md) | [入门](./docs/zh-CN/getting-started.md) |
-| Architecture | [architecture](./docs/concept/architecture.md) | [架构](./docs/zh-CN/concept/architecture.md) |
-| Philosophy | [philosophy](./docs/concept/philosophy.md) | [设计哲学](./docs/zh-CN/concept/philosophy.md) |
-| DSL quick reference | [dsl-quickref](./docs/reference/dsl-quickref.md) | [DSL 速查](./docs/zh-CN/reference/dsl-quickref.md) |
-| CLI reference | [cli](./docs/reference/cli.md) | [CLI](./docs/zh-CN/reference/cli.md) |
-| MCP server | [mcp](./docs/guides/mcp.md) | [MCP](./docs/zh-CN/guides/mcp.md) |
-| Registry | [registry](./docs/reference/registry.md) | [Registry](./docs/zh-CN/reference/registry.md) |
-| Corpus authoring | [corpus-authoring](./docs/guides/corpus-authoring.md) | [写 corpus](./docs/zh-CN/guides/corpus-authoring.md) |
-| Comparison | [comparison](./docs/concept/comparison.md) | [对比](./docs/zh-CN/concept/comparison.md) |
-| FAQ | [faq](./docs/community/faq.md) | [FAQ](./docs/zh-CN/community/faq.md) |
-| Known issues | [known-issues](./docs/community/known-issues.md) | [已知问题](./docs/zh-CN/community/known-issues.md) |
-| Protocol Spec | [PRIME-PROTOCOL-v1.md](./spec/PRIME-PROTOCOL-v1.md) | — |
-
----
-
-## Status
-
-- **Spec:** v1.0, frozen as of 2026-05-07.
-- **Implementation:** ~75% of v1 spec. Parser, compiler L1+L3, runtime, registry, CLI, generic MCP server — all built and tested.
-- **Optional:** L2 semantic checker (DeepSeek, ~$0.0001/atom) — gated by `DEEPSEEK_API_KEY`.
-- **Honest gaps:** lifecycle / `deprecated` warning enforcement, structured AST for type expressions, formal domain plugin protocol. See [ROADMAP.md](./docs/community/roadmap.md).
-
----
-
-## Contributing
-
-Read [.github/CONTRIBUTING.md](./.github/CONTRIBUTING.md) before opening a pull request and follow the [PR template](./.github/PULL_REQUEST_TEMPLATE.md). For questions and ideas, use [Discussions](https://github.com/skill-wiki/skill-wiki.github.io/discussions); for defects or proposals, file an [issue](https://github.com/skill-wiki/prime-system/issues).
-
----
-
-## License
-
-[Apache License 2.0](./LICENSE). Patent grant included; redistribution must keep [NOTICE](./NOTICE) intact.
+See the protocol and architecture material under `spec/` and `docs/`.

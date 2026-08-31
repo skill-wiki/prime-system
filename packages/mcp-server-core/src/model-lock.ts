@@ -14,12 +14,21 @@
  * their snapshot honestly reports what is known about them.
  */
 
-import { createHash } from "node:crypto";
 import { existsSync, lstatSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { LoadedModel, ModelDefinition } from "@skill-wiki/model-schema";
+import {
+  MODEL_LOCK_FILE,
+  MODEL_LOCK_VERSION,
+  computeModelFileDigest,
+  computeModelSchemaDigest,
+  type LoadedModel,
+  type ModelLock,
+  type ModelLockEntry,
+  type ModelLockFileEntry,
+} from "@skill-wiki/model-schema";
 
-export const MODEL_LOCK_FILE = "model.lock";
+export { MODEL_LOCK_FILE, computeModelSchemaDigest } from "@skill-wiki/model-schema";
+export type { ModelLock, ModelLockEntry, ModelLockFileEntry } from "@skill-wiki/model-schema";
 
 export type ModelLockCode = "MODEL_LOCK_MISSING" | "MODEL_LOCK_INVALID" | "MODEL_LOCK_MISMATCH";
 
@@ -36,27 +45,7 @@ export class ModelLockError extends Error {
   }
 }
 
-export interface ModelLockFileEntry {
-  readonly path: string;
-  readonly digest: string;
-}
-
-export interface ModelLockEntry {
-  readonly name: string;
-  readonly version: string;
-  readonly protocol: string;
-  readonly schemaDigest: string;
-  readonly files: readonly ModelLockFileEntry[];
-  readonly manifestDigest: string;
-}
-
-export interface ModelLock {
-  readonly lockVersion: string;
-  readonly models: readonly ModelLockEntry[];
-}
-
 const DIGEST = /^sha256:[0-9a-f]{64}$/;
-const SUPPORTED_LOCK_VERSION = "1";
 
 function invalid(message: string): never {
   throw new ModelLockError("MODEL_LOCK_INVALID", message);
@@ -83,30 +72,12 @@ function digestField(raw: Record<string, unknown>, key: string, label: string): 
   return value;
 }
 
-/**
- * The digest of a Model Package's *semantics*, not of its bytes.
- *
- * Identical to `scripts/build-atom-dirs.ts` — the only producer of a
- * `schemaDigest` in this repository — so a bundle sealed by that pipeline and a
- * bundle verified here cannot disagree about what the model's digest is. Sorting
- * by `kind/name` makes the value independent of file order and of how the
- * definitions were split across files.
- */
-export function computeModelSchemaDigest(definitions: readonly ModelDefinition[]): string {
-  const hash = createHash("sha256");
-  for (const definition of [...definitions].sort((left, right) =>
-    `${left.kind}/${left.name}` < `${right.kind}/${right.name}` ? -1 : 1)) {
-    hash.update(JSON.stringify(definition));
-  }
-  return `sha256:${hash.digest("hex")}`;
-}
-
 /** Validate an untrusted parsed lock without touching disk. */
 export function parseModelLock(value: unknown): ModelLock {
   const raw = record(value, MODEL_LOCK_FILE);
   const lockVersion = nonEmptyString(raw, "lockVersion", MODEL_LOCK_FILE);
-  if (lockVersion !== SUPPORTED_LOCK_VERSION) {
-    invalid(`Unsupported model.lock lockVersion "${lockVersion}"; this runtime understands "${SUPPORTED_LOCK_VERSION}".`);
+  if (lockVersion !== MODEL_LOCK_VERSION) {
+    invalid(`Unsupported model.lock lockVersion "${lockVersion}"; this runtime understands "${MODEL_LOCK_VERSION}".`);
   }
   if (!Array.isArray(raw.models) || raw.models.length === 0) {
     invalid("model.lock.models must be a non-empty array.");
@@ -205,6 +176,18 @@ export function verifyModelLock(options: VerifyModelLockOptions): readonly Model
         `${actualSchemaDigest}. The model was changed after this corpus was compiled; recompile the corpus.`,
     );
   }
+  const expectedFiles = [...options.model.manifest.files].sort();
+  const lockedFiles = [...entry.files].sort((a, b) => a.path < b.path ? -1 : a.path > b.path ? 1 : 0);
+  if (lockedFiles.map(file => file.path).join("\0") !== expectedFiles.join("\0")) {
+    mismatch(`${MODEL_LOCK_FILE} file inventory does not match the loaded model manifest.`);
+  }
+  for (const file of lockedFiles) {
+    if (file.path.split(/[\\/]+/).includes("..")) invalid(`${MODEL_LOCK_FILE} contains an unsafe model file path: ${file.path}`);
+    const actual = computeModelFileDigest(readFileSync(join(options.model.root, file.path)));
+    if (actual !== file.digest) mismatch(`${MODEL_LOCK_FILE} digest mismatch for model file ${file.path}.`);
+  }
+  const actualManifestDigest = computeModelFileDigest(readFileSync(join(options.model.root, "prime-model.yaml")));
+  if (actualManifestDigest !== entry.manifestDigest) mismatch(`${MODEL_LOCK_FILE} manifestDigest does not match prime-model.yaml.`);
   // The manifest carries the same lock as a flat map (§8.4 `models`). Both are
   // checked so a hand-edited manifest cannot claim a model the lock disowns.
   if (options.manifestModels !== undefined) {

@@ -181,7 +181,7 @@ const BUNDLE_ENTRY: CorpusIndexEntry = {
 };
 const BUNDLE_MANIFEST: BundleManifestMetadata = {
   protocolVersion: "2.0.0", irVersion: SUPPORTED_CORPUS_IR_VERSION,
-  compilerVersion: "2.1.0", emitterVersion: "3",
+  compilerVersion: "2.1.0", emitterVersion: "4",
   corpus: "c-1", release: "r-1", sourceRevision: "git:0000000",
   models: { "m-1": "1.0.0" },
   schemaDigest: `sha256:${"0".repeat(64)}`,

@@ -41,7 +41,7 @@ function bundle(options: {
     outDir: root,
     entries: advertised.map(id => ({ id, kind: "thing", version: "1.0.0", description: `unit ${id}`, domain: "test", tags: [], tokens: { summary: 1, core: 1, full: 1 } })),
     manifest: {
-      protocolVersion: "2.0.0", irVersion: "2", compilerVersion: "2.1.0", emitterVersion: "3",
+      protocolVersion: "2.0.0", irVersion: "2", compilerVersion: "2.1.0", emitterVersion: "4",
       corpus: options.corpus, release: "2026-01-01", sourceRevision: "test",
       models: MODEL, schemaDigest: `sha256:${"a".repeat(64)}`, createdAt: "2026-01-01T00:00:00.000Z",
     },

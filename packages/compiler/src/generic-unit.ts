@@ -36,7 +36,7 @@ export interface CompileUnitOptions { readonly projections?: readonly string[]; 
  * `compiled-v3-final/corpus.manifest.json` records `"3"`. Coordinator: sequence
  * the bump with the runtime constant rather than letting one side move alone.
  */
-export const EMITTER_VERSION = "3";
+export const EMITTER_VERSION = "4";
 export type CompileUnitDiagnostic = NormalizeDiagnostic | { readonly code: string; readonly message: string; readonly source?: { readonly filename?: string; readonly loc: { readonly line: number; readonly column: number; readonly offset: number } } };
 export type CompileUnitResult = { readonly ok: true; readonly value: CompiledUnitIR } | { readonly ok: false; readonly diagnostics: readonly CompileUnitDiagnostic[] };
 export interface EmitCompiledUnitResult { readonly directory: string; readonly meta: AtomMeta; readonly files: readonly string[]; }
@@ -58,7 +58,7 @@ function stableValue(value: ValueIR): ValueIR { if (Array.isArray(value)) return
 function stableTypedValue(value: TypedValueIR): unknown { if (value.kind === "string" || value.kind === "number" || value.kind === "boolean") return { kind: value.kind, value: value.value, declaredTypeRef: value.declaredTypeRef }; if (value.kind === "reference") return { kind: value.kind, path: value.path, target: value.target, alias: value.alias, declaredTypeRef: value.declaredTypeRef }; if (value.kind === "array") return { kind: value.kind, items: value.items.map(stableTypedValue), declaredTypeRef: value.declaredTypeRef }; return { kind: value.kind, fields: Object.fromEntries(Object.entries(value.fields).sort(([a], [b]) => compare(a, b)).map(([key, item]) => [key, stableTypedValue(item)])), declaredTypeRef: value.declaredTypeRef }; }
 /** Canonical digest authority for portable compiled unit artifacts. */
 export function computeCompiledUnitContentDigest(unit: UnitIR, projections: Readonly<Record<string, ProjectionArtifactIR>>): string {
-  const envelope = { identity: unit.identity, typeRef: unit.typeRef, implements: unit.implements, fields: Object.fromEntries(Object.entries(unit.fields).sort(([a], [b]) => compare(a, b)).map(([key, value]) => [key, stableTypedValue(value)])), relations: [...unit.relations].sort((a, b) => compare(a.id, b.id)).map(edge => ({ id: edge.id, relationRef: edge.relationRef, from: edge.from, to: edge.to, attributes: edge.attributes && stableValue(edge.attributes) })), citations: unit.citations, policyLabels: unit.policyLabels, lifecycle: unit.lifecycle, visibility: unit.visibility };
+  const envelope = { identity: unit.identity, typeRef: unit.typeRef, implements: unit.implements, fields: Object.fromEntries(Object.entries(unit.fields).sort(([a], [b]) => compare(a, b)).map(([key, value]) => [key, stableTypedValue(value)])), relations: [...unit.relations].sort((a, b) => compare(a.id, b.id)).map(edge => ({ id: edge.id, relationRef: edge.relationRef, from: edge.from, to: edge.to, attributes: edge.attributes && stableValue(edge.attributes) })), citations: unit.citations, policyLabels: unit.policyLabels, lifecycle: unit.lifecycle, visibility: unit.visibility, provenance: { attributes: unit.provenance.attributes === undefined ? undefined : stableValue(unit.provenance.attributes) } };
   return framedDigest([JSON.stringify(envelope), ...Object.values(projections).sort((a, b) => compare(a.name, b.name)).flatMap(artifact => [artifact.name, artifact.path, artifact.digest, String(artifact.bytes), String(artifact.tokens), JSON.stringify(artifact.selectors)])]);
 }
 
@@ -185,7 +185,9 @@ export function compileNormalizedUnit(unit: UnitIR, ast: ChunkableAST, model: Lo
   }
   const tokens = Object.fromEntries(Object.entries(projections).map(([name, artifact]) => [name, artifact.tokens]));
   const contentDigest = computeCompiledUnitContentDigest(unit, projections);
-  return { ok: true, value: { kind: "compiled-unit", unit, projections, meta: { id: unit.identity.id, kind: unit.typeRef, version: unit.identity.version, description: declaredDescription(unit), domain: declaredScalar(unit, "domain") ?? unit.identity.corpus, tags: declaredStrings(unit, "tags"), tokens, projection: Object.fromEntries(Object.entries(projections).sort(([a], [b]) => compare(a, b)).map(([name, artifact]) => [name, artifact.path])), contentDigest } } };
+  const provenance = unit.provenance.attributes;
+  const license = typeof provenance?.["license"] === "string" ? provenance["license"] : undefined;
+  return { ok: true, value: { kind: "compiled-unit", unit, projections, meta: { id: unit.identity.id, kind: unit.typeRef, version: unit.identity.version, description: declaredDescription(unit), domain: declaredScalar(unit, "domain") ?? unit.identity.corpus, tags: declaredStrings(unit, "tags"), tokens, projection: Object.fromEntries(Object.entries(projections).sort(([a], [b]) => compare(a, b)).map(([name, artifact]) => [name, artifact.path])), contentDigest, ...(license === undefined ? {} : { license }), ...(provenance === undefined ? {} : { provenance }) } } };
 }
 
 /** Parse, normalize, and render a generic `unit` declaration without legacy compiler stages. */
@@ -232,7 +234,7 @@ function yaml(value: unknown, indent = 0): string {
 }
 function atomYaml(compiled: CompiledUnitIR): string {
   const relations = compiled.unit.relations.map(edge => ({ type: edge.relationRef, target: edge.to }));
-  return yaml({ id: compiled.meta.id, kind: compiled.meta.kind, version: compiled.meta.version, description: compiled.meta.description, tags: compiled.meta.tags, content_hash: compiled.meta.contentDigest, tokens: compiled.meta.tokens, projection: compiled.meta.projection, relations, quality: {} }).trimStart() + "\n";
+  return yaml({ id: compiled.meta.id, kind: compiled.meta.kind, version: compiled.meta.version, description: compiled.meta.description, tags: compiled.meta.tags, ...(compiled.meta.license === undefined ? {} : { license: compiled.meta.license }), ...(compiled.meta.provenance === undefined ? {} : { provenance: compiled.meta.provenance }), content_hash: compiled.meta.contentDigest, tokens: compiled.meta.tokens, projection: compiled.meta.projection, relations, quality: {} }).trimStart() + "\n";
 }
 
 /** Atomically emit a runtime-readable generic unit directory. */

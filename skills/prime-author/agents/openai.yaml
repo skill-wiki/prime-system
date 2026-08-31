@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prime Author"
+  short_description: "Author model-driven Prime corpus sources safely"
+  default_prompt: "Use $prime-author to add or update typed knowledge in this Prime corpus."

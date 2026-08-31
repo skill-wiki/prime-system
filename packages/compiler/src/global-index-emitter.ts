@@ -123,7 +123,7 @@ export function buildGlobalIndexXml(atoms: AtomMeta[]): string {
   const lines: string[] = [];
   lines.push(`<?xml version="1.0" encoding="UTF-8"?>`);
   lines.push(
-    `<prime_index version="1.0" total="${sorted.length}" total_tokens="${totalTokens}">`
+    `<prime_index version="1.0" total="${atoms.length}" active="${sorted.length}" total_tokens="${totalTokens}">`
   );
 
   for (const clusterName of clusterNames) {

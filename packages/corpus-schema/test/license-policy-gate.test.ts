@@ -20,7 +20,7 @@ import { parse as parseYaml } from "yaml";
 import { CorpusPackageDeclarationSchema, resolveCorpusPackage } from "../src/index.ts";
 
 const DECLARATION_PATH = new URL(
-  "../../../../prime-corpus-frontend-design/prime-corpus.yaml",
+  "../../../../prime-frontend-design/corpus/prime-corpus.yaml",
   import.meta.url,
 ).pathname;
 
@@ -34,7 +34,7 @@ function licenseDiagnostics(raw: unknown): readonly string[] {
   expect(parsed.success).toBe(true);
   if (!parsed.success) throw new Error("declaration did not parse");
   const resolved = resolveCorpusPackage(parsed.data, {
-    availableModelVersions: { "prime-v1-compatibility": ["1.0.0"] },
+    availableModelVersions: { "prime-design": ["1.0.0"] },
   });
   return resolved.diagnostics
     .filter(d => d.code.includes("LICENSE"))
@@ -56,7 +56,7 @@ describe("prime-corpus.yaml deny gate", () => {
     sources.push({
       id: "community-gpl-readmitted",
       origin: "https://github.com/spencergoldade/cursor-designer",
-      path: "primes-v3/sources/@community",
+      path: "sources/@community",
       license: "GPL-3.0 AND Apache-2.0",
       unitCount: 73,
     });
@@ -70,7 +70,7 @@ describe("prime-corpus.yaml deny gate", () => {
     sources.push({
       id: "community-gpl-disjunctive",
       origin: "https://github.com/spencergoldade/cursor-designer",
-      path: "primes-v3/sources/@community",
+      path: "sources/@community",
       license: "MIT OR GPL-3.0",
       unitCount: 1,
     });
@@ -85,7 +85,7 @@ describe("prime-corpus.yaml deny gate", () => {
     sources.push({
       id: "community-nc-readmitted",
       origin: "legacy primes/ units carrying CC-BY-NC-SA-4.0",
-      path: "primes-v3/sources/@community",
+      path: "sources/@community",
       license: "CC-BY-NC-SA-4.0 AND Apache-2.0",
       unitCount: 12,
     });
@@ -107,7 +107,7 @@ describe("prime-corpus.yaml deny gate", () => {
     sources.push({
       id: "community-unknown-readmitted",
       origin: "upstream repository named in the unit, terms never recorded",
-      path: "primes-v3/sources/@community",
+      path: "sources/@community",
       license: "unknown",
       unitCount: 17,
     });
@@ -117,7 +117,7 @@ describe("prime-corpus.yaml deny gate", () => {
     (noassertion["sources"] as Record<string, unknown>[]).push({
       id: "community-noassertion-readmitted",
       origin: "upstream repository named in the unit, terms never recorded",
-      path: "primes-v3/sources/@community",
+      path: "sources/@community",
       license: "NOASSERTION",
       unitCount: 17,
     });

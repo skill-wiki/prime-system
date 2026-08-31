@@ -8,6 +8,7 @@ import { existsSync, lstatSync, readFileSync, readdirSync } from "fs";
 import { createHash } from "crypto";
 import { isAbsolute, join, parse as parsePath, relative, resolve, sep } from "path";
 import { CORPUS_DECLARATION_FILE, NAMESPACE, loadCorpusPackage } from "@skill-wiki/corpus-schema";
+import { CORPUS_SIGNATURE_FILE, verifyCorpusSignature } from "./corpus-signature.ts";
 
 export const CORPUS_MANIFEST_FILE = "corpus.manifest.json";
 export const CORPUS_INDEX_FILE = "_index.xml";
@@ -33,7 +34,7 @@ export const SUPPORTED_CORPUS_IR_VERSION = "2";
  * Runtime states what it accepts, and a mismatch is an error rather than a
  * silent downgrade.
  */
-export const SUPPORTED_CORPUS_EMITTER_VERSION = "3";
+export const SUPPORTED_CORPUS_EMITTER_VERSION = "4";
 
 export type PrimeBundleErrorCode =
   | "MANIFEST_MISSING"
@@ -182,7 +183,7 @@ export function computeCorpusContentDigest(corpusRoot: string): string {
       if (stat.isDirectory()) { visit(absolute); continue; }
       if (!stat.isFile()) throw new PrimeBundleError("BUNDLE_CONTENT_INVALID", "Corpus can contain only regular files.", { context: { file: rel } });
       const posix = rel.split(sep).join("/");
-      if (posix === CORPUS_MANIFEST_FILE || /^\.corpus\.manifest\.json\.tmp-[A-Za-z0-9._-]+$/.test(posix) || EPHEMERAL_BUNDLE_FILE.test(posix) || CORPUS_NONARTIFACT_NOISE.includes(name as typeof CORPUS_NONARTIFACT_NOISE[number])) continue;
+      if (posix === CORPUS_MANIFEST_FILE || posix === CORPUS_SIGNATURE_FILE || /^\.corpus\.manifest\.json\.tmp-[A-Za-z0-9._-]+$/.test(posix) || EPHEMERAL_BUNDLE_FILE.test(posix) || CORPUS_NONARTIFACT_NOISE.includes(name as typeof CORPUS_NONARTIFACT_NOISE[number])) continue;
       try { files.push({ path: posix, bytes: readFileSync(absolute) }); } catch (cause) { throw new PrimeBundleError("BUNDLE_CONTENT_INVALID", "Unable to read corpus artifact.", { cause, context: { file: rel } }); }
     }
   };
@@ -675,6 +676,21 @@ export function mountCorpus(
     }
     declaredNamespace = declaration.value.declaration.namespace;
     defaultProfile = declaration.value.declaration.retrieval.defaultProfile;
+    try {
+      verifyCorpusSignature(request.path, { required: declaration.value.declaration.publication.requireSignature });
+    } catch (cause) {
+      return {
+        ok: false,
+        failure: {
+          path: request.path,
+          diagnostics: [{
+            code: "MOUNT_LOAD_FAILED", severity: "error",
+            message: cause instanceof Error ? cause.message : "Corpus signature verification failed.",
+            context: { path: request.path, signature: "invalid" },
+          }],
+        },
+      };
+    }
     if (declaredNamespace !== manifestCorpus) {
       diagnostics.push({
         // Narrowed by the namespace cutover: this used to fire on every mount

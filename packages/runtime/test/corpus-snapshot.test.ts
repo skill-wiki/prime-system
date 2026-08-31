@@ -16,7 +16,7 @@ function withCorpus(run: (dir: string) => void): void {
 
 function manifest(indexDigest = digest(index), contentDigest = digest("content")): Record<string, unknown> {
   return {
-    protocolVersion: "2.0.0", irVersion: "2", compilerVersion: "2.1.0", emitterVersion: "3",
+    protocolVersion: "2.0.0", irVersion: "2", compilerVersion: "2.1.0", emitterVersion: "4",
     corpus: "org.example/test", release: "2026.08.28.1", sourceRevision: "git:abc123",
     models: { "org.example/model": "2.0.0" }, schemaDigest: digest("schema"),
     contentDigest, indexDigest, createdAt: "2026-08-28T00:00:00Z",
@@ -127,7 +127,7 @@ describe("loadCorpusSnapshot", () => {
   it("fails closed when the corpus was emitted by an unsupported emitter", () => withCorpus((dir) => {
     writeFileSync(join(dir, "_index.xml"), index);
     const contentDigest = computeCorpusContentDigest(dir);
-    writeFileSync(join(dir, "corpus.manifest.json"), JSON.stringify({ ...manifest(digest(index), contentDigest), emitterVersion: "4" }));
+    writeFileSync(join(dir, "corpus.manifest.json"), JSON.stringify({ ...manifest(digest(index), contentDigest), emitterVersion: "5" }));
     try {
       loadCorpusSnapshot(dir);
       throw new Error("expected unsupported emitter version");

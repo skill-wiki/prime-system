@@ -74,7 +74,7 @@ function makeCorpus(name: string, units: readonly UnitSpec[]): string {
       domain: "fixture", tags: [], tokens: { summary: 4, core: 8, full: 12 },
     })),
     manifest: {
-      protocolVersion: "2.0.0", irVersion: "2", compilerVersion: "2.1.0", emitterVersion: "3",
+      protocolVersion: "2.0.0", irVersion: "2", compilerVersion: "2.1.0", emitterVersion: "4",
       corpus: `fixture/${name}`, release: `${name}.1`, sourceRevision: "git:test",
       models: { "audit-fixture": "1.0.0" }, schemaDigest: `sha256:${"a".repeat(64)}`,
       createdAt: "2026-08-28T00:00:00Z",
