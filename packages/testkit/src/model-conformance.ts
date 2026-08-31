@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-import { loadModel, type ActionDefinition, type FunctionDefinition, type LoadedModel, type ModelDefinition, type ProjectionDefinition, type RelationDefinition, type RetrievalProfile, type TypeDefinition } from "@skill-wiki/model-schema";
+import { applyMigration, loadModel, rollbackMigration, type ActionDefinition, type FunctionDefinition, type LoadedModel, type MigrationDefinition, type ModelDefinition, type ProjectionDefinition, type RelationDefinition, type RetrievalProfile, type TypeDefinition } from "@skill-wiki/model-schema";
 import { assertSchemaDigestSelfConsistent, generateSdk } from "@skill-wiki/sdk-codegen";
 import { defaultRendererSections, type RendererSections } from "./renderer-sections.ts";
 import { check, finding, formatReport, report, skipped, type CheckOutcome, type Finding, type SuiteReport } from "./diagnostics.ts";
@@ -252,6 +252,23 @@ function retrievalCheck(profiles: readonly RetrievalProfile[]): CheckOutcome {
   return check("MC-RETRIEVAL-PROFILE", "Retrieval profiles are executable", findings);
 }
 
+/** §17.1: every declared migration must apply and restore a representative pre-image. */
+function migrationRoundtripCheck(migrations: readonly MigrationDefinition[], types: readonly TypeDefinition[]): CheckOutcome {
+  const findings: Finding[] = [];
+  for (const migration of migrations) migration.steps.forEach((step, index) => {
+    const unit = "renameField" in step
+      ? { id: `${migration.name}/${index}`, typeRef: step.renameField.type, fields: { [step.renameField.from]: "probe" }, relations: [] }
+      : "mapRelation" in step
+        ? { id: `${migration.name}/${index}`, typeRef: types[0]?.name ?? "*", fields: {}, relations: [{ relationRef: step.mapRelation.from, target: "probe/target" }] }
+        : { id: `${migration.name}/${index}`, typeRef: step.setDefault.type, fields: {}, relations: [] };
+    const applied = applyMigration(unit, migration);
+    if (!applied.ok) for (const diagnostic of applied.diagnostics) findings.push(finding(diagnostic.code, diagnostic.message, "error", { subject: migration.name }));
+    if (applied.affectedSteps === 0) findings.push(finding("MIGRATION_STEP_NOT_EXERCISED", `Step ${index} in ${migration.name} did not affect its representative input`, "error", { subject: migration.name }));
+    if (JSON.stringify(rollbackMigration(applied)) !== JSON.stringify(unit)) findings.push(finding("MIGRATION_ROUNDTRIP_MISMATCH", `Migration ${migration.name} did not restore its representative input`, "error", { subject: migration.name }));
+  });
+  return check("MC-MIGRATION-ROUNDTRIP", "Migration roundtrip", findings);
+}
+
 export interface ModelConformanceOptions {
   /**
    * Types with an empty field schema are an error by default. A model may opt
@@ -359,6 +376,7 @@ export function runModelConformance(root: string, options: ModelConformanceOptio
       ["MC-PROJ-RENDERER-SECTIONS", "Selectors that name a renderer section instead of a field"],
       ["MC-RETRIEVAL-PROFILE", "Retrieval profiles are executable"],
       ["MC-SDK-COMPILE", "Generated SDK compiles"],
+      ["MC-MIGRATION-ROUNDTRIP", "Migration roundtrip"],
     ] as const) checks.push(skipped(id, title, "model did not load; definitions unavailable"));
   } else {
     const model = loaded.value;
@@ -372,10 +390,8 @@ export function runModelConformance(root: string, options: ModelConformanceOptio
     checks.push(...projectionCheck(types, byKind(model, "projection"), options.rendererSections ?? defaultRendererSections()));
     checks.push(retrievalCheck(byKind(model, "retrieval-profile")));
     checks.push(sdkCompileCheck(model));
+    checks.push(migrationRoundtripCheck(byKind(model, "migration"), types));
   }
-
-  // §17.1 lists both, and §17.5 forbids dressing a skip up as a pass.
-  checks.push(skipped("MC-MIGRATION-ROUNDTRIP", "Migration roundtrip", "protocol has no migration definition kind yet (plan §13.3)"));
 
   return report("model-conformance", root, checks);
 }

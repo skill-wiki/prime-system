@@ -44,7 +44,13 @@ export const FunctionDefinitionSchema = z.object({ kind: z.literal("function"), 
 export const ActionDefinitionSchema = z.object({ kind: z.literal("action"), name: z.string().min(1), version: SemVer, inputs: z.array(Field).default([]), output: z.string().min(1), capabilities: z.array(z.string().min(1)).default([]), sideEffects: z.enum(["none", "read", "write"]), idempotency: z.enum(["idempotent", "non-idempotent", "unknown"]), approval: z.enum(["never", "always", "conditional"]), provider: z.string().min(1).optional(), preconditions: z.array(z.string().min(1)).optional(), extensions: ExtensionMap.optional() }).strict();
 export const ProjectionDefinitionSchema = z.object({ kind: z.literal("projection"), name: z.string().min(1), version: SemVer, targetTokens: z.number().int().positive(), include: z.array(z.string()).default([]), exclude: z.array(z.string()).default([]), typeGroups: z.record(z.string(), z.array(z.string().min(1))).default({}), rules: z.array(z.object({ layer: z.string().optional(), typeRef: z.string().optional(), include: z.array(z.string()).optional(), exclude: z.array(z.string()).optional() }).strict()).default([]), extensions: ExtensionMap.optional() }).strict();
 export const RetrievalProfileSchema = z.object({ kind: z.literal("retrieval-profile"), name: z.string().min(1), version: SemVer, projection: z.string().min(1), candidateGenerators: z.array(z.object({ name: z.string().min(1), weight: z.number().nonnegative() }).strict()).min(1), features: z.record(z.string(), z.number()), constraints: z.array(z.string().min(1)).default([]), reranker: z.string().min(1).optional(), extensions: ExtensionMap.optional() }).strict();
-const DefinitionSchema = z.discriminatedUnion("kind", [TypeDefinitionSchema, RelationDefinitionSchema, FunctionDefinitionSchema, ActionDefinitionSchema, ProjectionDefinitionSchema, RetrievalProfileSchema]);
+export const MigrationStepSchema = z.union([
+  z.object({ renameField: z.object({ type: z.string().min(1), from: z.string().min(1), to: z.string().min(1) }).strict() }).strict(),
+  z.object({ mapRelation: z.object({ from: z.string().min(1), to: z.string().min(1) }).strict() }).strict(),
+  z.object({ setDefault: z.object({ type: z.string().min(1), field: z.string().min(1), value: z.unknown() }).strict() }).strict(),
+]);
+export const MigrationDefinitionSchema = z.object({ kind: z.literal("migration"), name: z.string().min(1), version: SemVer, from: z.string().min(1), to: SemVer, steps: z.array(MigrationStepSchema).min(1), extensions: ExtensionMap.optional() }).strict();
+const DefinitionSchema = z.discriminatedUnion("kind", [TypeDefinitionSchema, RelationDefinitionSchema, FunctionDefinitionSchema, ActionDefinitionSchema, ProjectionDefinitionSchema, RetrievalProfileSchema, MigrationDefinitionSchema]);
 export const ModelManifestSchema = z.object({ protocol: z.literal("prime/model/v2"), name: z.string().min(1), version: SemVer, files: z.array(z.string().min(1)).min(1) }).strict();
 export const DefinitionFileSchema = z.object({ kind: z.literal("definitions"), version: SemVer, definitions: z.array(DefinitionSchema).min(1) }).strict();
 
@@ -55,6 +61,8 @@ export type FunctionDefinition = z.infer<typeof FunctionDefinitionSchema>;
 export type ActionDefinition = z.infer<typeof ActionDefinitionSchema>;
 export type ProjectionDefinition = z.infer<typeof ProjectionDefinitionSchema>;
 export type RetrievalProfile = z.infer<typeof RetrievalProfileSchema>;
+export type MigrationStep = z.infer<typeof MigrationStepSchema>;
+export type MigrationDefinition = z.infer<typeof MigrationDefinitionSchema>;
 export type ModelDefinition = z.infer<typeof DefinitionSchema>;
 export interface Diagnostic { code: string; message: string; path?: string; definition?: string }
 export interface LoadedModel { root: string; manifest: Manifest; definitions: readonly ModelDefinition[] }
@@ -96,7 +104,7 @@ function validateLinks(definitions: readonly ModelDefinition[], diagnostics: Dia
     const seen = new Set<string>();
     for (const value of f.enum) { if (seen.has(value)) diagnostics.push(diag("DUPLICATE_ENUM_VALUE", `Field '${f.name}' repeats enum value '${value}'`, undefined, owner)); seen.add(value); }
   };
-  for (const d of definitions) { const owner = `${d.kind}:${d.name}`; if (d.kind === "type") for (const f of d.fields) field(f, owner); if (d.kind === "function" || d.kind === "action") { for (const f of d.inputs) field(f, owner); ref(d.output, owner); } if (d.kind === "relation") { ref(d.from, owner, "scalar"); ref(d.to, owner, "scalar"); if (d.inverse && !relations.has(d.inverse)) diagnostics.push(diag("DANGLING_RELATION_REF", `Unknown inverse relation: ${d.inverse}`, undefined, owner)); } if (d.kind === "projection") { for (const [group, members] of Object.entries(d.typeGroups)) for (const member of members) ref(member, `${owner}/group:${group}`, "scalar"); for (const rule of d.rules) if (rule.typeRef) { if (rule.typeRef.startsWith("group:")) { const group = rule.typeRef.slice("group:".length); if (!(group in d.typeGroups)) diagnostics.push(diag("DANGLING_TYPE_GROUP_REF", `Unknown projection type group: ${group}`, undefined, owner)); } else ref(rule.typeRef, `${owner}/rule`, "scalar"); } } if (d.kind === "retrieval-profile" && !projections.has(d.projection)) diagnostics.push(diag("DANGLING_PROJECTION_REF", `Unknown projection: ${d.projection}`, undefined, owner)); }
+  for (const d of definitions) { const owner = `${d.kind}:${d.name}`; if (d.kind === "type") for (const f of d.fields) field(f, owner); if (d.kind === "function" || d.kind === "action") { for (const f of d.inputs) field(f, owner); ref(d.output, owner); } if (d.kind === "relation") { ref(d.from, owner, "scalar"); ref(d.to, owner, "scalar"); if (d.inverse && !relations.has(d.inverse)) diagnostics.push(diag("DANGLING_RELATION_REF", `Unknown inverse relation: ${d.inverse}`, undefined, owner)); } if (d.kind === "projection") { for (const [group, members] of Object.entries(d.typeGroups)) for (const member of members) ref(member, `${owner}/group:${group}`, "scalar"); for (const rule of d.rules) if (rule.typeRef) { if (rule.typeRef.startsWith("group:")) { const group = rule.typeRef.slice("group:".length); if (!(group in d.typeGroups)) diagnostics.push(diag("DANGLING_TYPE_GROUP_REF", `Unknown projection type group: ${group}`, undefined, owner)); } else ref(rule.typeRef, `${owner}/rule`, "scalar"); } } if (d.kind === "retrieval-profile" && !projections.has(d.projection)) diagnostics.push(diag("DANGLING_PROJECTION_REF", `Unknown projection: ${d.projection}`, undefined, owner)); if (d.kind === "migration") for (const step of d.steps) { if ("renameField" in step) { ref(step.renameField.type, owner, "scalar"); const target = definitions.find(x => x.kind === "type" && x.name === step.renameField.type); if (target?.kind === "type" && !target.fields.some(f => f.name === step.renameField.to)) diagnostics.push(diag("MIGRATION_TARGET_FIELD_UNKNOWN", `Migration target field is not declared: ${step.renameField.type}.${step.renameField.to}`, undefined, owner)); } else if ("mapRelation" in step) { if (!relations.has(step.mapRelation.to)) diagnostics.push(diag("MIGRATION_TARGET_RELATION_UNKNOWN", `Migration target relation is not declared: ${step.mapRelation.to}`, undefined, owner)); } else { ref(step.setDefault.type, owner, "scalar"); const target = definitions.find(x => x.kind === "type" && x.name === step.setDefault.type); if (target?.kind === "type" && !target.fields.some(f => f.name === step.setDefault.field)) diagnostics.push(diag("MIGRATION_DEFAULT_FIELD_UNKNOWN", `Migration default field is not declared: ${step.setDefault.type}.${step.setDefault.field}`, undefined, owner)); } } }
 }
 export function loadModel(root: string): LoadResult {
   const diagnostics: Diagnostic[] = [];
@@ -125,3 +133,11 @@ export {
   type ModelLockEntry,
   type ModelLockFileEntry,
 } from "./model-lock.ts";
+export {
+  applyMigration,
+  rollbackMigration,
+  type MigratableRelation,
+  type MigratableUnit,
+  type MigrationApplyResult,
+  type MigrationDiagnostic,
+} from "./migration.ts";

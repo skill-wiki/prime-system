@@ -13,3 +13,12 @@ definitions:
   - {kind: projection, name: summary, version: 1.0.0, targetTokens: 80, include: [title], rules: [{typeRef: Ticket, include: [priority]}]}
   - {kind: projection, name: core, version: 1.0.0, targetTokens: 200, include: [title, priority, active], rules: [{typeRef: group:ticket-types, include: [owner]}], typeGroups: {ticket-types: [Ticket]}}
   - {kind: projection, name: full, version: 1.0.0, targetTokens: 500, include: ["*"]}
+  - kind: migration
+    name: ticket-v1
+    version: 1.0.0
+    from: "<1.0.0"
+    to: 1.0.0
+    steps:
+      - renameField: {type: Ticket, from: subject, to: title}
+      - mapRelation: {from: assigned-to, to: owned-by}
+      - setDefault: {type: Ticket, field: active, value: true}
