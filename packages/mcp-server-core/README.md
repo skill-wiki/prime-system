@@ -1,47 +1,29 @@
-# @skill-wiki/mcp-server-core
+# Kernary MCP transport
 
-Generic [Model Context Protocol](https://modelcontextprotocol.io) server for any compiled [Prime](https://github.com/skill-wiki/prime-system) corpus. Exposes a single tool — `prime_query` — that browses atoms, traverses the edge graph, and returns projection-level paths the agent reads on demand.
+`@skill-wiki/mcp-server-core` is the currently published compatibility package
+for Kernary's generic MCP transport. It mounts a compiled Corpus snapshot and
+the exact external Model Package bound by `model.lock`.
 
-The server **never returns atom body content**. It returns paths. The agent uses its own Read tool to load the projection (`summary`, `core`, or `full`) it actually needs.
-
-## Install
-
-```sh
-npm install -g @skill-wiki/mcp-server-core
-# or run on demand: npx @skill-wiki/mcp-server-core
+```bash
+PRIME_DIR=/absolute/path/to/corpus/dist \
+PRIME_MODEL_DIR=/absolute/path/to/model \
+bunx @skill-wiki/mcp-server-core
 ```
 
-Requires Node.js >= 22.
+The package installs `kernary-mcp` and the compatibility alias
+`prime-mcp-core`. Environment variables and tool names remain compatibility
+identifiers in v0.2.
 
-## Wire into Claude Code
+## Tools
 
-```jsonc
-{
-  "mcpServers": {
-    "skill-wiki": {
-      "command": "npx",
-      "args": ["@skill-wiki/mcp-server-core"],
-      "env": { "PRIME_DIR": "/abs/path/to/compiled" }
-    }
-  }
-}
-```
+- `prime_query`: execute a model-declared Retrieval Profile and render selected
+  projections.
+- `prime_plan`: return the same selection decisions without rendering.
+- `prime_resource`: read one exact verified projection.
 
-`PRIME_DIR` must point at a directory containing `_index.xml` (the output of `prime compile`).
+The transport returns explicit refusals for unavailable profile providers,
+visibility violations, invalid requests, missing projections, and Model/Snapshot
+identity mismatches. Domain Packages may project additional tools without adding
+their schema to Kernary Core.
 
-## Tool surface
-
-```ts
-prime_query({
-  scope: "atoms" | "related" | "show",
-  query?: string,             // for scope=atoms
-  id?: string,                // for scope=related|show
-  level?: "summary" | "core" | "full",
-  kind?: string,
-  limit?: number,
-})
-```
-
-## License
-
-Apache-2.0
+See [MCP transport](../../docs/reference/mcp-transport.md). Apache-2.0.

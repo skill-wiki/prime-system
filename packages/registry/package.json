@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "private": true,
   "license": "Apache-2.0",
-  "description": "Prime Registry API — search, publish, and download Primes",
+  "description": "Kernary Registry API for discovering and distributing typed packages",
   "type": "module",
   "scripts": {
     "dev": "bun --watch src/index.ts",

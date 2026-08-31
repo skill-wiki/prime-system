@@ -43,7 +43,7 @@ const HOST_MODULE_ENV = "PRIME_HTTP_HOST_MODULE";
 const HOSTNAME_ENV = "PRIME_HTTP_HOSTNAME";
 const PORT_ENV = "PRIME_HTTP_PORT";
 const OTLP_ENV = "PRIME_OTLP_TRACES_ENDPOINT";
-const SERVICE_NAME = "prime-http-server";
+const SERVICE_NAME = "kernary-http-server";
 
 /** What a host module must default-export as `createHost`. */
 export interface HttpHostModule {
@@ -69,7 +69,7 @@ export function buildTracer(environment: Record<string, string | undefined>): {
   const sink = new BatchingSpanSink(createOtlpHttpExporter({
     endpoint,
     resource: { attributes: { "service.name": SERVICE_NAME } },
-    scope: { name: SERVICE_NAME, version: "0.1.0" },
+    scope: { name: SERVICE_NAME, version: "0.2.0" },
     onError: (error): void => {
       // Reported once per failed batch on stderr, never thrown: a collector being
       // unreachable must not fail a query. Silence here is what makes a dashboard

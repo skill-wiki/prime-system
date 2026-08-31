@@ -1,33 +1,23 @@
-# @skill-wiki/cli
+# Kernary CLI
 
-The command-line interface for [Prime Language](https://github.com/skill-wiki/prime-system) — a knowledge-protocol DSL for AI agents.
+`@skill-wiki/cli` is the currently published compatibility package for the
+Kernary command line. It installs `kernary` as the preferred binary and `prime`
+as a v0.2 compatibility alias.
 
-## Install
+The CLI requires Bun because the Action run surface uses the Bun SQLite runtime.
 
-```sh
-npm install -g @skill-wiki/cli
-# or: bun add -g @skill-wiki/cli
+```bash
+bun add --global @skill-wiki/cli
+kernary --help
 ```
 
-Requires Node.js >= 22.
+The current command surface covers source authoring and checks, compatibility
+package management, bundle diagnostics, Action preflight and execution, Event
+run inspection, and Language Server diagnostics.
 
-## Quick start
+Maintained Corpus releases should use their owning package scripts rather than a
+single-file command. Those scripts bind the exact Model Package, Corpus identity,
+release date, signing policy, and strict verification.
 
-```sh
-prime init                      # scaffold a new .prime atom
-prime compile path/to/file.prime  # compile .prime → .md projections
-prime check  path/to/file.prime  # validate without emitting
-prime list                      # list atoms in the local registry
-prime show   @scope/name        # show atom details + dependencies
-prime install @scope/name       # resolve + verify dep graph locally
-```
-
-Run `prime --help` for the full command surface (init, compile, check, test, graph, decompose, compose, list, show, deps, install, publish, search, info, ls).
-
-## Docs
-
-See the [Prime System repository](https://github.com/skill-wiki/prime-system) for the language spec, atom kinds, projection model, and architecture.
-
-## License
-
-Apache-2.0
+See [CLI compatibility](../../docs/reference/cli.md) for the migration boundary.
+Kernary is Apache-2.0 licensed.

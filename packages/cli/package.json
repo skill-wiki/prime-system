@@ -1,10 +1,11 @@
 {
   "name": "@skill-wiki/cli",
   "version": "0.2.0",
-  "description": "Prime CLI \u2014 compile, check, install, publish, search Prime atoms and corpora.",
+  "description": "Kernary CLI \u2014 author, compile, inspect, query, and operate model-driven knowledge packages.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
+    "kernary": "dist/index.js",
     "prime": "dist/index.js"
   },
   "files": [
@@ -13,7 +14,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist --target node && node -e \"const f='dist/index.js';const fs=require('fs');let s=fs.readFileSync(f,'utf8');if(s.startsWith('#!'))s=s.replace(/^#![^\\n]*\\n/,'#!/usr/bin/env node\\n');else s='#!/usr/bin/env node\\n'+s;fs.writeFileSync(f,s);fs.chmodSync(f,0o755);\"",
+    "build": "bun build src/index.ts --outdir dist --target bun && node -e \"const f='dist/index.js';const fs=require('fs');let s=fs.readFileSync(f,'utf8');if(s.startsWith('#!'))s=s.replace(/^#![^\\n]*\\n/,'#!/usr/bin/env bun\\n');else s='#!/usr/bin/env bun\\n'+s;fs.writeFileSync(f,s);fs.chmodSync(f,0o755);\" && bun dist/index.js --version",
     "prepublishOnly": "bun run build",
     "test": "bun test --pass-with-no-tests",
     "lint": "tsc --noEmit"
@@ -31,14 +32,14 @@
     "@skill-wiki/types": "workspace:*"
   },
   "keywords": [
-    "prime-lang",
-    "skill-wiki",
+    "kernary",
+    "knowledge-runtime",
     "mcp",
     "ai-agents",
     "cli"
   ],
   "engines": {
-    "node": ">=22"
+    "bun": ">=1.3.0"
   },
   "repository": {
     "type": "git",

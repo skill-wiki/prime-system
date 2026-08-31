@@ -1,7 +1,7 @@
 {
   "name": "@skill-wiki/sdk",
   "version": "0.2.0",
-  "description": "Engine client: one Query/Plan/Action/Events surface over interchangeable transports (plan §10.2, §10.4)",
+  "description": "Kernary client with one Query, Plan, Action, and Events surface over interchangeable transports",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "scripts": { "test": "bun test", "typecheck": "tsc --noEmit -p tsconfig.json" },

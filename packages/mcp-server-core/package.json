@@ -1,7 +1,7 @@
 {
   "name": "@skill-wiki/mcp-server-core",
   "version": "0.2.0",
-  "description": "Generic MCP server for any compiled Prime corpus. Exposes one tool — prime_query — that browses atoms, traverses the edge graph, and returns projection-level paths for the agent to Read.",
+  "description": "Kernary's generic MCP transport for a verified Model Package and compiled Corpus snapshot.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "src/index.ts",
@@ -9,6 +9,7 @@
     ".": "./src/index.ts"
   },
   "bin": {
+    "kernary-mcp": "dist/index.js",
     "prime-mcp-core": "dist/index.js"
   },
   "files": [
@@ -33,8 +34,8 @@
     "lint": "tsc --noEmit"
   },
   "keywords": [
-    "prime-lang",
-    "skill-wiki",
+    "kernary",
+    "knowledge-runtime",
     "mcp",
     "model-context-protocol",
     "stdio"

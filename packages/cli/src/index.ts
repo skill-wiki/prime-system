@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 /**
- * Prime CLI — The command-line interface for the Prime Language.
+ * Kernary CLI. The `prime` binary remains a compatibility alias in v0.2.
  *
  * Commands:
  *   prime init                    Create a new .prime file interactively
@@ -52,13 +52,13 @@ import { actionCommand } from './commands/action';
 import { runCommand } from './commands/run';
 import { lspCommand } from './commands/lsp';
 
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 
 function printUsage() {
   console.log(`
-prime v${VERSION} — AI 时代的知识编程语言
+Kernary v${VERSION} — model-driven knowledge runtime for agents
 
-Usage: prime <command> [options]
+Usage: kernary <command> [options]
 
 Core:
   init                    Create a new .prime file
@@ -112,7 +112,7 @@ async function main() {
   }
 
   if (args[0] === '--version' || args[0] === '-v') {
-    console.log(`prime v${VERSION}`);
+    console.log(`Kernary v${VERSION}`);
     process.exit(0);
   }
 

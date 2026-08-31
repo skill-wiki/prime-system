@@ -1,24 +1,31 @@
-# Prime System
+# Kernary
 
-Prime System is the domain-neutral protocol, compiler, runtime and SDK for
-model-driven knowledge engines.
+Kernary compiles domain models and corpora into versioned runtimes for agents.
+An agent can query an immutable snapshot, receive a constrained selection plan,
+and call policy-gated actions through an embedded SDK, MCP, or HTTP.
 
-It does **not** ship a production ontology or corpus. Atom kinds, fields,
-relations, projections, retrieval profiles, actions and validators come from an
-external Model Package; units and assets come from an external Corpus Package.
+Kernary does not ship a production ontology. Types, fields, relations,
+projections, retrieval profiles, actions, policies, and validators belong to an
+external Model Package. Units and assets belong to a Corpus Package. Ticket,
+Recipe, Security, and Frontend Design are examples built on the engine; none is
+built into Core.
 
 ```text
 Model Package + Corpus Package + Adapters
                     │
                     ▼
- parser → IR → compiler → immutable bundle
+        parser → IR → compiler → snapshot
                     │
-       query · constraint · action runtime
-                    │
-          MCP · HTTP · SDK · CLI
+          query plan      action plan
+                    │          │
+       constraints      policy + evidence
+                    └────┬─────┘
+                 SDK · MCP · HTTP
 ```
 
-## Install and verify
+## Verify the engine
+
+Kernary currently uses Bun for the workspace toolchain.
 
 ```bash
 bun install --frozen-lockfile
@@ -27,10 +34,15 @@ bun run test
 bun run build
 ```
 
-## Build an example
+The test suite loads several external models, including Ticket, Recipe, and
+Security. This is a conformance property: adding a domain type or relation must
+not require an engine change.
 
-The examples intentionally use small external models and corpora. The v1 model
-under `compat/` is a compatibility fixture, not Core schema.
+## Build the maintained example
+
+The repository still carries the `.prime` v1 compatibility syntax while the
+v0.2 package CLI is being consolidated. The maintained build entry point today
+is:
 
 ```bash
 bun scripts/build-atom-dirs.ts \
@@ -41,7 +53,11 @@ bun scripts/build-atom-dirs.ts \
   --release 2026-08-31
 ```
 
-Run the generic transport with an explicit bundle and model:
+The command emits an immutable bundle, `model.lock`, `_index.xml`, and
+`corpus.manifest.json`. `compat/prime-v1-model` owns the historical Atom schema;
+it is a compatibility Model Package, not Kernary Core.
+
+Start the generic MCP transport against that exact model and bundle:
 
 ```bash
 PRIME_DIR=examples/hello-world/primes/compiled \
@@ -49,40 +65,52 @@ PRIME_MODEL_DIR=compat/prime-v1-model \
 bun packages/mcp-server-core/src/index.ts
 ```
 
-## External declaration boundary
+`PRIME_*`, `.prime`, `prime/*`, the `prime` CLI alias, and the published
+`@skill-wiki/*` npm scope are compatibility identifiers. New documentation uses
+Kernary for the product. See the [naming ADR](docs/adr/0001-kernary-name-and-product-boundary.md)
+for the migration boundary.
 
-The engine fixes only the meta-schema, for example `TypeDefinitionSchema` and
-`RelationDefinitionSchema`. It does not enumerate domain types or verbs. Both of
-these parse and compile without an engine change when the loaded model declares
-them:
+## Package model
 
-```prime
-unit INC_42 : Ticket { title: "Database unavailable" }
-Widget DashboardCard { title: "Revenue" }
-```
+- **Model Package**: types, relations, projections, retrieval, functions,
+  actions, policies, validators, and migrations.
+- **Corpus Package**: units, assets, provenance, licence policy, and release
+  identity.
+- **Adapter Package**: external source or provider integration.
+- **Domain Package**: a deployable composition of a model, corpus, adapters,
+  tools, and optional Agent Skills.
 
-`compat/prime-v1-model` currently declares the historical 28 kinds and 14
-relations so older corpora can migrate. A new domain should own its model rather
-than editing that fixture.
+A Skill can explain how an Agent should use a Domain Package. It does not own
+schema, grant capabilities, or replace the SDK and transports.
+
+## Query and action are separate paths
+
+Query planning resolves candidates, features, hard and soft constraints,
+relation semantics, projection load order, and token budgets. A Selection Plan
+explains what the runtime selected and why.
+
+Actions use a separate authorization path. External writes require a declared
+Action, principal and capability checks, preflight, policy and human approval
+where required, idempotency, and append-only event evidence. Being able to read
+a unit never grants permission to change state.
 
 ## Packages
 
-- `model-schema`, `corpus-schema`: external package declarations and resolution
-- `parser`, `ir`, `compiler`, `bundle`: deterministic source-to-bundle pipeline
-- `runtime`, `query-engine`, `constraint-solver`, `projection-engine`
-- `action-runtime`, `policy-engine`, `evaluation-engine`, `event-store`
-- `sdk`, `sdk-codegen`, `language-server`, `plugin-host`
-- `mcp-server-core`, `http-server`, `cli`, `registry`, `observability`
-- `testkit`: model, corpus, bundle, wiring and invariant conformance
+- Declarations: `model-schema`, `corpus-schema`
+- Compile pipeline: `parser`, `ir`, `compiler`, `bundle`
+- Read path: `runtime`, `query-engine`, `constraint-solver`, `projection-engine`
+- Write path: `action-runtime`, `policy-engine`, `event-store`
+- Integration: `sdk`, `sdk-codegen`, `mcp-server-core`, `http-server`, `cli`
+- Tooling: `language-server`, `plugin-host`, `registry`, `observability`, `testkit`
 
-## Non-negotiable invariants
+## Documentation
 
-- Runtime loads compiled bundles only; it never compiles source on request.
-- Model and bundle digests are verified at boot.
-- Generated bundle files and locks are never edited by hand.
-- Selection does not grant action capabilities.
-- External writes require Action definitions, policy, preflight, idempotency and
-  event evidence.
-- Domain packages depend on Prime System; Prime System never imports a domain.
+- [Start here](docs/start/index.md)
+- [Package model](docs/concepts/package-model.md)
+- [Compilation and snapshots](docs/concepts/compilation-and-snapshots.md)
+- [Selection and execution](docs/concepts/selection-and-execution.md)
+- [Terminology](docs/style/terminology.md)
+- [Legacy Prime v1 specifications](spec/PRIME-PROTOCOL-v1.md)
 
-See the protocol and architecture material under `spec/` and `docs/`.
+Kernary is Apache-2.0 licensed. Current remote and npm names remain unchanged
+until their external rename and dual-publish steps are complete.

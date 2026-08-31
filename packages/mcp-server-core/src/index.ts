@@ -181,7 +181,7 @@ export function createPrimeMcpServer(options: PrimeMcpOptions): PrimeMcpInstance
   const loaded = loadCorpusSnapshot(options.primeDir, { requireManifest: options.requireManifest });
   verifyCorpusSignature(options.primeDir);
   for (const diagnostic of loaded.diagnostics) {
-    stderr.error(`[prime-mcp-core] ${diagnostic.severity} ${diagnostic.code}: ${diagnostic.message}`);
+    stderr.error(`[kernary-mcp] ${diagnostic.severity} ${diagnostic.code}: ${diagnostic.message}`);
   }
   const index = loadIndex(options.primeDir);
 
@@ -199,10 +199,10 @@ export function createPrimeMcpServer(options: PrimeMcpOptions): PrimeMcpInstance
       manifestSchemaDigest: loaded.manifest.schemaDigest,
     }),
   })) {
-    stderr.error(`[prime-mcp-core] ${diagnostic.severity} ${diagnostic.code}: ${diagnostic.message}`);
+    stderr.error(`[kernary-mcp] ${diagnostic.severity} ${diagnostic.code}: ${diagnostic.message}`);
   }
   stderr.error(
-    `[prime-mcp-core] model ${model.model.manifest.name}@${model.model.manifest.version} (${resolution.origin}) · ` +
+    `[kernary-mcp] model ${model.model.manifest.name}@${model.model.manifest.version} (${resolution.origin}) · ` +
       `profiles ${Object.keys(model.profiles).sort().join(",")} · projections ${model.catalog.profiles().join(",")}`,
   );
 
@@ -219,7 +219,7 @@ export function createPrimeMcpServer(options: PrimeMcpOptions): PrimeMcpInstance
     corpus: loaded.snapshot.corpus,
   });
   for (const diagnostic of corpus.diagnostics) {
-    stderr.error(`[prime-mcp-core] ${diagnostic.severity} ${diagnostic.code}: ${diagnostic.message}`);
+    stderr.error(`[kernary-mcp] ${diagnostic.severity} ${diagnostic.code}: ${diagnostic.message}`);
   }
 
   const identity: ResourceIdentity = {
@@ -244,7 +244,7 @@ export function createPrimeMcpServer(options: PrimeMcpOptions): PrimeMcpInstance
     maxTokens: readPositiveInt(environment[MAX_TOKENS_ENV], DEFAULT_MAX_TOKENS),
   };
 
-  const server = new McpServer({ name: "prime-mcp-core", version: "0.1.0" }, { capabilities: { tools: {} } });
+  const server = new McpServer({ name: "kernary-mcp", version: "0.2.0" }, { capabilities: { tools: {} } });
   // `registerTool` with an explicit `inputSchema` is the only form that both
   // advertises the parameters in `tools/list` and delivers parsed arguments to
   // the callback. The deprecated `tool(name, description, cb)` overload declares
@@ -321,16 +321,16 @@ export async function runStdioServer(environment: Record<string, string | undefi
     requireManifest: environment.PRIME_REQUIRE_MANIFEST === "1",
     environment,
   });
-  console.error(`[prime-mcp-core] ${instance.index.total} atoms · ${instance.index.totalTokens} tokens · snapshot ${instance.snapshot.corpus}@${instance.snapshot.release}`);
+  console.error(`[kernary-mcp] ${instance.index.total} units · ${instance.index.totalTokens} tokens · snapshot ${instance.snapshot.corpus}@${instance.snapshot.release}`);
   await instance.server.connect(new StdioServerTransport());
-  console.error(`[prime-mcp-core] ready · tools: prime_query, prime_plan, prime_resource · transport ${instance.serve.transport} · stdio active`);
+  console.error(`[kernary-mcp] ready · compatibility tools: prime_query, prime_plan, prime_resource · transport ${instance.serve.transport} · stdio active`);
 }
 
 const isEntrypoint = Boolean(process.argv[1]) && import.meta.url === pathToFileURL(resolveFsPath(process.argv[1])).href;
 if (isEntrypoint) {
   runStdioServer().catch((error) => {
     const code = typeof error === "object" && error !== null && "code" in error ? String((error as { code: unknown }).code) : "BOOT_FAILED";
-    console.error(`[prime-mcp-core] error ${code}: ${error instanceof Error ? error.message : String(error)}`);
+    console.error(`[kernary-mcp] error ${code}: ${error instanceof Error ? error.message : String(error)}`);
     process.exitCode = 1;
   });
 }

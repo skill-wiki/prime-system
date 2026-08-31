@@ -1,41 +1,38 @@
-# Skill Wiki 文档
+# Kernary 文档
 
-[English](../README.md) · [中文](./README.md)
+Kernary 是模型驱动的 Agent Knowledge Runtime。这里描述当前 v0.2 Package、
+Snapshot、Query 与 Action contract。
 
-类型化原子 · 边图 · 懒加载投影 —— AI 知识的协议层。
+## 开始
 
----
+- [构建知识 Runtime](../start/index.zh-CN.md)
+- [连接 Agent](../guides/connect-agent.zh-CN.md)
 
-## 入门
+## 核心概念
 
-- [getting-started](./getting-started.md) —— 从 `git clone` 到 agent 能查询的类型化 corpus，10 分钟跑通。
+- [Package 模型](../concepts/package-model.zh-CN.md)
+- [编译与 Snapshot](../concepts/compilation-and-snapshots.zh-CN.md)
+- [Selection 与 Execution](../concepts/selection-and-execution.zh-CN.md)
 
-## 概念
+## 构建与运维
 
-- [architecture](./concept/architecture.md) —— 流水线、分层、各 package：brief 怎么变成 context。
-- [philosophy](./concept/philosophy.md) —— 架构**为什么**长这样。
-- [comparison](./concept/comparison.md) —— Skill Wiki 与 RAG / Skills / fine-tuning 等方案的对比。
+- [Action 与 Policy](../guides/actions-and-policies.zh-CN.md)
+- [Release 与 Migration](../operations/releases-and-migrations.zh-CN.md)
+- [Kernary 外部名称迁移](../operations/kernary-name-migration.zh-CN.md)
 
-## 指南
+## Reference
 
-- [corpus-authoring](./guides/corpus-authoring.md) —— 端到端写一个自己的类型化 corpus。
-- [domain-extension](./guides/domain-extension.md) —— 在协议之上扩展新领域。
-- [mcp](./guides/mcp.md) —— 把 MCP server 接到 Claude Code、Cursor 或任何客户端。
+- [CLI 兼容面](reference/cli.md)
+- [MCP Transport](../reference/mcp-transport.zh-CN.md)
+- [HTTP 与 Registry](../reference/http-and-registry.zh-CN.md)
+- [术语表](../style/terminology.md)
 
-## 参考
+Engine 文档由本仓库拥有。Domain Package 自己拥有 Model、Corpus、Adapter、工具
+和 Case Study。网站只渲染所属仓库的版本化 Markdown，Owner Source 缺失时应
+Fail closed。
 
-- [cli](./reference/cli.md) —— 每个 `prime` 子命令和 flag。
-- [dsl-quickref](./reference/dsl-quickref.md) —— 28 种原子 kind 和 14 条边动词速查。
-- [registry](./reference/registry.md) —— 发布、版本管理、发现 corpus。
+旧 Skill Wiki 与 Prime v1 文档保存在 [`legacy/`](../legacy/)；它们只解释兼容
+标识和历史决策，不是当前产品 Contract。Lane 报告位于 `internal/`，不作为用户
+文档发布。
 
-## 社区
-
-- [roadmap](./community/roadmap.md) —— v0.2 及之后的规划。
-- [governance](./community/governance.md) —— RFC 分级、决策流程、投票规则。
-- [maintainers](./community/maintainers.md) —— 当前维护者与自荐路径。
-- [faq](./community/faq.md) —— 常见问题，包括 "这是 RAG 吗？"。
-- [known-issues](./community/known-issues.md) —— v0.1.0 当前的限制。
-
----
-
-另见：[协议规范 v1](../../spec/PRIME-PROTOCOL-v1.md) · [前端领域规范](../../spec/FRONTEND-DESIGN-DOMAIN-v1.md) · [仓库 README](../../README.zh-CN.md)。
+[English](../README.md)

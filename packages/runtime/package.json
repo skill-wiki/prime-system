@@ -1,7 +1,7 @@
 {
   "name": "@skill-wiki/runtime",
   "version": "0.2.0",
-  "description": "Immutable corpus-bundle activation, atom metadata reads and projection resolution",
+  "description": "Immutable Corpus snapshot activation, Unit metadata reads, and projection resolution",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "scripts": {

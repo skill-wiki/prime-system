@@ -1,0 +1,4 @@
+interface:
+  display_name: "Product Docs Editor"
+  short_description: "Write accurate, runnable Kernary product docs"
+  default_prompt: "Use $product-docs-editor to revise this Kernary documentation page from repository-owned facts."

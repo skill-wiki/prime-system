@@ -1,23 +1,28 @@
-# Prime System
+# Kernary
 
-Prime System 是领域无关的知识引擎协议、编译器、运行时与 SDK。
+Kernary 把领域模型和语料编译成供 Agent 使用的版本化 Runtime。Agent 可以
+查询不可变 Snapshot、获得带约束与依据的 Selection Plan，也可以通过 SDK、
+MCP 或 HTTP 调用经过 Policy 控制的 Action。
 
-它不内置生产本体和真实语料。类型、字段、关系、投影、检索策略、
-Action 与 Validator 由外部 Model Package 声明；数据单元和资产由外部
-Corpus Package 提供。
+引擎本身不附带生产 ontology。类型、字段、关系、投影、检索 Profile、
+Action、Policy 和 Validator 由外部 Model Package 定义；Unit 与资产属于
+Corpus Package。Ticket、Recipe、Security 和 Frontend Design 都是构建在
+Kernary 上的例子，不是 Core 内置 schema。
 
 ```text
 Model Package + Corpus Package + Adapters
                     │
                     ▼
- parser → IR → compiler → immutable bundle
+        parser → IR → compiler → snapshot
                     │
-       query · constraint · action runtime
-                    │
-          MCP · HTTP · SDK · CLI
+          query plan      action plan
+                    │          │
+       constraints      policy + evidence
+                    └────┬─────┘
+                 SDK · MCP · HTTP
 ```
 
-## 安装与验证
+## 验证引擎
 
 ```bash
 bun install --frozen-lockfile
@@ -26,9 +31,12 @@ bun run test
 bun run build
 ```
 
-## 示例编译
+测试会加载 Ticket、Recipe、Security 等互不相同的外部模型。这里要守住的
+不是某个领域用例，而是一个不变量：增加领域类型或关系不能要求修改引擎。
 
-`compat/prime-v1-model` 只是历史 v1 模型的兼容 fixture，不是 Core Schema。
+## 构建当前维护的示例
+
+v0.2 仍保留 `.prime` v1 兼容语法。当前维护的构建入口是：
 
 ```bash
 bun scripts/build-atom-dirs.ts \
@@ -39,33 +47,47 @@ bun scripts/build-atom-dirs.ts \
   --release 2026-08-31
 ```
 
+它会生成不可变 Bundle、`model.lock`、`_index.xml` 和
+`corpus.manifest.json`。`compat/prime-v1-model` 拥有历史 Atom schema；它是
+兼容 Model Package，不是 Kernary Core。
+
 ```bash
 PRIME_DIR=examples/hello-world/primes/compiled \
 PRIME_MODEL_DIR=compat/prime-v1-model \
 bun packages/mcp-server-core/src/index.ts
 ```
 
-## Schema 边界
+`PRIME_*`、`.prime`、`prime/*`、`prime` CLI alias 和已发布的
+`@skill-wiki/*` npm scope 都属于兼容标识。当前产品名统一使用 Kernary；
+迁移边界见[命名 ADR](docs/adr/0001-kernary-name-and-product-boundary.md)。
 
-引擎固定的是 `TypeDefinitionSchema`、`RelationDefinitionSchema` 等声明
-元协议，不枚举领域类型或关系。只要外部模型声明，下列新类型无需修改
-Parser/Compiler/Runtime：
+## Package 模型
 
-```prime
-unit INC_42 : Ticket { title: "Database unavailable" }
-Widget DashboardCard { title: "Revenue" }
-```
+- **Model Package**：类型、关系、投影、检索、Function、Action、Policy、
+  Validator 与 Migration。
+- **Corpus Package**：Unit、资产、来源、许可证策略和 Release identity。
+- **Adapter Package**：外部来源或 Provider 集成。
+- **Domain Package**：Model、Corpus、Adapter、工具和可选 Agent Skill 的组合。
 
-历史 28 kinds / 14 relations 仅存在于 `compat/prime-v1-model`。新领域应拥有
-自己的 Model Package，而不是修改兼容 fixture。
+Skill 可以说明 Agent 如何使用某个 Domain Package，但它不拥有 schema、
+不授予 capability，也不能替代 SDK 和 Transport。
 
-## 核心不变量
+## Query 与 Action 是两条路径
 
-- Runtime 只加载编译 Bundle，请求期不编译源文件。
-- 启动时严格核对 Model lock 与 Bundle digest。
-- Bundle、index、manifest、lock 都由工具原子生成，禁止手改。
-- Selection 不自动获得 Action 权限。
-- 外部写入必须经过 Action、Policy、Preflight、Idempotency 与 Event evidence。
-- 领域包可以依赖 Prime System；Prime System 不得反向依赖任何领域包。
+Query 负责 Candidate、Feature、硬软约束、Relation semantics、Projection
+load order 和 token budget。Selection Plan 说明选中了什么以及为什么。
 
-协议与架构说明见 `spec/`、`docs/`。
+Action 走独立授权路径。外部写入必须经过 Action 声明、Principal 与 Capability
+检查、Preflight、Policy、必要的人工审批、Idempotency 和追加式 Event evidence。
+能够读取 Unit，不代表能够修改外部状态。
+
+## 文档
+
+- [从这里开始](docs/start/index.zh-CN.md)
+- [Package 模型](docs/concepts/package-model.zh-CN.md)
+- [编译与 Snapshot](docs/concepts/compilation-and-snapshots.zh-CN.md)
+- [Selection 与 Execution](docs/concepts/selection-and-execution.zh-CN.md)
+- [术语表](docs/style/terminology.md)
+
+Kernary 使用 Apache-2.0。GitHub remote 与 npm scope 只有在外部改名和双发
+完成后才会更新；文档不会提前假装这些步骤已经发生。

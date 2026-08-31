@@ -1,0 +1,4 @@
+interface:
+  display_name: "Founder Prose"
+  short_description: "Write evidence-led Kernary essays in a human voice"
+  default_prompt: "Use $founder-prose to turn these real notes into a clear Kernary architecture narrative."

@@ -1,7 +1,7 @@
 {
   "name": "@skill-wiki/types",
   "version": "0.2.0",
-  "description": "Core type definitions for the Prime Language system",
+  "description": "Compatibility source and AST types for the Kernary engine",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "scripts": {

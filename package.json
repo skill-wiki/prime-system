@@ -1,25 +1,25 @@
 {
-  "name": "skill-wiki",
+  "name": "kernary-engine",
   "version": "0.2.0",
-  "description": "Skill Wiki — typed atoms, edge graph, lazy projection. Like Wikipedia, but for AI agents.",
+  "description": "Kernary — a model-driven knowledge runtime for agents.",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/skill-wiki/skill-wiki",
+  "homepage": "https://github.com/skill-wiki/prime-system",
   "repository": {
     "type": "git",
-    "url": "https://github.com/skill-wiki/skill-wiki.git"
+    "url": "https://github.com/skill-wiki/prime-system.git"
   },
   "bugs": {
-    "url": "https://github.com/skill-wiki/skill-wiki/issues"
+    "url": "https://github.com/skill-wiki/prime-system/issues"
   },
   "keywords": [
-    "skill-wiki",
+    "kernary",
     "prime",
     "knowledge-protocol",
     "ai-agents",
     "mcp",
     "claude",
-    "atoms",
-    "knowledge-graph"
+    "model-driven",
+    "knowledge-runtime"
   ],
   "private": true,
   "workspaces": [

@@ -114,8 +114,8 @@ describe("the query path emits the spans Phase 5 asks for", () => {
     const h = harness();
     await h.handler(post("/v1/query", query(h.profile), PUBLIC_TOKEN));
     const payload = toOtlpTracePayload(h.sink.all(), {
-      resource: { attributes: { "service.name": "prime-http-server" } },
-      scope: { name: "prime-http-server", version: "0.1.0" },
+      resource: { attributes: { "service.name": "kernary-http-server" } },
+      scope: { name: "kernary-http-server", version: "0.2.0" },
     });
     const scopeSpans = payload.resourceSpans[0]!.scopeSpans[0]!;
     expect(scopeSpans.spans).toHaveLength(h.sink.all().length);

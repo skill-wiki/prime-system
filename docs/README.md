@@ -1,41 +1,42 @@
-# Skill Wiki Documentation
+# Kernary documentation
 
-[English](./README.md) · [中文](./zh-CN/README.md)
+Kernary is a model-driven knowledge runtime for Agents. These pages describe the
+current v0.2 package, snapshot, query, and action contracts.
 
-Typed atoms, edge graph, lazy projection — a protocol layer for AI knowledge.
+## Start
 
----
+- [Build a knowledge runtime](start/index.md)
+- [Connect an Agent](guides/connect-agent.md)
 
-## Getting started
+## Core concepts
 
-- [getting-started](./getting-started.md) — `git clone` to a typed corpus your agent can query, in 10 minutes.
+- [Package model](concepts/package-model.md)
+- [Compilation and snapshots](concepts/compilation-and-snapshots.md)
+- [Selection and execution](concepts/selection-and-execution.md)
 
-## Concept
+## Build and operate
 
-- [architecture](./concept/architecture.md) — pipeline, layers, packages: how a brief becomes context.
-- [philosophy](./concept/philosophy.md) — *why* the architecture has these shapes.
-- [comparison](./concept/comparison.md) — Skill Wiki vs. RAG / Skills / fine-tuning / etc.
-
-## Guides
-
-- [corpus-authoring](./guides/corpus-authoring.md) — write your own typed corpus end-to-end.
-- [domain-extension](./guides/domain-extension.md) — add a new domain on top of the protocol.
-- [mcp](./guides/mcp.md) — wire the MCP server into Claude Code, Cursor, or any client.
+- [Actions and policies](guides/actions-and-policies.md)
+- [Releases and migrations](operations/releases-and-migrations.md)
+- [Kernary external name migration](operations/kernary-name-migration.md)
 
 ## Reference
 
-- [cli](./reference/cli.md) — every `prime` subcommand and flag.
-- [dsl-quickref](./reference/dsl-quickref.md) — the 28 atom kinds and 14 edge verbs.
-- [registry](./reference/registry.md) — publish, version, and discover corpora.
+- [CLI compatibility](reference/cli.md)
+- [MCP transport](reference/mcp-transport.md)
+- [HTTP and Registry](reference/http-and-registry.md)
+- [Terminology](style/terminology.md)
+- [Naming and product boundary ADR](adr/0001-kernary-name-and-product-boundary.md)
 
-## Community
+## Content ownership
 
-- [roadmap](./community/roadmap.md) — what's planned for v0.2 and beyond.
-- [governance](./community/governance.md) — RFC tiers, decision process, voting.
-- [maintainers](./community/maintainers.md) — current maintainers and self-nomination path.
-- [faq](./community/faq.md) — common questions, including "is this RAG?".
-- [known-issues](./community/known-issues.md) — current limitations of v0.1.0.
+This repository owns engine documentation. A Domain Package owns its model,
+corpus, adapters, tools, and case study. The website renders versioned Markdown
+from each owning repository and must fail when an owner source is missing.
 
----
+Old Skill Wiki and Prime v1 documentation is preserved under [legacy](legacy/).
+It explains compatibility identifiers and historical decisions; it is not the
+current product contract. Engineering lane reports are under [internal](internal/)
+and are not published as user documentation.
 
-See also: [Protocol Spec v1](../spec/PRIME-PROTOCOL-v1.md) · [Frontend Domain Spec](../spec/FRONTEND-DESIGN-DOMAIN-v1.md) · [repository README](../README.md).
+[中文](zh-CN/README.md)

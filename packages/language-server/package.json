@@ -1,7 +1,7 @@
 {
   "name": "@skill-wiki/language-server",
   "version": "0.2.0",
-  "description": "Prime Language Server — editor-time document store, diagnostics and completion (plan §14). Toolchain only; never builds a runtime bundle.",
+  "description": "Kernary Language Server for editor diagnostics and completion; it never builds a runtime snapshot",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "scripts": {
