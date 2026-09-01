@@ -158,7 +158,7 @@ bun packages/cli/src/index.ts --version
 
 ### Build and mount the smallest example
 
-The engine repository carries compatibility examples so that the full path is
+The engine repository carries small example packages so that the full path is
 easy to inspect. They are not built-in Core ontology:
 
 ```bash
@@ -179,8 +179,9 @@ PRIME_MODEL_DIR=compat/prime-v1-model \
 bun packages/mcp-server-core/src/index.ts
 ```
 
-The `PRIME_*` environment names and `prime` command are compatibility aliases;
-new integrations should call the product Kernary.
+The MCP entry point reads the mounted Corpus and Model paths from its environment
+configuration. New integrations should use the `kernary` CLI and the package
+contracts documented below.
 
 ## Author a domain without changing the engine
 
@@ -227,9 +228,9 @@ The workspace is organized by contract, not by a single framework package:
 | Integration | `sdk`, `sdk-codegen`, `mcp-server-core`, `http-server`, `cli` | Expose the same contracts to hosts |
 | Extension / quality | `plugin-host`, `registry`, `observability`, `evaluation-engine`, `testkit`, `language-server` | Host adapters, distribution, telemetry, evaluation, tooling |
 
-The workspace package names still use the published `@skill-wiki/*` scope for
-compatibility and dual-publish migration. That scope is a package namespace,
-not the product name.
+The workspace packages are implementation modules for Kernary. Their names are
+listed here so a host can choose the layer it needs; domain users normally
+depend on the SDK or a transport rather than importing every module.
 
 ## Security and reproducibility invariants
 

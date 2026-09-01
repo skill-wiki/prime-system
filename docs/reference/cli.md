@@ -1,44 +1,75 @@
-# CLI compatibility
+# Kernary CLI
 
-`kernary` is the preferred command in v0.2. The published compatibility package
-also installs `prime`; both binaries execute the same entry point.
+The `kernary` command is the fastest way to inspect a Model Package, build a
+Corpus Package, run diagnostics, and exercise an Action locally.
 
 ```text
-kernary v0.2.0 — model-driven ontology engine for agents and applications
+kernary v0.2.0 — model-driven ontology engine
 
 Usage: kernary <command> [options]
 ```
 
-## Current commands
+Run `kernary --help` for the installed command surface. Subcommands also expose
+their own help and exit codes.
 
-| Group | Commands |
+## Commands at a glance
+
+| Goal | Commands |
 |---|---|
-| Author and check | `init`, `compile`, `check`, `test`, `graph` |
-| Legacy Skill composition | `decompose`, `compose` |
-| Local package data | `list`, `show`, `deps`, `install` |
-| Compatibility registry | `publish`, `publish-marketplace`, `search`, `info`, `ls` |
-| Bundle diagnostics | `doctor` |
-| Actions and runs | `action preflight`, `action run`, `run inspect`, `run replay` |
-| Editor toolchain | `lsp diagnostics`, `lsp completion` |
+| Start or author a package | `init`, `compile`, `check`, `graph` |
+| Inspect package data | `list`, `show`, `deps`, `install` |
+| Publish and discover packages | `publish`, `search`, `info`, `ls` |
+| Inspect a snapshot | `doctor` |
+| Test actions and runs | `action preflight`, `action run`, `run inspect`, `run replay` |
+| Work from an editor | `lsp diagnostics`, `lsp completion` |
+| Decompose existing guidance | `decompose`, `compose` |
 
-Run `kernary --help` and the relevant subcommand help for the authoritative
-syntax. Some subcommand messages still print the `prime` alias while their v0.2
-help is migrated; scripts should accept both binaries during this window.
+## A typical local workflow
 
-## Important limits
+```bash
+# inspect a model and source package
+kernary check ./my-domain/model
+kernary deps ./my-domain/model
 
-- `compile <file>` is the compatibility single-source command. Maintained corpus
-  releases use their owning package build script so model, corpus identity,
-  release date, signing, and strict verification stay bound together.
-- The CLI does not replace the Query Engine. Generic runtime queries are exposed
-  through SDK, MCP, and HTTP.
-- `lsp` provides editor diagnostics and completion. It does not build a runtime
-  bundle in the editor process.
-- Publication changes an external registry. Run it only after conformance,
-  signing, and explicit release authorization.
+# compile the corpus with its model and release identity
+kernary compile ./my-domain/corpus/sources/incident.prime \
+  --output ./build/incident --dir --bundle
 
-## Compatibility identifiers
+# verify the generated snapshot before mounting it
+kernary doctor --dir ./build/my-domain --strict-manifest
+```
 
-`.prime`, `PRIME_*`, `prime/*`, `prime.dev`, `.primes/`, and `@skill-wiki/*`
-appear in the current command surface. They do not make Prime the product name.
-Each changes only through a versioned migration or verified external rename.
+Maintained Domain Packages may wrap these steps in a package-specific build
+script when they need custom adapters, signing, or evaluation gates.
+
+## Diagnostics and exit codes
+
+`doctor` reports the snapshot identity, active/deprecated Unit counts, token
+totals, and every diagnostic. `--json` is intended for CI:
+
+```bash
+kernary doctor --dir ./build/my-domain --strict-manifest --json
+```
+
+The command exits non-zero when the bundle is missing, its manifest does not
+match the index or content, or a required Model Package cannot be loaded.
+
+## Editor support
+
+The `lsp` commands provide diagnostics and completion for Model and Corpus
+declarations. They read the package that you point them at; they do not invent
+domain fields and they do not build a runtime bundle inside the editor process.
+
+## Query and Action boundaries
+
+The CLI can inspect and exercise a package, but the generic Query Engine and
+Action Runtime remain the same libraries used by the SDK, MCP, and HTTP
+transports. Use those integrations when an application needs a long-running
+server, tenant context, policy providers, or event evidence.
+
+## Publication
+
+`publish` changes an external package registry. Run it only after declaration
+conformance, bundle verification, signing, and release review have passed.
+The registry stores package metadata and immutable release references; it does
+not change the Model or Corpus semantics.

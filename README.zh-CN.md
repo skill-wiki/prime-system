@@ -152,7 +152,7 @@ bun packages/cli/src/index.ts --version
 
 ### 构建并挂载最小示例
 
-Engine 仓库保留了用于检查完整链路的兼容示例。它们不是 Core 内置 ontology：
+Engine 仓库保留了用于检查完整链路的小型示例 Package。它们不是 Core 内置 ontology：
 
 ```bash
 bun scripts/build-atom-dirs.ts \
@@ -172,7 +172,8 @@ PRIME_MODEL_DIR=compat/prime-v1-model \
 bun packages/mcp-server-core/src/index.ts
 ```
 
-`PRIME_*` 环境变量和 `prime` 命令是兼容别名；新的集成文档统一使用 Kernary。
+MCP 入口从环境配置读取挂载的 Corpus 与 Model 路径。新的集成应使用 `kernary`
+CLI 以及下方文档中的 Package contract。
 
 ## 不改引擎，编写自己的领域
 
@@ -217,8 +218,8 @@ Workspace 按契约组织，而不是按某个框架堆成一个大包：
 | Integration | `sdk`、`sdk-codegen`、`mcp-server-core`、`http-server`、`cli` | 向宿主暴露同一套契约 |
 | Extension / Quality | `plugin-host`、`registry`、`observability`、`evaluation-engine`、`testkit`、`language-server` | Adapter、分发、观测、评估与工具 |
 
-Workspace 包目前仍使用已发布的 `@skill-wiki/*` scope，以便完成兼容和双发迁移。
-这是 Package namespace，不是产品名称。
+Workspace 中列出的 Package 是 Kernary 的实现模块；领域使用者通常依赖 SDK 或
+Transport，不需要直接引入所有模块。
 
 ## 安全与可复现性不变量
 

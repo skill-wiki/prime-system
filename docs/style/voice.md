@@ -17,7 +17,7 @@ language.
 - Tutorial and guide: the reader is doing something now; show prerequisites,
   commands, success, and recovery.
 - Concept and ADR: explain the mental model, trade-offs, and durable boundary.
-- Reference: signatures, fields, defaults, errors, compatibility; no story arc.
+- Reference: signatures, fields, defaults, and errors; no story arc.
 - Release note and essay: first person is allowed for real choices and evidence.
 
 ## Bilingual writing
@@ -33,5 +33,5 @@ second technical vocabulary.
 2. Which repository or command owns every changing fact?
 3. Is a domain example being presented as a Core rule?
 4. Can every command run, and what visible result proves success?
-5. Does the page say what is still legacy, unavailable, or pending publication?
+5. Does the page say what is unavailable or pending publication?
 6. Can a paragraph be removed without losing a decision or instruction?

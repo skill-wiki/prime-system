@@ -18,15 +18,13 @@ current v0.2 package, snapshot, query, and action contracts.
 
 - [Actions and policies](guides/actions-and-policies.md)
 - [Releases and migrations](operations/releases-and-migrations.md)
-- [Kernary external name migration](operations/kernary-name-migration.md)
 
 ## Reference
 
-- [CLI compatibility](reference/cli.md)
+- [CLI](reference/cli.md)
 - [MCP transport](reference/mcp-transport.md)
 - [HTTP and Registry](reference/http-and-registry.md)
 - [Terminology](style/terminology.md)
-- [Naming and product boundary ADR](adr/0001-kernary-name-and-product-boundary.md)
 
 ## Content ownership
 
@@ -34,9 +32,8 @@ This repository owns engine documentation. A Domain Package owns its model,
 corpus, adapters, tools, and case study. The website renders versioned Markdown
 from each owning repository and must fail when an owner source is missing.
 
-Old Skill Wiki and Prime v1 documentation is preserved under [legacy](legacy/).
-It explains compatibility identifiers and historical decisions; it is not the
-current product contract. Engineering lane reports are under [internal](internal/)
-and are not published as user documentation.
+Historical decisions are preserved under [legacy](legacy/). Engineering lane
+reports are under [internal](internal/) and are not published as user
+documentation. Neither directory is part of the current product guide.
 
 [中文](zh-CN/README.md)

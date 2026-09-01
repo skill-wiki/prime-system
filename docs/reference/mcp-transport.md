@@ -1,8 +1,8 @@
 # MCP transport
 
-`@skill-wiki/mcp-server-core` is the currently published compatibility package
-for Kernary's generic MCP transport. It mounts one compiled snapshot and its
-exact Model Package.
+Kernary's MCP transport exposes a compiled Model + Corpus snapshot to any MCP
+client. It is a thin transport: the Model Package owns domain vocabulary and the
+Query/Action runtimes own semantics.
 
 ```bash
 PRIME_DIR=/absolute/path/to/corpus/dist \
@@ -10,21 +10,29 @@ PRIME_MODEL_DIR=/absolute/path/to/model \
 bun packages/mcp-server-core/src/index.ts
 ```
 
-The environment names and `prime_*` tool prefix remain stable during v0.2.
+## Core tools
 
-## Tools
-
-- `prime_query` runs a model-declared Retrieval Profile and returns selected
+- `prime_query` runs the Model-declared retrieval profile and returns selected
   projections plus the decisions that produced them.
 - `prime_plan` returns the same selection arithmetic without rendering
   projections.
-- `prime_resource` reads one exact projection through the runtime instead of
-  asking the Agent to interpret a path.
+- `prime_resource` resolves one exact projection URI through the Runtime.
 
-All three tools have explicit input schemas. A request without a retrieval
-signal, an unavailable profile SPI, a visibility violation, a missing
-projection, or a model/bundle identity mismatch returns a refusal or diagnostic;
-it is not converted into a zero-result success.
+All tools advertise explicit input schemas. Requests fail loudly when the
+retrieval signal is missing, a profile provider is unavailable, a projection is
+unknown, visibility is denied, or the Model and Bundle identities disagree.
+Returning an empty list would hide a deployment error, so it is not used as a
+fallback.
 
-Domain Packages may expose additional model-projected tools. Those tools compose
-the generic runtime; they do not replace it or add their schema to Core.
+## Mounting more than one corpus
+
+An embedded host can create one server per mounted snapshot or compose the
+snapshots through the SDK/HTTP host. Keep tenant, workspace, corpus, release,
+and model identity explicit in the host configuration; do not infer them from a
+directory basename.
+
+## Domain tools
+
+A Domain Package may add Model-projected tools for its own providers. Those tools
+call the same Runtime and policy boundaries; they do not replace the generic
+query/resource tools or move domain schema into Core.

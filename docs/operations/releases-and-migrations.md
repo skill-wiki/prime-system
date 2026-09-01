@@ -26,12 +26,8 @@ Activate by pointing a runtime instance at a verified immutable directory. Do
 not compile over the active release. Keep the previous snapshot addressable so a
 rollback is a binding change, not a reverse mutation of generated files.
 
-## Migrate
+## Migrate a model
 
 A migration belongs to the Model Package and names its source and target model
 versions. Run it against source or a migration workspace, build a new snapshot,
 and compare inventories and identities before activation.
-
-The Kernary brand migration does not rewrite `.prime`, `prime/*`, corpus IDs,
-GitHub remotes, or npm package scopes by implication. Those identifiers change
-only through a versioned migration or an externally verified rename.

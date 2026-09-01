@@ -25,10 +25,7 @@ bun run smoke
 Release。保留上一 Snapshot 的地址，使 Rollback 只是 Binding 变化，而不是反向
 修改生成物。
 
-## 迁移
+## 迁移 Model
 
 Migration 属于 Model Package，并声明源与目标模型版本。先在 Source 或迁移
 Workspace 上执行，构建新 Snapshot，比较 Inventory 与 Identity，再激活。
-
-Kernary 品牌迁移不会隐式改写 `.prime`、`prime/*`、Corpus ID、GitHub remote 或
-npm scope。这些标识只有在版本化 Migration 或已验证的外部 Rename 后才变化。

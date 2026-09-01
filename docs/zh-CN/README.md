@@ -18,7 +18,6 @@ Snapshot、Query 与 Action contract。
 
 - [Action 与 Policy](../guides/actions-and-policies.zh-CN.md)
 - [Release 与 Migration](../operations/releases-and-migrations.zh-CN.md)
-- [Kernary 外部名称迁移](../operations/kernary-name-migration.zh-CN.md)
 
 ## Reference
 
@@ -31,8 +30,7 @@ Engine 文档由本仓库拥有。Domain Package 自己拥有 Model、Corpus、A
 和 Case Study。网站只渲染所属仓库的版本化 Markdown，Owner Source 缺失时应
 Fail closed。
 
-旧 Skill Wiki 与 Prime v1 文档保存在 [`legacy/`](../legacy/)；它们只解释兼容
-标识和历史决策，不是当前产品 Contract。Lane 报告位于 `internal/`，不作为用户
-文档发布。
+历史材料保存在 [`legacy/`](../legacy/)；Lane 报告位于 `internal/`，都不属于当前
+产品指南，也不会作为用户文档发布。
 
 [English](../README.md)

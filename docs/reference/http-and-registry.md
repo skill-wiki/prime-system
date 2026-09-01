@@ -1,29 +1,50 @@
 # HTTP and Registry
 
-The HTTP server delegates snapshot, plan, query, and resource operations to the
-same engine transport used by the SDK. It adds network-boundary concerns, not
-domain semantics.
+Use the HTTP transport when an Agent, web application, or service needs to use
+Kernary from another process. Use a Registry when teams need to discover and
+distribute the packages that make up a domain.
 
-## HTTP security contract
+## HTTP service
+
+The server exposes the same contract as the embedded SDK:
+
+```text
+health · snapshot · plan · query · resource
+                         │
+                 preflight · execute · events
+```
+
+It delegates Model and Corpus semantics to the Engine. A handwritten domain
+route is not required for each new package.
+
+### Security defaults
 
 - Every route except `/healthz` requires a bearer credential.
-- The server derives the principal from that credential. A request body cannot
-  choose its own principal.
-- The server binds loopback by default. Non-loopback exposure requires an
-  explicit acknowledgement.
-- TLS termination, rate limiting, and deployment request-size limits belong in
-  the surrounding infrastructure and must be configured for remote use.
+- The principal comes from that credential; a request body cannot choose it.
+- The server binds to loopback by default.
+- Non-loopback exposure requires an explicit acknowledgement.
+- TLS termination, rate limiting, request-size limits, and network policy belong
+  in the surrounding deployment infrastructure.
 
-The package exposes health, snapshot, plan, query, and single-projection resource
-operations. Action and event capabilities use the SDK/action runtime contracts;
-do not add a handwritten domain route.
+Before exposing the service remotely, bind authentication to a Request Context
+with tenant and workspace identity. Register only the Action providers that the
+deployment is prepared to authorize and observe.
 
-## Registry
+## Registry service
 
-The Registry discovers and distributes Model, Corpus, Adapter, Domain, and Plugin
-Packages. A registry record must preserve package kind, version, digest,
-compatibility, provenance, and signature metadata.
+A Registry is a catalogue and distribution point for:
 
-The current remote and `@skill-wiki/*` package names are compatibility locations.
-Documentation must not claim a `kernary.dev` registry or `@kernary/*` publication
-until those external services exist and a round-trip publish/install check passes.
+- Model Packages;
+- Corpus Packages;
+- Adapter Packages;
+- Domain Packages;
+- Plugin Packages.
+
+Each record should include package kind, name, version, digest, provenance,
+licence, visibility, and signature metadata. Installation resolves an immutable
+release; it must not rewrite the package's Model or Corpus semantics.
+
+The static website currently provides package discovery and source links. A
+hosted Registry is a separately deployed service that implements this contract.
+The [package model](../concepts/package-model.md) explains which data belongs in
+each package before it is published.

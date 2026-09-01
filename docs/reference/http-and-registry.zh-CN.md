@@ -1,25 +1,46 @@
 # HTTP 与 Registry
 
-HTTP Server 把 Snapshot、Plan、Query 与 Resource 操作委托给 SDK 使用的同一
-Engine Transport。它只增加网络边界问题，不增加领域语义。
+当 Agent、Web 应用或服务需要跨进程使用 Kernary 时，使用 HTTP Transport；当多个
+团队需要发现和分发组成领域的 Package 时，使用 Registry。
 
-## HTTP 安全 Contract
+## HTTP Service
 
-- 除 `/healthz` 外的 Route 都需要 Bearer credential。
-- Server 从 Credential 推导 Principal；Request body 不能选择自己的 Principal。
-- 默认只绑定 Loopback；暴露到非 Loopback 地址需要显式确认。
-- 远程部署的 TLS termination、Rate limiting 与 Request-size limit 属于外围
-  Infrastructure，必须另行配置。
+HTTP 与 Embedded SDK 暴露同一套契约：
 
-Package 暴露 Health、Snapshot、Plan、Query 与单 Projection Resource 操作。
-Action 和 Event 使用 SDK/Action Runtime contract；不要新增手写领域 Route。
+```text
+health · snapshot · plan · query · resource
+                         │
+                 preflight · execute · events
+```
 
-## Registry
+Server 把 Model 与 Corpus 语义交给 Engine，不需要为每个新 Package 手写一套领域
+Route。
 
-Registry 发现和分发 Model、Corpus、Adapter、Domain 与 Plugin Package。Record
-需要保留 Package kind、Version、Digest、Compatibility、Provenance 与 Signature
-metadata。
+### 安全默认值
 
-当前 Remote 与 `@skill-wiki/*` 名称都是兼容位置。在外部服务真实存在并且
-Publish/Install round-trip 通过前，文档不能宣称 `kernary.dev` Registry 或
-`@kernary/*` 已发布。
+- 除 `/healthz` 外的 Route 都需要 Bearer credential；
+- Principal 来自 Credential，Request body 不能自行指定 Principal；
+- Server 默认只绑定 Loopback；
+- 暴露到非 Loopback 地址需要显式确认；
+- TLS termination、Rate limit、Request-size limit 和 Network policy 属于外围部署。
+
+远程暴露前，请把 Authentication 绑定到带 Tenant/Workspace identity 的 Request
+Context，并且只注册已经准备好授权和观测的 Action Provider。
+
+## Registry Service
+
+Registry 是以下 Package 的目录和分发入口：
+
+- Model Package；
+- Corpus Package；
+- Adapter Package；
+- Domain Package；
+- Plugin Package。
+
+每条记录应包含 Package kind、name、version、digest、provenance、license、visibility
+和 signature metadata。安装过程解析不可变 Release，不应该重写 Package 的 Model 或
+Corpus 语义。
+
+当前静态网站提供 Package 发现与 Source 链接；托管 Registry 是单独部署的服务，
+实现这套契约。发布前请先阅读 [Package 模型](../concepts/package-model.zh-CN.md)，
+确认每项数据应该属于哪一类 Package。

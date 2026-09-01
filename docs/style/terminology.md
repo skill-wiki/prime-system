@@ -17,23 +17,16 @@ Use these terms consistently in current documentation.
 | Execution Plan | Preflighted action effects and required approvals |
 | Action | Model-declared, policy-gated operation |
 
-## Compatibility terms
+## Use these distinctions
 
-- **Prime**: use only for the `.prime` format, `prime/*` protocol identifiers,
-  the legacy CLI alias, or a named historical document.
-- **Skill Wiki**: use only for the former brand, current unrenamed remote/npm
-  location, or a redirect source.
-- **Atom**: use when a specific external model or v1 compatibility model declares
-  it. Core operates on Unit IR.
-- **Skill**: use for an optional Agent-facing workflow, never as the engine's
-  schema or universal package unit.
-- **Registry**: the discovery and distribution service for model, corpus,
-  adapter, domain, and plugin packages. Do not call every entry a Prime.
+- **Unit** is the neutral runtime item. A Model Package may give a Unit a more
+  specific type name; Core does not need to know that name in advance.
+- **Skill** is an optional Agent-facing workflow. It is not a schema, a package
+  boundary, or an authorization mechanism.
+- **Registry** is the discovery and distribution service for Model, Corpus,
+  Adapter, Domain, and Plugin Packages.
+- **Domain Package** is the product boundary that a reader or Agent installs;
+  Engine packages are its implementation layers.
 
-## Avoid in current guides
-
-- “28 kinds” or “14 verbs” without naming the v1 compatibility model.
-- `domain.yaml` as the current extension mechanism.
-- Frontend Design's retrieval axes or tools as generic runtime behavior.
-- “MCP-native” when the same engine also supports embedded SDK and HTTP.
-- “production-ready” without a named release support policy.
+Avoid presenting one example domain's type counts, retrieval axes, or tools as
+universal behavior. State the owning Package when a detail is domain-specific.
