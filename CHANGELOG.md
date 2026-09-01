@@ -1,7 +1,7 @@
 # Changelog
 
-All notable changes to the Skill Wiki / Prime **system** repo. Corpus
-Domain Packages (e.g. `kernary-frontend-design`) maintain their own changelogs.
+All notable changes to the AOE / Prime **system** repo. Corpus
+Domain Packages (e.g. `aoe-frontend-design`) maintain their own changelogs.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project aspires to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -49,7 +49,7 @@ Initial release.
 - `packages/cli/` — `prime` command with verbs: `init`, `compile`, `check`,
   `ls`, `show`, `graph`, `deps`, `publish`, `install`, `mcp`.
 - `packages/mcp-server-core/` — ~200-line generic MCP server exposing one
-  tool, `prime_query`, over any compiled corpus.
+  tool, `aoe_query`, over any compiled corpus.
 - `spec/PRIME-PROTOCOL-v1.md` — protocol specification, v1.0.
 - `spec/FRONTEND-DESIGN-DOMAIN-v1.md` — frontend-design domain wrapper spec.
 - `examples/hello-world/` — 5-atom corpus demonstrating the round-trip
@@ -68,7 +68,7 @@ Initial release.
 ### Decisions
 
 - **Two-repo split.** System repo (this) carries protocol only.
-  Frontend-design Domain Package (`kernary-frontend-design`) carries the legacy 899-unit corpus +
+  Frontend-design Domain Package (`aoe-frontend-design`) carries the legacy 899-unit corpus +
   domain-specific intent / retrieval / composition / validator-html /
   5-tool MCP wrapper.
 - **License: Apache-2.0.** Patent grant explicit. NOTICE preserved across
@@ -90,5 +90,5 @@ Initial release.
 
 ---
 
-[Unreleased]: https://github.com/skill-wiki/kernary-engine/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/skill-wiki/kernary-engine/releases/tag/v0.1.0
+[Unreleased]: https://github.com/kernary-aoe/aoe-engine/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/kernary-aoe/aoe-engine/releases/tag/v0.1.0

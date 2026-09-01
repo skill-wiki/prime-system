@@ -9,7 +9,7 @@
  * it silently widening every query's recall.
  */
 
-import type { GraphIR, SelectionCandidateIR } from "@skill-wiki/ir";
+import type { GraphIR, SelectionCandidateIR } from "@aoe/ir";
 import { compareStrings, orderedRecord, quantize } from "../deterministic.ts";
 import type { CandidateGenerator, GeneratorContext, QueryRequest } from "../types.ts";
 

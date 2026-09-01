@@ -8,7 +8,7 @@
  * non-match, not a fault.
  */
 
-import type { TypedValueIR, ValueIR } from "@skill-wiki/ir";
+import type { TypedValueIR, ValueIR } from "@aoe/ir";
 
 /**
  * Resolve a field path to the values it addresses. Arrays are traversed rather

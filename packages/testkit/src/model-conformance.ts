@@ -1,8 +1,8 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-import { applyMigration, loadModel, rollbackMigration, type ActionDefinition, type FunctionDefinition, type LoadedModel, type MigrationDefinition, type ModelDefinition, type ProjectionDefinition, type RelationDefinition, type RetrievalProfile, type TypeDefinition } from "@skill-wiki/model-schema";
-import { assertSchemaDigestSelfConsistent, generateSdk } from "@skill-wiki/sdk-codegen";
+import { applyMigration, loadModel, rollbackMigration, type ActionDefinition, type FunctionDefinition, type LoadedModel, type MigrationDefinition, type ModelDefinition, type ProjectionDefinition, type RelationDefinition, type RetrievalProfile, type TypeDefinition } from "@aoe/model-schema";
+import { assertSchemaDigestSelfConsistent, generateSdk } from "@aoe/sdk-codegen";
 import { defaultRendererSections, type RendererSections } from "./renderer-sections.ts";
 import { check, finding, formatReport, report, skipped, type CheckOutcome, type Finding, type SuiteReport } from "./diagnostics.ts";
 
@@ -293,7 +293,7 @@ export interface ModelConformanceOptions {
  *
  * The scratch directory has to live inside this package rather than under
  * `os.tmpdir()`, because the generated `types.ts` and `client.ts` both import
- * `@skill-wiki/sdk`, and module resolution has to be able to walk up from the
+ * `@aoe/sdk`, and module resolution has to be able to walk up from the
  * artifacts to `packages/testkit/node_modules`.
  */
 function sdkCompileCheck(model: LoadedModel): CheckOutcome {

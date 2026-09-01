@@ -19,7 +19,7 @@
  */
 import { existsSync, readFileSync, readdirSync, statSync } from "fs";
 import { join, basename } from "path";
-import { loadCorpusSnapshot, loadIndex, loadAtomMeta } from "@skill-wiki/runtime";
+import { loadCorpusSnapshot, loadIndex, loadAtomMeta } from "@aoe/runtime";
 import { buildCorpusGraph } from "./corpus-graph";
 import {
   buildDiagnosticsDocument,

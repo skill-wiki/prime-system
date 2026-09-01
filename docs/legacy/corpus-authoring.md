@@ -178,7 +178,7 @@ $ vim sources/@me/method-render-bacon.prime
 $ prime compile sources/@me/method-render-bacon.prime --dir --output ./compiled
 
 # Query (via the generic MCP server)
-$ AOE_CORPUS_DIR=$(pwd)/compiled bunx @prime-lang/mcp-server-core &
+$ AOE_CORPUS_DIR=$(pwd)/compiled bunx @aoe/mcp-server-core &
 $ # ... ask Claude Code about "rendering bacon"
 $ # ... or use the CLI:
 $ prime show @me/method-render-bacon
@@ -271,7 +271,7 @@ corpus repo uses for its five-tool wrapper.
 To start the core server today, use the real command:
 
 ```bash
-AOE_CORPUS_DIR=/abs/path/to/compiled bunx @prime-lang/mcp-server-core
+AOE_CORPUS_DIR=/abs/path/to/compiled bunx @aoe/mcp-server-core
 ```
 
 Or in `.mcp.json`:
@@ -281,7 +281,7 @@ Or in `.mcp.json`:
   "mcpServers": {
     "skill-wiki": {
       "command": "bunx",
-      "args": ["@prime-lang/mcp-server-core"],
+      "args": ["@aoe/mcp-server-core"],
       "env": { "AOE_CORPUS_DIR": "/abs/path/to/compiled" }
     }
   }

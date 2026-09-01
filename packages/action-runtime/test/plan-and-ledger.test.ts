@@ -2,8 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadModelOrThrow } from "@skill-wiki/model-schema";
-import type { SnapshotRef } from "@skill-wiki/ir";
+import { loadModelOrThrow } from "@aoe/model-schema";
+import type { SnapshotRef } from "@aoe/ir";
 import {
   ActionProviderRegistry,
   ActionRuntime,
@@ -30,7 +30,7 @@ function runtimeFor(changes: (action: any) => void = () => {}, extra: Record<str
 
 /**
  * A ledger whose records survive the object that wrote them. It is deliberately
- * not `@skill-wiki/event-store`: the assertion under test is that the runtime's
+ * not `@aoe/event-store`: the assertion under test is that the runtime's
  * conflict check now lives behind the `IdempotencyLedger` boundary rather than in
  * a field of the runtime, and a file is enough to prove a claim outlives a
  * process. The durable backends' own restart guarantee is asserted in

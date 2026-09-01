@@ -12,8 +12,8 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { loadModelOrThrow } from "@skill-wiki/model-schema";
-import { loadCorpus, runCorpusConformance, type GoldenQuery, type GoldenQueryObservation } from "@skill-wiki/testkit";
+import { loadModelOrThrow } from "@aoe/model-schema";
+import { loadCorpus, runCorpusConformance, type GoldenQuery, type GoldenQueryObservation } from "@aoe/testkit";
 import { planSelection } from "../src/index.ts";
 import { DOMAINS, loadDomainPackage, ordinaryPrincipal } from "./support/domains.ts";
 import type { GoldenObservation } from "./support/golden.ts";

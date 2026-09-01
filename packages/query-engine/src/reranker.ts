@@ -48,8 +48,8 @@
  * total would disagree about the same candidate.
  */
 
-import type { DiagnosticIR, SelectionCandidateIR } from "@skill-wiki/ir";
-import type { RetrievalProfile } from "@skill-wiki/model-schema";
+import type { DiagnosticIR, SelectionCandidateIR } from "@aoe/ir";
+import type { RetrievalProfile } from "@aoe/model-schema";
 import { compareStrings, quantize } from "./deterministic.ts";
 import { diagnostic, fail, QueryEngineError } from "./types.ts";
 

@@ -1,4 +1,4 @@
-import type { PolicyDecision } from "@skill-wiki/policy-engine";
+import type { PolicyDecision } from "@aoe/policy-engine";
 import { EvaluationProviderError, type EvaluationProvider, type EvaluationProviderRegistry, type EvaluationRequestContext, type Evidence } from "./providers.ts";
 import type { EvaluationCheck, EvaluationSeverity, EvaluationSuite } from "./schema.ts";
 

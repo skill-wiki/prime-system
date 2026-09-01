@@ -20,8 +20,8 @@
  * `FEATURE_AXIS_NOT_APPLICABLE` (a request shape).
  */
 
-import type { DiagnosticIR, SelectionCandidateIR } from "@skill-wiki/ir";
-import type { RetrievalProfile } from "@skill-wiki/model-schema";
+import type { DiagnosticIR, SelectionCandidateIR } from "@aoe/ir";
+import type { RetrievalProfile } from "@aoe/model-schema";
 import { canonicalStrings, compareByScoreThenId, orderedRecord, quantize, sortedKeys } from "./deterministic.ts";
 import { linearScore } from "./reranker.ts";
 import type { CandidateGenerator } from "./types.ts";

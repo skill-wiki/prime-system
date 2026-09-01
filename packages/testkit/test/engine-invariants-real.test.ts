@@ -2,18 +2,18 @@ import { expect, test } from "bun:test";
 import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { GraphEdgeIR, RelationDefIR, SnapshotRef, UnitIR } from "@skill-wiki/ir";
-import { solve, type SolveRequest } from "@skill-wiki/constraint-solver";
-import { ProjectionPathError, redactUnitFields, requireBundlePath, resolveBundlePath, type RedactionPolicy } from "@skill-wiki/projection-engine";
-import { MemoryEventStore, toScope, type PersistableRun, type RunScopeSource } from "@skill-wiki/event-store";
-import { finalizeCorpusBundle, type BundleManifestMetadata, type CorpusIndexEntry } from "@skill-wiki/bundle";
-import { loadCorpusSnapshot, PrimeBundleError, SUPPORTED_CORPUS_IR_VERSION, CORPUS_INDEX_FILE, CORPUS_MANIFEST_FILE, type PrimeBundleErrorCode } from "@skill-wiki/runtime";
+import type { GraphEdgeIR, RelationDefIR, SnapshotRef, UnitIR } from "@aoe/ir";
+import { solve, type SolveRequest } from "@aoe/constraint-solver";
+import { ProjectionPathError, redactUnitFields, requireBundlePath, resolveBundlePath, type RedactionPolicy } from "@aoe/projection-engine";
+import { MemoryEventStore, toScope, type PersistableRun, type RunScopeSource } from "@aoe/event-store";
+import { finalizeCorpusBundle, type BundleManifestMetadata, type CorpusIndexEntry } from "@aoe/bundle";
+import { loadCorpusSnapshot, PrimeBundleError, SUPPORTED_CORPUS_IR_VERSION, CORPUS_INDEX_FILE, CORPUS_MANIFEST_FILE, type PrimeBundleErrorCode } from "@aoe/runtime";
 import { runEngineInvariants, type EngineHarness } from "../src/engine-invariants.ts";
 import { canonicalJson } from "../src/corpus.ts";
 
 /**
  * §17.3 bound to the three implementations that actually landed. The suite in
- * `src/` stays black-box; the bindings live here, so `@skill-wiki/testkit` does
+ * `src/` stays black-box; the bindings live here, so `@aoe/testkit` does
  * not become a dependent of every engine package.
  *
  * Neutral names throughout: `t-1`, `rel-x`, `label-a`. A binding that had to
@@ -61,7 +61,7 @@ function selectedIds(request: SolveRequest): readonly string[] {
 }
 
 const constraintSolverHarness: EngineHarness = {
-  name: "@skill-wiki/constraint-solver",
+  name: "@aoe/constraint-solver",
   deterministicPlanning: {
     request: { requestId: EXCLUSION_REQUEST.requestId },
     plan: () => { const r = solve(EXCLUSION_REQUEST); return r.ok ? r.plan : { unsat: true }; },
@@ -97,7 +97,7 @@ function observableValues(policy: RedactionPolicy): readonly string[] {
 }
 
 const projectionEngineHarness: EngineHarness = {
-  name: "@skill-wiki/projection-engine",
+  name: "@aoe/projection-engine",
   acl: {
     request: { unitId: "u-secret" },
     deniedPrincipal: "principal-without-clearance",
@@ -128,7 +128,7 @@ function eventStoreHarness(): EngineHarness {
   const applied = new Set<string>();
 
   return {
-    name: "@skill-wiki/event-store",
+    name: "@aoe/event-store",
     snapshotIsolation: {
       open: () => currentSnapshot,
       mutate: () => { currentSnapshot += 1; seed(currentSnapshot); },
@@ -229,7 +229,7 @@ function bundleIntegrityHarness(roots: string[]): EngineHarness {
   roots.push(valid, tampered);
   rewriteManifest(tampered, m => { m.contentDigest = flipDigest(String(m.contentDigest)); });
   return {
-    name: "@skill-wiki/bundle + @skill-wiki/runtime",
+    name: "@aoe/bundle + @aoe/runtime",
     bundleIntegrity: { validDescriptor: { root: valid }, tamperedDescriptor: { root: tampered }, load: loadBundle },
   };
 }

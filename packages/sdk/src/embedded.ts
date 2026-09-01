@@ -18,16 +18,16 @@
  * adapter out of the MCP package for exactly this reason.
  */
 
-import type { SelectionPlanIR, SnapshotRef, ValueIR } from "@skill-wiki/ir";
+import type { SelectionPlanIR, SnapshotRef, ValueIR } from "@aoe/ir";
 import {
   planSelection,
   type CandidateGeneratorRegistry,
   type QueryEngineContext,
   type QueryRequest,
-} from "@skill-wiki/query-engine";
-import type { ActionRun, EffectPlan, EventRecord } from "@skill-wiki/action-runtime";
-import { NOOP_TRACER, withSpan, type SpanContext, type Tracer } from "@skill-wiki/observability";
-import type { ActionRuntime } from "@skill-wiki/action-runtime";
+} from "@aoe/query-engine";
+import type { ActionRun, EffectPlan, EventRecord } from "@aoe/action-runtime";
+import { NOOP_TRACER, withSpan, type SpanContext, type Tracer } from "@aoe/observability";
+import type { ActionRuntime } from "@aoe/action-runtime";
 import {
   SdkError,
   type ActionRequest,

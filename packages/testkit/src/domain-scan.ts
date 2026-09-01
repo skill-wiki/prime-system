@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, existsSync, lstatSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { parse } from "yaml";
 import { z } from "zod";
-import type { LoadedModel } from "@skill-wiki/model-schema";
+import type { LoadedModel } from "@aoe/model-schema";
 import { check, finding, type CheckOutcome, type Finding, type Severity } from "./diagnostics.ts";
 
 /**
@@ -365,7 +365,7 @@ function declaredEntries(packageDir: string): readonly string[] {
 /**
  * Static-import closure of a package's entry points.
  *
- * Deliberately follows only relative specifiers: a `@skill-wiki/x` import crosses
+ * Deliberately follows only relative specifiers: a `@aoe/x` import crosses
  * into another package, and that package is walked from its own entry, so the
  * closure never has to model workspace resolution.
  *

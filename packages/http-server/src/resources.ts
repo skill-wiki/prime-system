@@ -25,8 +25,8 @@
  * layer to reach `UnitIR`; see the lane report.
  */
 
-import type { UnitIR, ValueIR } from "@skill-wiki/ir";
-import { admit, type Principal, type QueryEngineContext, type QueryRequest } from "@skill-wiki/query-engine";
+import type { UnitIR, ValueIR } from "@aoe/ir";
+import { admit, type Principal, type QueryEngineContext, type QueryRequest } from "@aoe/query-engine";
 
 export interface ResourceDescriptor {
   readonly corpus: string;

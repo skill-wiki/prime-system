@@ -17,12 +17,12 @@ import type {
   SnapshotRef,
   TypedValueIR,
   UnitIR,
-} from "@skill-wiki/ir";
+} from "@aoe/ir";
 import type {
   ProjectionDefinition,
   RelationDefinition,
   RetrievalProfile,
-} from "@skill-wiki/model-schema";
+} from "@aoe/model-schema";
 
 const loc = { line: 1, column: 1, offset: 0 } as const;
 

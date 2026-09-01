@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { DeterministicExpressionProvider, EvaluationEngine, EvaluationProviderRegistry, EvaluationSuiteSchema } from "@skill-wiki/evaluation-engine";
-import { loadModelOrThrow, type ActionDefinition, type LoadedModel } from "@skill-wiki/model-schema";
-import { PolicyEngine, PolicySetSchema } from "@skill-wiki/policy-engine";
+import { DeterministicExpressionProvider, EvaluationEngine, EvaluationProviderRegistry, EvaluationSuiteSchema } from "@aoe/evaluation-engine";
+import { loadModelOrThrow, type ActionDefinition, type LoadedModel } from "@aoe/model-schema";
+import { PolicyEngine, PolicySetSchema } from "@aoe/policy-engine";
 import { ActionProviderRegistry, ActionRuntime, type RuntimeOptions } from "../src/index.ts";
 
 const base = loadModelOrThrow(new URL("../../model-schema/test/fixtures/ticket-model", import.meta.url).pathname);

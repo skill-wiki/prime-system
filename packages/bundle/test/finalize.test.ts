@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadCorpusSnapshot, PrimeBundleError } from "@skill-wiki/runtime";
+import { loadCorpusSnapshot, PrimeBundleError } from "@aoe/runtime";
 import { finalizeCorpusBundle } from "../src/index";
 
 const digest = (x: string) => `sha256:${createHash("sha256").update(x).digest("hex")}`;

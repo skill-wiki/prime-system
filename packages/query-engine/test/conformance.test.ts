@@ -8,7 +8,7 @@
  */
 
 import { describe, expect, test } from "bun:test";
-import type { GraphIR, SelectionPlanIR } from "@skill-wiki/ir";
+import type { GraphIR, SelectionPlanIR } from "@aoe/ir";
 import { planSelection, type QueryRequest } from "../src/index.ts";
 import {
   anyPrincipal,

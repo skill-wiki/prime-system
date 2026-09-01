@@ -7,7 +7,7 @@
  * facet matters — that is what the profile weight is for.
  */
 
-import type { GraphIR, SelectionCandidateIR } from "@skill-wiki/ir";
+import type { GraphIR, SelectionCandidateIR } from "@aoe/ir";
 import { compareStrings, orderedRecord, quantize } from "../deterministic.ts";
 import { describeFacet, matchedFacets } from "../facets.ts";
 import type { CandidateGenerator, GeneratorContext, QueryRequest } from "../types.ts";

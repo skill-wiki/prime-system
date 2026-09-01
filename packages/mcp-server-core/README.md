@@ -1,13 +1,13 @@
 # AOE MCP transport
 
-`@skill-wiki/mcp-server-core` provides AOE's Agent Ontology Engine transport. It
+`@aoe/mcp-server-core` provides AOE's Agent Ontology Engine transport. It
 mounts a compiled Corpus snapshot and
 the exact external Model Package bound by `model.lock`.
 
 ```bash
 AOE_CORPUS_DIR=/absolute/path/to/corpus/dist \
 AOE_MODEL_DIR=/absolute/path/to/model \
-bunx @skill-wiki/mcp-server-core
+bunx @aoe/mcp-server-core
 ```
 
 The package installs the `aoe-mcp` executable. Environment variables and tool

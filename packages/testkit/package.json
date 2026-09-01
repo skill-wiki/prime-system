@@ -1,28 +1,28 @@
 {
-  "name": "@skill-wiki/testkit",
+  "name": "@aoe/testkit",
   "version": "0.2.0",
   "description": "Domain-agnosticism conformance suites: model, corpus, engine invariants, and a zero-domain-semantics scanner",
   "main": "src/index.ts",
   "types": "src/index.ts",
-  "bin": { "prime-testkit": "src/cli.ts" },
+  "bin": { "aoe-testkit": "src/cli.ts" },
   "scripts": { "test": "bun test", "typecheck": "tsc --noEmit -p tsconfig.json" },
   "license": "Apache-2.0",
   "dependencies": {
-    "@skill-wiki/corpus-schema": "workspace:*",
-    "@skill-wiki/ir": "workspace:*",
-    "@skill-wiki/model-schema": "workspace:*",
-    "@skill-wiki/parser": "workspace:*",
-    "@skill-wiki/runtime": "workspace:*",
-    "@skill-wiki/sdk": "workspace:*",
-    "@skill-wiki/sdk-codegen": "workspace:*",
-    "@skill-wiki/types": "workspace:*",
+    "@aoe/corpus-schema": "workspace:*",
+    "@aoe/ir": "workspace:*",
+    "@aoe/model-schema": "workspace:*",
+    "@aoe/parser": "workspace:*",
+    "@aoe/runtime": "workspace:*",
+    "@aoe/sdk": "workspace:*",
+    "@aoe/sdk-codegen": "workspace:*",
+    "@aoe/types": "workspace:*",
     "yaml": "^2.8.3",
     "zod": "^4.0.0"
   },
   "devDependencies": {
-    "@skill-wiki/bundle": "workspace:*",
-    "@skill-wiki/constraint-solver": "workspace:*",
-    "@skill-wiki/event-store": "workspace:*",
-    "@skill-wiki/projection-engine": "workspace:*"
+    "@aoe/bundle": "workspace:*",
+    "@aoe/constraint-solver": "workspace:*",
+    "@aoe/event-store": "workspace:*",
+    "@aoe/projection-engine": "workspace:*"
   }
 }

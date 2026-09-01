@@ -54,7 +54,7 @@
 
 ```typescript
 // 之前（v0.0.x）— 已移除
-import { FRONTEND_DESIGN_DOMAIN, createDefaultDomainRegistry } from "@prime-lang/runtime";
+import { FRONTEND_DESIGN_DOMAIN, createDefaultDomainRegistry } from "@aoe/runtime";
 const registry = createDefaultDomainRegistry();
 ```
 
@@ -62,7 +62,7 @@ const registry = createDefaultDomainRegistry();
 
 ```typescript
 // 之后（v0.1.0+）— 从语料库的 domain.yaml 加载
-import { loadDomainFromFile, DomainRegistry, registerAll } from "@prime-lang/runtime";
+import { loadDomainFromFile, DomainRegistry, registerAll } from "@aoe/runtime";
 const registry = new DomainRegistry();
 registerAll(registry, [
   loadDomainFromFile("./corpora/frontend-design/domain.yaml"),
@@ -72,7 +72,7 @@ registerAll(registry, [
 或使用便捷工厂：
 
 ```typescript
-import { createConfigDrivenRegistry } from "@prime-lang/runtime";
+import { createConfigDrivenRegistry } from "@aoe/runtime";
 // 扫描 cwd/corpora/** 下的 domain.yaml 文件（深度 ≤ 4）
 const registry = createConfigDrivenRegistry();
 ```
@@ -569,7 +569,7 @@ export const MAX_DISCOVERY_DEPTH = 4;
 ### 5.3 环境变量覆盖
 
 ```
-PRIME_DOMAINS_DIR=/path/to/my/corpora prime query "..."
+PRIME_DOMAINS_DIR=/path/to/my/corpora aoe query "..."
 ```
 
 当 `PRIME_DOMAINS_DIR` 已设置时：
@@ -859,7 +859,7 @@ my-project/
   CLAUDE.md
 ```
 
-从 `my-project/` 运行 `prime query "how do I make a pan sauce"` 时，加载两个领域并返回烹饪偏置的结果。询问 `"cite-style for judicial opinions"` 时，返回法律偏置的结果。
+从 `my-project/` 运行 `aoe query "how do I make a pan sauce"` 时，加载两个领域并返回烹饪偏置的结果。询问 `"cite-style for judicial opinions"` 时，返回法律偏置的结果。
 
 ### 带 domains/ 子目录的语料库包
 

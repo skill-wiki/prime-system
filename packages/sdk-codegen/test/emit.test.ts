@@ -6,7 +6,7 @@
 
 import { describe, expect, test } from "bun:test";
 import { resolve } from "node:path";
-import { loadModelOrThrow } from "@skill-wiki/model-schema";
+import { loadModelOrThrow } from "@aoe/model-schema";
 import {
   buildCodegenSchema,
   camelCase,

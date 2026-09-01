@@ -11,7 +11,7 @@ import { resolve as resolvePath, basename, join } from 'path';
 import { header, success, error, warn, info, diagnosticLine, createSpinner, bold, green, yellow, red, gray } from '../utils/display';
 import { fileExists } from '../utils/fs';
 
-import { compileSource, type PipelinePhaseEvent } from '@skill-wiki/compiler';
+import { compileSource, type PipelinePhaseEvent } from '@aoe/compiler';
 
 const PHASE_LABEL: Record<PipelinePhaseEvent['phase'], string> = {
   parse: 'Phase 1: Parsing...',

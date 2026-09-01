@@ -35,7 +35,7 @@ The repo ships three example corpora. The smallest is
 `examples/hello-world/` — five atoms about boiling water and making tea.
 
 ```bash
-git clone https://github.com/skill-wiki/prime-system.git
+git clone https://github.com/kernary-aoe/prime-system.git
 cd prime-system
 bun install        # or npm/pnpm install
 bun run build      # compiles all 7 packages
@@ -125,7 +125,7 @@ servers):
   "mcpServers": {
     "skill-wiki": {
       "command": "bunx",
-      "args": ["@prime-lang/mcp-server-core"],
+      "args": ["@aoe/mcp-server-core"],
       "env": { "AOE_CORPUS_DIR": "/abs/path/to/your/compiled" }
     }
   }
@@ -186,7 +186,7 @@ retrieval, HTML output validator) are specific to that domain and not
 part of the protocol.
 
 ```bash
-git clone https://github.com/skill-wiki/prime-corpus-frontend.git
+git clone https://github.com/kernary-aoe/prime-corpus-frontend.git
 cd prime-corpus-frontend
 bun install
 bun run build           # compiles the 899 atoms
@@ -195,7 +195,7 @@ AOE_CORPUS_DIR=compiled bun ../prime-system/packages/mcp-server-core/src/index.t
 
 This corpus has its own MCP wrapper (5 tools instead of 1, with intent
 classification and 6-axis retrieval). See
-[the corpus repo's README](https://github.com/skill-wiki/prime-corpus-frontend)
+[the corpus repo's README](https://github.com/kernary-aoe/prime-corpus-frontend)
 for the wired-up integration.
 
 ---
@@ -205,7 +205,7 @@ for the wired-up integration.
 | Symptom | Cause | Fix |
 |---|---|---|
 | `Unknown option: --experimental-transform-types` | Node version too old | Upgrade to Node 22+ |
-| `Cannot find module '@prime-lang/types'` | Packages not built | Run `bun run build` from repo root |
+| `Cannot find module '@aoe/types'` | Packages not built | Run `bun run build` from repo root |
 | `parse error: unexpected token at line 12` | Syntax error in .prime file | Run `prime check <file>` for the precise location |
 | `unresolved reference: @example/foo` | Atom ID typo or atom not in corpus | Check the `id:` line in the target atom; ensure file is in the source dir |
 | `[L3] cycle detected: A → B → A` | Two atoms `requires` each other | Pick one direction; replace the other with `enhances` |

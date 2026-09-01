@@ -115,4 +115,4 @@ mounting a release:
 
 For the publication workflow, read [Compilation and snapshots](./compilation-and-snapshots.md).
 For a working external package, see the
-[Frontend Design Domain Package](https://github.com/skill-wiki/kernary-frontend-design).
+[Frontend Design Domain Package](https://github.com/kernary-aoe/aoe-frontend-design).

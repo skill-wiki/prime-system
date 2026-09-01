@@ -1,6 +1,6 @@
 # Recipes — Cooking Knowledge Corpus
 
-> Fifteen atoms across eight kinds. Proof that Skill Wiki works for any domain.
+> Fifteen atoms across eight kinds. Proof that AOE works for any domain.
 
 This corpus encodes practical cooking knowledge as typed atoms with a real edge graph.
 It is deliberately cross-domain from the frontend corpus — the same DSL, same edge verbs,
@@ -136,7 +136,7 @@ making it a good entry point for graph traversal.
 
 ```bash
 cd examples/recipes
-prime compile primes/sources --out primes/compiled
+aoe compile primes/sources --out primes/compiled
 # [build] parsing 15 .prime files...
 # [build] resolving edges... 31 edges across 15 atoms
 # [build] L1 checks: PASS
@@ -147,9 +147,9 @@ prime compile primes/sources --out primes/compiled
 List by kind:
 
 ```bash
-prime ls --kind fact
-prime ls --kind rule
-prime ls --kind method
+aoe ls --kind fact
+aoe ls --kind rule
+aoe ls --kind method
 ```
 
 ---
@@ -159,13 +159,13 @@ prime ls --kind method
 **Get the pan sauce method in full:**
 
 ```bash
-prime show @recipes/method-pan-sauce --level full
+aoe show @recipes/method-pan-sauce --level full
 ```
 
 **Traverse what method-pan-sauce depends on:**
 
 ```bash
-prime deps @recipes/method-pan-sauce
+aoe deps @recipes/method-pan-sauce
 # requires: @recipes/fact-maillard-reaction-temperature
 # requires: @recipes/fact-emulsion-temperature-window
 # requires: @recipes/rule-rest-meat-after-cooking
@@ -175,16 +175,16 @@ prime deps @recipes/method-pan-sauce
 **Find the anti-pattern for a given mistake:**
 
 ```bash
-prime query "pan too crowded" --kind anti-pattern
+aoe query "pan too crowded" --kind anti-pattern
 # matched: @recipes/anti-pattern-overcrowded-pan (full)
 ```
 
 **Boot the MCP server:**
 
 ```bash
-PRIME_DIR=$(pwd)/primes/compiled bun ../../packages/mcp-server-core/src/index.ts
-# [prime-mcp-core] 15 atoms · ... tokens · ... clusters
-# [prime-mcp-core] ready · tool: prime_query · stdio transport active
+AOE_CORPUS_DIR=$(pwd)/primes/compiled bun ../../packages/mcp-server-core/src/index.ts
+# [aoe-mcp-core] 15 atoms · ... tokens · ... clusters
+# [aoe-mcp-core] ready · tool: aoe_query · stdio transport active
 ```
 
 ---

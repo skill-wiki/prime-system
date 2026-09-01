@@ -1,6 +1,6 @@
 /**
  * @module resolver
- * Dependency resolver for Prime compilation.
+ * Dependency resolver for AOE compilation.
  *
  * Responsibilities:
  * - Build dependency graph from use[] and links[]
@@ -20,7 +20,7 @@ import type {
   LinkShorthandNode,
   ObjectNode,
   FieldNode,
-} from "@skill-wiki/types";
+} from "@aoe/types";
 import type {
   Diagnostic,
   InstalledPrime,
@@ -39,7 +39,7 @@ function isPrimeAST(ast: AnyAST): ast is PrimeAST {
 // ─── Internal Types ────────────────────────────────────────────────────────
 
 interface RawDependency {
-  /** Target Prime identifier */
+  /** Target AOE identifier */
   to: string;
   /** Relationship type */
   type: string;
@@ -295,9 +295,9 @@ export interface ResolveResult {
 }
 
 /**
- * Resolve the dependency graph for a Prime AST.
+ * Resolve the dependency graph for a AOE AST.
  *
- * @param ast - The parsed Prime AST (root node to resolve)
+ * @param ast - The parsed AOE AST (root node to resolve)
  * @param installedPrimes - Map of all installed Primes
  * @param relations - Relation semantics, read from the model package. Defaults
  *   to the v1 compatibility model; pass a different index to resolve against a
@@ -419,7 +419,7 @@ export function resolve(
         // Recursively resolve transitive dependencies
         if (!visited.has(dep.to) && !excludes) {
           visited.add(dep.to);
-          // If the installed Prime has its own AST, extract its dependencies
+          // If the installed AOE has its own AST, extract its dependencies
           if (installed.ast) {
             const transitiveDeps = extractDependencies(installed.ast as PrimeAST, relations, reportUnresolvableUse);
             queue.push({ name: dep.to, deps: transitiveDeps });

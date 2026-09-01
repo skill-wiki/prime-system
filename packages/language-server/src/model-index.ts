@@ -3,11 +3,11 @@
  * §14.2 `ModelResolver` + `SemanticIndex`, for the model side.
  *
  * The Language Server knows no type names and no field names of its own — every
- * one comes from a Model Package loaded through `@skill-wiki/model-schema`
+ * one comes from a Model Package loaded through `@aoe/model-schema`
  * (plan §3.1 / ADR-1). Nothing in this file may name a domain concept.
  */
 
-import { loadModel, type Diagnostic as ModelDiagnostic, type LoadedModel, type TypeDefinition } from "@skill-wiki/model-schema";
+import { loadModel, type Diagnostic as ModelDiagnostic, type LoadedModel, type TypeDefinition } from "@aoe/model-schema";
 
 export type ModelState =
   | { readonly kind: "none" }

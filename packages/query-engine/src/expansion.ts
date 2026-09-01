@@ -19,8 +19,8 @@
  * declared traversal — would make `traversal: one-hop` unenforceable.
  */
 
-import type { ConflictSeverityIR, DiagnosticIR, RelationExpansionIR } from "@skill-wiki/ir";
-import type { RelationDefinition } from "@skill-wiki/model-schema";
+import type { ConflictSeverityIR, DiagnosticIR, RelationExpansionIR } from "@aoe/ir";
+import type { RelationDefinition } from "@aoe/model-schema";
 import type { Adjacency } from "./adjacency.ts";
 import { compareStrings } from "./deterministic.ts";
 
@@ -146,7 +146,7 @@ export function expandSelection(
 
       if (loadOrder !== "none") {
         for (const id of admitted) {
-          // The direction convention now lives on `LoadOrderIR` in `@skill-wiki/ir`
+          // The direction convention now lives on `LoadOrderIR` in `@aoe/ir`
           // (coordinator decision D-7): for an edge `origin -> id`, `before` means
           // the target loads before the origin.
           orderConstraints.push(

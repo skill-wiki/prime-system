@@ -12,7 +12,7 @@
  * ambiguous, and an ambiguous key is a cross-tenant collision.
  */
 
-import type { SnapshotRef } from "@skill-wiki/ir";
+import type { SnapshotRef } from "@aoe/ir";
 
 export interface CacheScope {
   readonly tenant: string;

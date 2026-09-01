@@ -12,8 +12,8 @@ import {
   ActionRuntime,
   InMemoryEventStore,
   type RequestContext,
-} from "@skill-wiki/action-runtime";
-import { loadModelOrThrow } from "@skill-wiki/model-schema";
+} from "@aoe/action-runtime";
+import { loadModelOrThrow } from "@aoe/model-schema";
 import { createEmbeddedTransport, AoeClient } from "../src/index.ts";
 import { loadEngineContext, MODEL_ROOT, registry, SNAPSHOT } from "./support/host.ts";
 

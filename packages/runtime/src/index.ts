@@ -1,5 +1,5 @@
 /**
- * @module @skill-wiki/runtime
+ * @module @aoe/runtime
  * Immutable corpus-bundle loading and projection resolution.
  *
  * Components:
@@ -21,12 +21,12 @@
  *
  * `domain-plugin` / `domain-config` (DomainRegistry, discoverDomains, AxisDef, …) went the
  * same way, for the same reason plus a harder one: they were this package's only
- * `@skill-wiki/types` importers and they walked `PrimeAST.body` as `FieldNode[]` to read
+ * `@aoe/types` importers and they walked `PrimeAST.body` as `FieldNode[]` to read
  * `domain:` and `tags:`. That is the exact SyntaxAST leak plan §7.1 forbids Runtime to have
  * ("Runtime 只能读取 ArtifactIR"), and Phase 2 acceptance names it: "Runtime 包不 import
  * Parser AST". They had zero consumers outside this package's own tests, so there was no
  * behaviour to preserve — the `domain.yaml` axis/tag vocabulary they loaded is now declared
- * by a Model Package (`@skill-wiki/model-schema`: TypeDefinition, RetrievalProfileSchema),
+ * by a Model Package (`@aoe/model-schema`: TypeDefinition, RetrievalProfileSchema),
  * which is where §4.2 puts it. Rewriting them onto UnitIR would have kept a second,
  * unreachable narrowing implementation alive.
  */

@@ -9,8 +9,8 @@
  * the two would make a `sideEffects: none` action write to the filesystem.
  */
 
-import type { ActionProvider, RequestContext } from '@skill-wiki/action-runtime';
-import type { ActionDefinition, LoadedModel, TypeDefinition } from '@skill-wiki/model-schema';
+import type { ActionProvider, RequestContext } from '@aoe/action-runtime';
+import type { ActionDefinition, LoadedModel, TypeDefinition } from '@aoe/model-schema';
 import type { AuditedCorpus } from './corpus';
 import { runAudit, type AuditFindings, type AuditMetrics } from './checks';
 

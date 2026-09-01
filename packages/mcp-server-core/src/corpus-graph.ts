@@ -1,9 +1,9 @@
 /**
  * The v1 atom-directory bundle, read as the IR the generic engines consume.
  *
- * `@skill-wiki/runtime` hands us `GlobalIndexAtom` (from `_index.xml`) and
- * `AtomMeta` (from `atom.yaml`); `@skill-wiki/query-engine` and
- * `@skill-wiki/projection-engine` consume `UnitIR`/`GraphIR`. Nothing in the repo
+ * `@aoe/runtime` hands us `GlobalIndexAtom` (from `_index.xml`) and
+ * `AtomMeta` (from `atom.yaml`); `@aoe/query-engine` and
+ * `@aoe/projection-engine` consume `UnitIR`/`GraphIR`. Nothing in the repo
  * bridged the two, so this module is that bridge and nothing else: it performs no
  * ranking, no filtering and no policy.
  *
@@ -24,7 +24,7 @@ import type {
   TypedValueIR,
   UnitIR,
   ValueIR,
-} from "@skill-wiki/ir";
+} from "@aoe/ir";
 
 /** The metadata shape this adapter needs, structurally satisfied by `AtomMeta`. */
 export interface AtomMetaLike {

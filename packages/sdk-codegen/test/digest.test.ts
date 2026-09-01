@@ -8,9 +8,9 @@
 
 import { describe, expect, test } from "bun:test";
 import { join, resolve } from "node:path";
-import { loadModelOrThrow, type LoadedModel, type ModelDefinition } from "@skill-wiki/model-schema";
-import { assertGeneratedArtifactUsable, ModelDigestMismatchError, parseGeneratedArtifactHeader } from "@skill-wiki/sdk";
-import type { SchemaIR, SnapshotRef } from "@skill-wiki/ir";
+import { loadModelOrThrow, type LoadedModel, type ModelDefinition } from "@aoe/model-schema";
+import { assertGeneratedArtifactUsable, ModelDigestMismatchError, parseGeneratedArtifactHeader } from "@aoe/sdk";
+import type { SchemaIR, SnapshotRef } from "@aoe/ir";
 import {
   assertSchemaDigestSelfConsistent,
   buildCodegenSchema,
@@ -89,7 +89,7 @@ describe("a mismatched digest is refused, at both ends of the contract", () => {
     const generated = generateSdk(model);
     const header = parseGeneratedArtifactHeader({
       protocol: "prime/generated/v1",
-      generator: "@skill-wiki/sdk-codegen",
+      generator: "@aoe/sdk-codegen",
       model: { name: model.manifest.name, version: model.manifest.version, digest: generated.modelDigest },
     });
     // Same header, matching snapshot: allowed.

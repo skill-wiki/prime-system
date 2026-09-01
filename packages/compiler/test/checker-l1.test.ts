@@ -4,7 +4,7 @@
 
 import { describe, test, expect } from "bun:test";
 import { checkL1 } from "../src/checker-l1";
-import type { PrimeAST, StepNode, FieldNode, ArrayNode, StringNode, ThresholdNode } from "@skill-wiki/types";
+import type { PrimeAST, StepNode, FieldNode, ArrayNode, StringNode, ThresholdNode } from "@aoe/types";
 import type { InstalledPrime } from "../src/types";
 
 // ─── Test Helpers ──────────────────────────────────────────────────────────
@@ -223,7 +223,7 @@ describe("checker-l1", () => {
   });
 
   describe("reference checking", () => {
-    test("reports error when use[] references a non-existent Prime", () => {
+    test("reports error when use[] references a non-existent AOE", () => {
       const ast = makeMethodAST({
         extraFields: [
           makeField("use", makeArray([
@@ -239,7 +239,7 @@ describe("checker-l1", () => {
       expect(errors).toHaveLength(1);
     });
 
-    test("passes when use[] references an installed Prime", () => {
+    test("passes when use[] references an installed AOE", () => {
       const installed = new Map<string, InstalledPrime>();
       installed.set("test-coverage", {
         name: "test-coverage",
@@ -264,7 +264,7 @@ describe("checker-l1", () => {
   });
 
   describe("@sealed not inherited", () => {
-    test("reports error when extending a @sealed Prime", () => {
+    test("reports error when extending a @sealed AOE", () => {
       const installed = new Map<string, InstalledPrime>();
       installed.set("SealedBase", {
         name: "sealed-base",
@@ -274,7 +274,7 @@ describe("checker-l1", () => {
       });
 
       const ast = makeMethodAST({ extendsName: "SealedBase" });
-      // Override the extends to the sealed Prime
+      // Override the extends to the sealed AOE
       ast.extends = "SealedBase";
 
       const diags = checkL1(ast, installed);
@@ -286,7 +286,7 @@ describe("checker-l1", () => {
   });
 
   describe("@abstract not instantiated", () => {
-    test("reports error when using an @abstract Prime directly", () => {
+    test("reports error when using an @abstract AOE directly", () => {
       const installed = new Map<string, InstalledPrime>();
       installed.set("abstract-method", {
         name: "abstract-method",

@@ -1,11 +1,11 @@
-# Contributing to Skill Wiki / Prime
+# Contributing to AOE / Prime
 
 [English](./CONTRIBUTING.md) · [中文](./CONTRIBUTING.zh-CN.md)
 
-Thank you for considering a contribution to the Skill Wiki system. This document
+Thank you for considering a contribution to the AOE system. This document
 is for people extending **the system itself** — the parser, compiler, runtime,
 registry, or CLI. If you want to author atoms (knowledge content), you are in the
-wrong repo; go to a Domain Package repo (e.g., `kernary-frontend-design`) and follow its
+wrong repo; go to a Domain Package repo (e.g., `aoe-frontend-design`) and follow its
 own CONTRIBUTING.
 
 ---
@@ -28,7 +28,7 @@ own CONTRIBUTING.
 
 ## What belongs here vs. a corpus repo
 
-**This repo — `kernary-engine`:**
+**This repo — `aoe-engine`:**
 - The `.prime` DSL parser (`packages/parser/`)
 - Compiler passes L1, L2, L3 (`packages/compiler/`)
 - Runtime: atom loader, projection resolver, domain plugin host (`packages/runtime/`)
@@ -40,7 +40,7 @@ own CONTRIBUTING.
 - Example corpora (`examples/`)
 - System-level tests
 
-**A Domain Package repo (e.g., `kernary-frontend-design`):**
+**A Domain Package repo (e.g., `aoe-frontend-design`):**
 - Atom `.prime` source files
 - Domain-specific intent classifier
 - Domain-specific retrieval logic
@@ -61,8 +61,8 @@ Requirements:
 - **Bun** (recommended for faster install and test runs; npm and pnpm also work)
 
 ```bash
-git clone https://github.com/skill-wiki/kernary-engine.git
-cd kernary-engine
+git clone https://github.com/kernary-aoe/aoe-engine.git
+cd aoe-engine
 bun install
 bun run build
 ```
@@ -140,7 +140,7 @@ packages/
 │       └── commands/         # one file per verb
 └── mcp-server-core/  # Generic MCP server (~200 lines)
     └── src/
-        └── server.ts         # prime_query over any compiled corpus
+        └── server.ts         # aoe_query over any compiled corpus
 ```
 
 ---
@@ -304,7 +304,7 @@ know which spec the compiler implemented.
 
 ## Dependency policy
 
-The Skill Wiki system is intentionally kept lean. Adding a new runtime dependency
+The AOE system is intentionally kept lean. Adding a new runtime dependency
 requires justification.
 
 **Rules:**
@@ -355,4 +355,4 @@ Participate in good faith. Harassment of any kind is not tolerated.
 
 ---
 
-*Skill Wiki v0.1.0 · Apache-2.0*
+*AOE v0.1.0 · Apache-2.0*

@@ -1,6 +1,6 @@
 /**
  * @module types
- * Diagnostic, compile result, and options types for the Prime compiler.
+ * Diagnostic, compile result, and options types for the AOE compiler.
  */
 
 // ─── Diagnostic ────────────────────────────────────────────────────────────
@@ -53,28 +53,28 @@ export interface CompileOptions {
   bundle?: boolean;
 
   /**
-   * Map of installed Prime names to their AST representations.
-   * Used for cross-Prime reference checking and dependency resolution.
+   * Map of installed AOE names to their AST representations.
+   * Used for cross-AOE reference checking and dependency resolution.
    */
   installedPrimes?: Map<string, InstalledPrime>;
 }
 
-// ─── Installed Prime ───────────────────────────────────────────────────────
+// ─── Installed AOE ───────────────────────────────────────────────────────
 
 /**
- * Minimal representation of an installed Prime used for cross-referencing.
+ * Minimal representation of an installed AOE used for cross-referencing.
  */
 export interface InstalledPrime {
   name: string;
   version: string;
   type: string;
-  /** The raw AST of the installed Prime */
+  /** The raw AST of the installed AOE */
   ast?: unknown;
   /** The compiled Markdown content */
   compiled?: string;
-  /** Link declarations from this Prime */
+  /** Link declarations from this AOE */
   links?: Array<{ type: string; to: string }>;
-  /** Decorator names on this Prime */
+  /** Decorator names on this AOE */
   decorators?: string[];
 }
 
@@ -112,9 +112,9 @@ export interface CompileOutputs {
  * A node in the dependency graph.
  */
 export interface DependencyNode {
-  /** Prime identifier (kebab-case) */
+  /** AOE identifier (kebab-case) */
   id: string;
-  /** Prime type (Knowledge, Method, Rule) */
+  /** AOE type (Knowledge, Method, Rule) */
   type: string;
   /** Resolved version */
   version: string;
@@ -124,9 +124,9 @@ export interface DependencyNode {
  * An edge in the dependency graph.
  */
 export interface DependencyEdge {
-  /** Source Prime identifier */
+  /** Source AOE identifier */
   from: string;
-  /** Target Prime identifier */
+  /** Target AOE identifier */
   to: string;
   /** Relationship type */
   type: string;
@@ -137,7 +137,7 @@ export interface DependencyEdge {
 }
 
 /**
- * The resolved dependency graph for a Prime and all its transitive dependencies.
+ * The resolved dependency graph for a AOE and all its transitive dependencies.
  */
 export interface DependencyGraph {
   /** All nodes (unique Primes) */

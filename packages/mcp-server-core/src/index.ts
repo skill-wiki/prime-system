@@ -13,10 +13,10 @@ import {
   type BundleDiagnostic,
   type GlobalIndex,
   type SnapshotRef,
-} from "@skill-wiki/runtime";
-import type { SnapshotRef as IrSnapshotRef } from "@skill-wiki/ir";
-import type { Principal } from "@skill-wiki/query-engine";
-import type { ProjectionScope, TransportKind } from "@skill-wiki/projection-engine";
+} from "@aoe/runtime";
+import type { SnapshotRef as IrSnapshotRef } from "@aoe/ir";
+import type { Principal } from "@aoe/query-engine";
+import type { ProjectionScope, TransportKind } from "@aoe/projection-engine";
 import { createAoeQueryResponse, createAoePlanResponse, type ResourceIdentity } from "./query-response";
 export {
   createAoeQueryResponse,

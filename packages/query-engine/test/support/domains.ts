@@ -19,14 +19,14 @@
  */
 
 import { resolve } from "node:path";
-import type { GraphEdgeIR, GraphIR, SelectionCandidateIR, TypedValueIR, UnitIR } from "@skill-wiki/ir";
+import type { GraphEdgeIR, GraphIR, SelectionCandidateIR, TypedValueIR, UnitIR } from "@aoe/ir";
 import {
   loadModelOrThrow,
   type ProjectionDefinition,
   type RelationDefinition,
   type RetrievalProfile,
-} from "@skill-wiki/model-schema";
-import { loadCorpus, type CorpusUnitRecord } from "@skill-wiki/testkit";
+} from "@aoe/model-schema";
+import { loadCorpus, type CorpusUnitRecord } from "@aoe/testkit";
 import {
   CandidateGeneratorRegistry,
   createFacetGenerator,

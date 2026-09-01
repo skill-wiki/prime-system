@@ -1,5 +1,5 @@
 {
-  "name": "@skill-wiki/runtime",
+  "name": "@aoe/runtime",
   "version": "0.2.0",
   "description": "Immutable Corpus snapshot activation, Unit metadata reads, and projection resolution",
   "main": "src/index.ts",
@@ -10,8 +10,8 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@skill-wiki/corpus-schema": "workspace:*",
-    "@skill-wiki/types": "workspace:*",
+    "@aoe/corpus-schema": "workspace:*",
+    "@aoe/types": "workspace:*",
     "yaml": "^2.8.3",
     "zod": "^4.0.0"
   },

@@ -4,8 +4,8 @@ import { mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { finalizeCorpusBundle } from "../src/index";
-import { compileUnit, emitCompiledUnit } from "@skill-wiki/compiler";
-import { loadModelOrThrow } from "@skill-wiki/model-schema";
+import { compileUnit, emitCompiledUnit } from "@aoe/compiler";
+import { loadModelOrThrow } from "@aoe/model-schema";
 import { loadAtomMeta, loadCorpusSnapshot, loadIndex, PrimeBundleError, resolveProjection } from "../../runtime/src/index";
 
 const digest = (text: string) => `sha256:${createHash("sha256").update(text).digest("hex")}`;

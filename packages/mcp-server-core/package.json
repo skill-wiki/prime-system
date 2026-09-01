@@ -1,5 +1,5 @@
 {
-  "name": "@skill-wiki/mcp-server-core",
+  "name": "@aoe/mcp-server-core",
   "version": "0.2.0",
   "description": "AOE MCP transport for a verified Model Package and compiled Corpus snapshot.",
   "license": "Apache-2.0",
@@ -19,11 +19,11 @@
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "@skill-wiki/ir": "workspace:*",
-    "@skill-wiki/model-schema": "workspace:*",
-    "@skill-wiki/projection-engine": "workspace:*",
-    "@skill-wiki/query-engine": "workspace:*",
-    "@skill-wiki/runtime": "workspace:*",
+    "@aoe/ir": "workspace:*",
+    "@aoe/model-schema": "workspace:*",
+    "@aoe/projection-engine": "workspace:*",
+    "@aoe/query-engine": "workspace:*",
+    "@aoe/runtime": "workspace:*",
     "zod": "^4.0.0"
   },
   "scripts": {
@@ -44,12 +44,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/skill-wiki/kernary-engine.git",
+    "url": "git+https://github.com/kernary-aoe/aoe-engine.git",
     "directory": "packages/mcp-server-core"
   },
-  "homepage": "https://github.com/skill-wiki/kernary-engine/tree/main/packages/mcp-server-core#readme",
+  "homepage": "https://github.com/kernary-aoe/aoe-engine/tree/main/packages/mcp-server-core#readme",
   "bugs": {
-    "url": "https://github.com/skill-wiki/kernary-engine/issues"
+    "url": "https://github.com/kernary-aoe/aoe-engine/issues"
   },
   "publishConfig": {
     "access": "public",

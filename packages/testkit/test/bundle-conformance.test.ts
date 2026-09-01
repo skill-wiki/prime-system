@@ -5,7 +5,7 @@ import { join } from "node:path";
 
 /** `realpathSync`: the loader refuses a symlink ancestor, and macOS `/var` is one. */
 const TMP = realpathSync(tmpdir());
-import { finalizeCorpusBundle } from "@skill-wiki/bundle";
+import { finalizeCorpusBundle } from "@aoe/bundle";
 import { runBundleConformance } from "../src/bundle-conformance.ts";
 
 /**

@@ -1,15 +1,15 @@
 {
-  "name": "@skill-wiki/sdk-codegen",
+  "name": "@aoe/sdk-codegen",
   "version": "0.2.0",
-  "description": "Generate digest-bound TypeScript types, MCP schemas, and typed SDKs from Kernary SchemaIR",
+  "description": "Generate digest-bound TypeScript types, MCP schemas, and typed SDKs from AOE SchemaIR",
   "main": "src/index.ts",
   "types": "src/index.ts",
-  "bin": { "prime-sdk-codegen": "src/cli.ts" },
+  "bin": { "aoe-sdk-codegen": "src/cli.ts" },
   "scripts": { "test": "bun test", "typecheck": "tsc --noEmit -p tsconfig.json" },
   "license": "Apache-2.0",
   "dependencies": {
-    "@skill-wiki/ir": "workspace:*",
-    "@skill-wiki/model-schema": "workspace:*",
-    "@skill-wiki/sdk": "workspace:*"
+    "@aoe/ir": "workspace:*",
+    "@aoe/model-schema": "workspace:*",
+    "@aoe/sdk": "workspace:*"
   }
 }

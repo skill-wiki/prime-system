@@ -1,9 +1,9 @@
 # Coding Style — Team Lint Rules Corpus
 
-> Twelve atoms encoding a TypeScript team's code-style policy as a Skill Wiki corpus.
+> Twelve atoms encoding a TypeScript team's code-style policy as a AOE corpus.
 
 This corpus answers a common question: *can I encode my team's engineering standards as
-Skill Wiki atoms and serve them to an AI coding agent?*
+AOE atoms and serve them to an AI coding agent?*
 
 The answer is yes. This corpus models a hypothetical TypeScript team's style guide —
 4 enforced rules, 3 preferred patterns, 2 active anti-patterns, 1 principle, 1 collection,
@@ -16,7 +16,7 @@ and 1 explicit trade-off.
 It demonstrates two things:
 
 1. **Institutional knowledge as atoms.** A `.eslintrc` enforces rules but doesn't explain
-   *why* they exist. A Skill Wiki corpus gives every rule a `description`, `notes`, and
+   *why* they exist. A AOE corpus gives every rule a `description`, `notes`, and
    edges to the other rules it relates to. An AI coding agent can load the relevant subset
    when it's actually needed — not the entire style guide on every turn.
 
@@ -131,7 +131,7 @@ Every rule and pattern points back to the principle as its justification.
 
 ```bash
 cd examples/coding-style
-prime compile primes/sources --out primes/compiled
+aoe compile primes/sources --out primes/compiled
 # [build] parsing 12 .prime files...
 # [build] resolving edges... 25 edges across 12 atoms
 # [build] L1 checks: PASS
@@ -146,13 +146,13 @@ prime compile primes/sources --out primes/compiled
 **Get the whole collection:**
 
 ```bash
-prime show @team/collection-team-style-guide --level full
+aoe show @team/collection-team-style-guide --level full
 ```
 
 **Check what pattern applies to a function with 5 parameters:**
 
 ```bash
-prime query "constructor with many parameters" --kind pattern
+aoe query "constructor with many parameters" --kind pattern
 # matched: @team/pattern-builder-over-options-bag (full)
 # see-also: @team/pattern-named-arguments
 ```
@@ -160,13 +160,13 @@ prime query "constructor with many parameters" --kind pattern
 **Get the trade-off when discussion starts about strict types:**
 
 ```bash
-prime show @team/tradeoff-strict-types-vs-iteration-speed --level full
+aoe show @team/tradeoff-strict-types-vs-iteration-speed --level full
 ```
 
 **Boot the MCP server and wire into Claude Code:**
 
 ```bash
-PRIME_DIR=$(pwd)/primes/compiled bun ../../packages/mcp-server-core/src/index.ts
+AOE_CORPUS_DIR=$(pwd)/primes/compiled bun ../../packages/mcp-server-core/src/index.ts
 ```
 
 ```json
@@ -174,8 +174,8 @@ PRIME_DIR=$(pwd)/primes/compiled bun ../../packages/mcp-server-core/src/index.ts
   "mcpServers": {
     "team-style-guide": {
       "command": "bunx",
-      "args": ["@prime-lang/mcp-server-core"],
-      "env": { "PRIME_DIR": "/abs/path/to/coding-style/primes/compiled" }
+      "args": ["@aoe/mcp-server-core"],
+      "env": { "AOE_CORPUS_DIR": "/abs/path/to/coding-style/primes/compiled" }
     }
   }
 }

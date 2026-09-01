@@ -13,9 +13,9 @@
  * interface.
  */
 
-import type { DiagnosticIR, SelectionPlanIR, SnapshotRef, ValueIR } from "@skill-wiki/ir";
-import type { QueryRequest } from "@skill-wiki/query-engine";
-import type { ActionRun, EffectPlan, EventRecord, RequestContext } from "@skill-wiki/action-runtime";
+import type { DiagnosticIR, SelectionPlanIR, SnapshotRef, ValueIR } from "@aoe/ir";
+import type { QueryRequest } from "@aoe/query-engine";
+import type { ActionRun, EffectPlan, EventRecord, RequestContext } from "@aoe/action-runtime";
 
 /**
  * The four deployment shapes plan §10.4 names. It is a closed set because it

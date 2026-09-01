@@ -21,7 +21,7 @@ import type {
   IdentNode,
   ArrayNode,
   ObjectNode,
-} from "@skill-wiki/types";
+} from "@aoe/types";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

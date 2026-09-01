@@ -14,8 +14,8 @@
  * `requires "@a/b"` — so reading the AST needs no vocabulary at all.
  */
 
-import { parse } from '@skill-wiki/parser';
-import type { FieldNode, ValueNode } from '@skill-wiki/types';
+import { parse } from '@aoe/parser';
+import type { FieldNode, ValueNode } from '@aoe/types';
 
 export interface RelationRef {
   /** The verb exactly as the source spelled it. Not validated, not ranked. */

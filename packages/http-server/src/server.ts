@@ -18,7 +18,7 @@
  * where a header could be read differently from how the handler's tests read it.
  */
 
-import type { Tracer } from "@skill-wiki/observability";
+import type { Tracer } from "@aoe/observability";
 import { isLoopbackHost, type Authenticator } from "./auth.ts";
 import { createRequestHandler, type HandlerOptions } from "./handler.ts";
 

@@ -2,8 +2,8 @@ import { expect, test } from "bun:test";
 import { join } from "node:path";
 import { mkdtempSync, realpathSync, rmSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { loadModelOrThrow } from "@skill-wiki/model-schema";
-import type { LoadedModel, ProjectionDefinition } from "@skill-wiki/model-schema";
+import { loadModelOrThrow } from "@aoe/model-schema";
+import type { LoadedModel, ProjectionDefinition } from "@aoe/model-schema";
 import { compileUnit, computeCompiledUnitContentDigest, emitCompiledUnit } from "../src/generic-unit";
 
 const model = loadModelOrThrow(join(import.meta.dir, "../../model-schema/test/fixtures/ticket-model"));

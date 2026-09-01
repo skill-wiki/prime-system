@@ -16,67 +16,67 @@
       },
     },
     "packages/action-runtime": {
-      "name": "@skill-wiki/action-runtime",
+      "name": "@aoe/action-runtime",
       "version": "0.1.0",
       "dependencies": {
-        "@skill-wiki/evaluation-engine": "workspace:*",
-        "@skill-wiki/ir": "workspace:*",
-        "@skill-wiki/model-schema": "workspace:*",
+        "@aoe/evaluation-engine": "workspace:*",
+        "@aoe/ir": "workspace:*",
+        "@aoe/model-schema": "workspace:*",
       },
       "devDependencies": {
-        "@skill-wiki/policy-engine": "workspace:*",
+        "@aoe/policy-engine": "workspace:*",
       },
     },
     "packages/bundle": {
-      "name": "@skill-wiki/bundle",
+      "name": "@aoe/bundle",
       "version": "0.1.0",
       "dependencies": {
-        "@skill-wiki/compiler": "workspace:*",
-        "@skill-wiki/ir": "workspace:*",
-        "@skill-wiki/runtime": "workspace:*",
+        "@aoe/compiler": "workspace:*",
+        "@aoe/ir": "workspace:*",
+        "@aoe/runtime": "workspace:*",
       },
       "devDependencies": {
-        "@skill-wiki/model-schema": "workspace:*",
+        "@aoe/model-schema": "workspace:*",
       },
     },
     "packages/cli": {
-      "name": "@skill-wiki/cli",
+      "name": "@aoe/cli",
       "version": "0.1.0",
       "bin": {
         "prime": "dist/index.js",
       },
       "dependencies": {
-        "@skill-wiki/action-runtime": "workspace:*",
-        "@skill-wiki/bundle": "workspace:*",
-        "@skill-wiki/compiler": "workspace:*",
-        "@skill-wiki/event-store": "workspace:*",
-        "@skill-wiki/ir": "workspace:*",
-        "@skill-wiki/language-server": "workspace:*",
-        "@skill-wiki/model-schema": "workspace:*",
-        "@skill-wiki/parser": "workspace:*",
-        "@skill-wiki/runtime": "workspace:*",
-        "@skill-wiki/types": "workspace:*",
+        "@aoe/action-runtime": "workspace:*",
+        "@aoe/bundle": "workspace:*",
+        "@aoe/compiler": "workspace:*",
+        "@aoe/event-store": "workspace:*",
+        "@aoe/ir": "workspace:*",
+        "@aoe/language-server": "workspace:*",
+        "@aoe/model-schema": "workspace:*",
+        "@aoe/parser": "workspace:*",
+        "@aoe/runtime": "workspace:*",
+        "@aoe/types": "workspace:*",
       },
     },
     "packages/compiler": {
-      "name": "@skill-wiki/compiler",
+      "name": "@aoe/compiler",
       "version": "0.1.0",
       "dependencies": {
-        "@skill-wiki/ir": "workspace:*",
-        "@skill-wiki/model-schema": "workspace:*",
-        "@skill-wiki/parser": "workspace:*",
-        "@skill-wiki/types": "workspace:*",
+        "@aoe/ir": "workspace:*",
+        "@aoe/model-schema": "workspace:*",
+        "@aoe/parser": "workspace:*",
+        "@aoe/types": "workspace:*",
       },
     },
     "packages/constraint-solver": {
-      "name": "@skill-wiki/constraint-solver",
+      "name": "@aoe/constraint-solver",
       "version": "0.1.0",
       "dependencies": {
-        "@skill-wiki/ir": "workspace:*",
+        "@aoe/ir": "workspace:*",
       },
     },
     "packages/corpus-schema": {
-      "name": "@skill-wiki/corpus-schema",
+      "name": "@aoe/corpus-schema",
       "version": "0.1.0",
       "dependencies": {
         "yaml": "^2.8.3",
@@ -84,7 +84,7 @@
       },
     },
     "packages/corpus-tools": {
-      "name": "@skill-wiki/corpus-tools",
+      "name": "@aoe/corpus-tools",
       "version": "0.1.0",
       "bin": {
         "prime-corpus-reconcile": "src/cli.ts",
@@ -94,67 +94,67 @@
       },
     },
     "packages/evaluation-engine": {
-      "name": "@skill-wiki/evaluation-engine",
+      "name": "@aoe/evaluation-engine",
       "version": "0.1.0",
       "dependencies": {
-        "@skill-wiki/ir": "workspace:*",
-        "@skill-wiki/policy-engine": "workspace:*",
+        "@aoe/ir": "workspace:*",
+        "@aoe/policy-engine": "workspace:*",
         "zod": "^4.0.0",
       },
     },
     "packages/event-store": {
-      "name": "@skill-wiki/event-store",
+      "name": "@aoe/event-store",
       "version": "0.1.0",
     },
     "packages/http-server": {
-      "name": "@skill-wiki/http-server",
+      "name": "@aoe/http-server",
       "version": "0.1.0",
       "bin": {
         "prime-http-server": "src/main.ts",
       },
       "dependencies": {
-        "@skill-wiki/ir": "workspace:*",
-        "@skill-wiki/observability": "workspace:*",
-        "@skill-wiki/query-engine": "workspace:*",
-        "@skill-wiki/runtime": "workspace:*",
-        "@skill-wiki/sdk": "workspace:*",
+        "@aoe/ir": "workspace:*",
+        "@aoe/observability": "workspace:*",
+        "@aoe/query-engine": "workspace:*",
+        "@aoe/runtime": "workspace:*",
+        "@aoe/sdk": "workspace:*",
       },
       "devDependencies": {
-        "@skill-wiki/model-schema": "workspace:*",
+        "@aoe/model-schema": "workspace:*",
       },
     },
     "packages/ir": {
-      "name": "@skill-wiki/ir",
+      "name": "@aoe/ir",
       "version": "0.1.0",
     },
     "packages/language-server": {
-      "name": "@skill-wiki/language-server",
+      "name": "@aoe/language-server",
       "version": "0.1.0",
       "dependencies": {
-        "@skill-wiki/compiler": "workspace:*",
-        "@skill-wiki/model-schema": "workspace:*",
-        "@skill-wiki/parser": "workspace:*",
-        "@skill-wiki/types": "workspace:*",
+        "@aoe/compiler": "workspace:*",
+        "@aoe/model-schema": "workspace:*",
+        "@aoe/parser": "workspace:*",
+        "@aoe/types": "workspace:*",
       },
     },
     "packages/mcp-server-core": {
-      "name": "@skill-wiki/mcp-server-core",
+      "name": "@aoe/mcp-server-core",
       "version": "0.1.0",
       "bin": {
         "prime-mcp-core": "dist/index.js",
       },
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.0.0",
-        "@skill-wiki/ir": "workspace:*",
-        "@skill-wiki/model-schema": "workspace:*",
-        "@skill-wiki/projection-engine": "workspace:*",
-        "@skill-wiki/query-engine": "workspace:*",
-        "@skill-wiki/runtime": "workspace:*",
+        "@aoe/ir": "workspace:*",
+        "@aoe/model-schema": "workspace:*",
+        "@aoe/projection-engine": "workspace:*",
+        "@aoe/query-engine": "workspace:*",
+        "@aoe/runtime": "workspace:*",
         "zod": "^4.0.0",
       },
     },
     "packages/model-schema": {
-      "name": "@skill-wiki/model-schema",
+      "name": "@aoe/model-schema",
       "version": "0.1.0",
       "dependencies": {
         "yaml": "^2.8.3",
@@ -162,18 +162,18 @@
       },
     },
     "packages/observability": {
-      "name": "@skill-wiki/observability",
+      "name": "@aoe/observability",
       "version": "0.1.0",
     },
     "packages/parser": {
-      "name": "@skill-wiki/parser",
+      "name": "@aoe/parser",
       "version": "0.1.0",
       "dependencies": {
-        "@skill-wiki/types": "workspace:*",
+        "@aoe/types": "workspace:*",
       },
     },
     "packages/plugin-host": {
-      "name": "@skill-wiki/plugin-host",
+      "name": "@aoe/plugin-host",
       "version": "0.1.0",
       "dependencies": {
         "yaml": "^2.8.3",
@@ -181,104 +181,104 @@
       },
     },
     "packages/policy-engine": {
-      "name": "@skill-wiki/policy-engine",
+      "name": "@aoe/policy-engine",
       "version": "0.1.0",
       "dependencies": {
-        "@skill-wiki/model-schema": "workspace:*",
+        "@aoe/model-schema": "workspace:*",
         "yaml": "^2.8.3",
         "zod": "^4.0.0",
       },
     },
     "packages/projection-engine": {
-      "name": "@skill-wiki/projection-engine",
+      "name": "@aoe/projection-engine",
       "version": "0.1.0",
       "dependencies": {
-        "@skill-wiki/ir": "workspace:*",
-        "@skill-wiki/model-schema": "workspace:*",
+        "@aoe/ir": "workspace:*",
+        "@aoe/model-schema": "workspace:*",
       },
     },
     "packages/query-engine": {
-      "name": "@skill-wiki/query-engine",
+      "name": "@aoe/query-engine",
       "version": "0.1.0",
       "dependencies": {
-        "@skill-wiki/constraint-solver": "workspace:*",
-        "@skill-wiki/ir": "workspace:*",
-        "@skill-wiki/model-schema": "workspace:*",
-        "@skill-wiki/observability": "workspace:*",
+        "@aoe/constraint-solver": "workspace:*",
+        "@aoe/ir": "workspace:*",
+        "@aoe/model-schema": "workspace:*",
+        "@aoe/observability": "workspace:*",
       },
       "devDependencies": {
-        "@skill-wiki/testkit": "workspace:*",
+        "@aoe/testkit": "workspace:*",
       },
     },
     "packages/registry": {
-      "name": "@skill-wiki/registry",
+      "name": "@aoe/registry",
       "version": "0.1.0",
       "dependencies": {
-        "@skill-wiki/parser": "workspace:*",
-        "@skill-wiki/types": "workspace:*",
+        "@aoe/parser": "workspace:*",
+        "@aoe/types": "workspace:*",
         "hono": "^4.7.6",
       },
     },
     "packages/runtime": {
-      "name": "@skill-wiki/runtime",
+      "name": "@aoe/runtime",
       "version": "0.1.0",
       "dependencies": {
-        "@skill-wiki/corpus-schema": "workspace:*",
-        "@skill-wiki/types": "workspace:*",
+        "@aoe/corpus-schema": "workspace:*",
+        "@aoe/types": "workspace:*",
         "yaml": "^2.8.3",
         "zod": "^4.0.0",
       },
     },
     "packages/sdk": {
-      "name": "@skill-wiki/sdk",
+      "name": "@aoe/sdk",
       "version": "0.1.0",
       "dependencies": {
-        "@skill-wiki/action-runtime": "workspace:*",
-        "@skill-wiki/ir": "workspace:*",
-        "@skill-wiki/model-schema": "workspace:*",
-        "@skill-wiki/observability": "workspace:*",
-        "@skill-wiki/query-engine": "workspace:*",
+        "@aoe/action-runtime": "workspace:*",
+        "@aoe/ir": "workspace:*",
+        "@aoe/model-schema": "workspace:*",
+        "@aoe/observability": "workspace:*",
+        "@aoe/query-engine": "workspace:*",
       },
     },
     "packages/sdk-codegen": {
-      "name": "@skill-wiki/sdk-codegen",
+      "name": "@aoe/sdk-codegen",
       "version": "0.1.0",
       "bin": {
         "prime-sdk-codegen": "src/cli.ts",
       },
       "dependencies": {
-        "@skill-wiki/ir": "workspace:*",
-        "@skill-wiki/model-schema": "workspace:*",
-        "@skill-wiki/sdk": "workspace:*",
+        "@aoe/ir": "workspace:*",
+        "@aoe/model-schema": "workspace:*",
+        "@aoe/sdk": "workspace:*",
       },
     },
     "packages/testkit": {
-      "name": "@skill-wiki/testkit",
+      "name": "@aoe/testkit",
       "version": "0.1.0",
       "bin": {
         "prime-testkit": "src/cli.ts",
       },
       "dependencies": {
-        "@skill-wiki/corpus-schema": "workspace:*",
-        "@skill-wiki/ir": "workspace:*",
-        "@skill-wiki/model-schema": "workspace:*",
-        "@skill-wiki/parser": "workspace:*",
-        "@skill-wiki/runtime": "workspace:*",
-        "@skill-wiki/sdk": "workspace:*",
-        "@skill-wiki/sdk-codegen": "workspace:*",
-        "@skill-wiki/types": "workspace:*",
+        "@aoe/corpus-schema": "workspace:*",
+        "@aoe/ir": "workspace:*",
+        "@aoe/model-schema": "workspace:*",
+        "@aoe/parser": "workspace:*",
+        "@aoe/runtime": "workspace:*",
+        "@aoe/sdk": "workspace:*",
+        "@aoe/sdk-codegen": "workspace:*",
+        "@aoe/types": "workspace:*",
         "yaml": "^2.8.3",
         "zod": "^4.0.0",
       },
       "devDependencies": {
-        "@skill-wiki/bundle": "workspace:*",
-        "@skill-wiki/constraint-solver": "workspace:*",
-        "@skill-wiki/event-store": "workspace:*",
-        "@skill-wiki/projection-engine": "workspace:*",
+        "@aoe/bundle": "workspace:*",
+        "@aoe/constraint-solver": "workspace:*",
+        "@aoe/event-store": "workspace:*",
+        "@aoe/projection-engine": "workspace:*",
       },
     },
     "packages/types": {
-      "name": "@skill-wiki/types",
+      "name": "@aoe/types",
       "version": "0.1.0",
     },
   },
@@ -287,57 +287,57 @@
 
     "@modelcontextprotocol/sdk": ["@modelcontextprotocol/sdk@1.29.0", "", { "dependencies": { "@hono/node-server": "^1.19.9", "ajv": "^8.17.1", "ajv-formats": "^3.0.1", "content-type": "^1.0.5", "cors": "^2.8.5", "cross-spawn": "^7.0.5", "eventsource": "^3.0.2", "eventsource-parser": "^3.0.0", "express": "^5.2.1", "express-rate-limit": "^8.2.1", "hono": "^4.11.4", "jose": "^6.1.3", "json-schema-typed": "^8.0.2", "pkce-challenge": "^5.0.0", "raw-body": "^3.0.0", "zod": "^3.25 || ^4.0", "zod-to-json-schema": "^3.25.1" }, "peerDependencies": { "@cfworker/json-schema": "^4.1.1" }, "optionalPeers": ["@cfworker/json-schema"] }, "sha512-zo37mZA9hJWpULgkRpowewez1y6ML5GsXJPY8FI0tBBCd77HEvza4jDqRKOXgHNn867PVGCyTdzqpz0izu5ZjQ=="],
 
-    "@skill-wiki/action-runtime": ["@skill-wiki/action-runtime@workspace:packages/action-runtime"],
+    "@aoe/action-runtime": ["@aoe/action-runtime@workspace:packages/action-runtime"],
 
-    "@skill-wiki/bundle": ["@skill-wiki/bundle@workspace:packages/bundle"],
+    "@aoe/bundle": ["@aoe/bundle@workspace:packages/bundle"],
 
-    "@skill-wiki/cli": ["@skill-wiki/cli@workspace:packages/cli"],
+    "@aoe/cli": ["@aoe/cli@workspace:packages/cli"],
 
-    "@skill-wiki/compiler": ["@skill-wiki/compiler@workspace:packages/compiler"],
+    "@aoe/compiler": ["@aoe/compiler@workspace:packages/compiler"],
 
-    "@skill-wiki/constraint-solver": ["@skill-wiki/constraint-solver@workspace:packages/constraint-solver"],
+    "@aoe/constraint-solver": ["@aoe/constraint-solver@workspace:packages/constraint-solver"],
 
-    "@skill-wiki/corpus-schema": ["@skill-wiki/corpus-schema@workspace:packages/corpus-schema"],
+    "@aoe/corpus-schema": ["@aoe/corpus-schema@workspace:packages/corpus-schema"],
 
-    "@skill-wiki/corpus-tools": ["@skill-wiki/corpus-tools@workspace:packages/corpus-tools"],
+    "@aoe/corpus-tools": ["@aoe/corpus-tools@workspace:packages/corpus-tools"],
 
-    "@skill-wiki/evaluation-engine": ["@skill-wiki/evaluation-engine@workspace:packages/evaluation-engine"],
+    "@aoe/evaluation-engine": ["@aoe/evaluation-engine@workspace:packages/evaluation-engine"],
 
-    "@skill-wiki/event-store": ["@skill-wiki/event-store@workspace:packages/event-store"],
+    "@aoe/event-store": ["@aoe/event-store@workspace:packages/event-store"],
 
-    "@skill-wiki/http-server": ["@skill-wiki/http-server@workspace:packages/http-server"],
+    "@aoe/http-server": ["@aoe/http-server@workspace:packages/http-server"],
 
-    "@skill-wiki/ir": ["@skill-wiki/ir@workspace:packages/ir"],
+    "@aoe/ir": ["@aoe/ir@workspace:packages/ir"],
 
-    "@skill-wiki/language-server": ["@skill-wiki/language-server@workspace:packages/language-server"],
+    "@aoe/language-server": ["@aoe/language-server@workspace:packages/language-server"],
 
-    "@skill-wiki/mcp-server-core": ["@skill-wiki/mcp-server-core@workspace:packages/mcp-server-core"],
+    "@aoe/mcp-server-core": ["@aoe/mcp-server-core@workspace:packages/mcp-server-core"],
 
-    "@skill-wiki/model-schema": ["@skill-wiki/model-schema@workspace:packages/model-schema"],
+    "@aoe/model-schema": ["@aoe/model-schema@workspace:packages/model-schema"],
 
-    "@skill-wiki/observability": ["@skill-wiki/observability@workspace:packages/observability"],
+    "@aoe/observability": ["@aoe/observability@workspace:packages/observability"],
 
-    "@skill-wiki/parser": ["@skill-wiki/parser@workspace:packages/parser"],
+    "@aoe/parser": ["@aoe/parser@workspace:packages/parser"],
 
-    "@skill-wiki/plugin-host": ["@skill-wiki/plugin-host@workspace:packages/plugin-host"],
+    "@aoe/plugin-host": ["@aoe/plugin-host@workspace:packages/plugin-host"],
 
-    "@skill-wiki/policy-engine": ["@skill-wiki/policy-engine@workspace:packages/policy-engine"],
+    "@aoe/policy-engine": ["@aoe/policy-engine@workspace:packages/policy-engine"],
 
-    "@skill-wiki/projection-engine": ["@skill-wiki/projection-engine@workspace:packages/projection-engine"],
+    "@aoe/projection-engine": ["@aoe/projection-engine@workspace:packages/projection-engine"],
 
-    "@skill-wiki/query-engine": ["@skill-wiki/query-engine@workspace:packages/query-engine"],
+    "@aoe/query-engine": ["@aoe/query-engine@workspace:packages/query-engine"],
 
-    "@skill-wiki/registry": ["@skill-wiki/registry@workspace:packages/registry"],
+    "@aoe/registry": ["@aoe/registry@workspace:packages/registry"],
 
-    "@skill-wiki/runtime": ["@skill-wiki/runtime@workspace:packages/runtime"],
+    "@aoe/runtime": ["@aoe/runtime@workspace:packages/runtime"],
 
-    "@skill-wiki/sdk": ["@skill-wiki/sdk@workspace:packages/sdk"],
+    "@aoe/sdk": ["@aoe/sdk@workspace:packages/sdk"],
 
-    "@skill-wiki/sdk-codegen": ["@skill-wiki/sdk-codegen@workspace:packages/sdk-codegen"],
+    "@aoe/sdk-codegen": ["@aoe/sdk-codegen@workspace:packages/sdk-codegen"],
 
-    "@skill-wiki/testkit": ["@skill-wiki/testkit@workspace:packages/testkit"],
+    "@aoe/testkit": ["@aoe/testkit@workspace:packages/testkit"],
 
-    "@skill-wiki/types": ["@skill-wiki/types@workspace:packages/types"],
+    "@aoe/types": ["@aoe/types@workspace:packages/types"],
 
     "@types/node": ["@types/node@22.19.18", "", { "dependencies": { "undici-types": "~6.21.0" } }, "sha512-9v00a+dn2yWVsYDEunWC4g/TcRKVq3r8N5FuZp7u0SGrPvdN9c2yXI9bBuf5Fl0hNCb+QTIePTn5pJs2pwBOQQ=="],
 

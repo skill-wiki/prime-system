@@ -25,7 +25,7 @@
  * while adding nothing about ordering that `topK` does not already say.
  */
 
-import type { DiagnosticIR, SelectionPlanIR } from "@skill-wiki/ir";
+import type { DiagnosticIR, SelectionPlanIR } from "@aoe/ir";
 import { planSelection, planWithConstraints, type QueryRequest } from "../../src/index.ts";
 import { DOMAINS, ordinaryPrincipal, type DomainDescriptor, type LoadedDomain } from "./domains.ts";
 

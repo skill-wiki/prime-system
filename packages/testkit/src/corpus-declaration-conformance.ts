@@ -4,7 +4,7 @@
  * Distinct from `corpus-conformance.ts`, which validates corpus *content* (the
  * `kind: corpus` document with inline `units[]`). This suite validates the
  * *declaration* — the six things §4.3 says a Corpus Package must state — and it
- * is the half that did not exist: before `@skill-wiki/corpus-schema` there was
+ * is the half that did not exist: before `@aoe/corpus-schema` there was
  * no document in the repo where a licence, a default retrieval profile, a
  * publication policy or an eval set could be written, so there was nothing for a
  * suite to check.
@@ -14,11 +14,11 @@
  * validatable before any content is compiled — that is the point of an input
  * declaration.
  */
-import type { LoadedModel, ModelDefinition } from "@skill-wiki/model-schema";
+import type { LoadedModel, ModelDefinition } from "@aoe/model-schema";
 import {
   resolveCorpusPackage,
   type CorpusPackageDeclaration,
-} from "@skill-wiki/corpus-schema";
+} from "@aoe/corpus-schema";
 import { check, finding, report, skipped, type CheckOutcome, type Finding, type SuiteReport } from "./diagnostics.ts";
 
 export interface CorpusDeclarationConformanceOptions {

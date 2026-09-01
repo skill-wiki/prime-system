@@ -1,5 +1,5 @@
 /**
- * Tests for the @skill-wiki/parser package.
+ * Tests for the @aoe/parser package.
  *
  * Uses Bun's built-in test runner.
  */
@@ -24,7 +24,7 @@ import type {
   ThresholdNode,
   ParameterShorthandNode,
   DecoratorNode,
-} from "@skill-wiki/types";
+} from "@aoe/types";
 
 function asPrime(ast: PrimeAST | AtomDeclaration): PrimeAST {
   if (ast.type !== "PrimeDeclaration") throw new Error(`Expected PrimeAST, got ${ast.type}`);
@@ -37,9 +37,9 @@ function findField(fields: FieldNode[], key: string): FieldNode | undefined {
   return fields.find((f) => f.key === key);
 }
 
-// ─── Test: Simple Knowledge Prime ───────────────────────────────────────────
+// ─── Test: Simple Knowledge AOE ───────────────────────────────────────────
 
-describe("Simple Knowledge Prime", () => {
+describe("Simple Knowledge AOE", () => {
   const source = `
 prime OWASPTop10 extends Knowledge {
   name: "owasp-top-10"
@@ -109,9 +109,9 @@ prime OWASPTop10 extends Knowledge {
   });
 });
 
-// ─── Test: Method Prime with steps, expect, error ───────────────────────────
+// ─── Test: Method AOE with steps, expect, error ───────────────────────────
 
-describe("Method Prime with steps", () => {
+describe("Method AOE with steps", () => {
   const source = `
 prime TDDRedGreenRefactor extends Method {
   name: "tdd-red-green-refactor"
@@ -228,9 +228,9 @@ prime TDDRedGreenRefactor extends Method {
   });
 });
 
-// ─── Test: Rule Prime with checks and thresholds ────────────────────────────
+// ─── Test: Rule AOE with checks and thresholds ────────────────────────────
 
-describe("Rule Prime with checks and thresholds", () => {
+describe("Rule AOE with checks and thresholds", () => {
   const source = `
 prime TestCoverageStandard extends Rule {
   name: "test-coverage-standard"
@@ -1101,7 +1101,7 @@ prime TDDRedGreenRefactor extends Method {
 
 // ─── Test: No extends clause ────────────────────────────────────────────────
 
-describe("Prime without extends", () => {
+describe("AOE without extends", () => {
   test("parses prime without extends clause", () => {
     const source = `
 prime Standalone {

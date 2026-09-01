@@ -24,9 +24,9 @@ import type {
   SelectionCandidateIR,
   SelectionPlanIR,
   ValueIR,
-} from "@skill-wiki/ir";
-import type { RetrievalProfile } from "@skill-wiki/model-schema";
-import { NOOP_TRACER, withSpan, type SpanContext, type Tracer } from "@skill-wiki/observability";
+} from "@aoe/ir";
+import type { RetrievalProfile } from "@aoe/model-schema";
+import { NOOP_TRACER, withSpan, type SpanContext, type Tracer } from "@aoe/observability";
 import { buildAdjacency, type Adjacency } from "./adjacency.ts";
 import { admit, type AdmissionResult } from "./admission.ts";
 import { planBudget, resolveProjectionChain } from "./budget.ts";
@@ -87,10 +87,10 @@ export interface PlanSelectionOptions {
  * pipeline phase names — mechanism, not model vocabulary — so they belong to the
  * engine exactly as `RERANKER_APPLIED` does.
  */
-export const SPAN_PLAN = "prime.query.plan";
-export const SPAN_RETRIEVAL = "prime.query.retrieval";
-export const SPAN_EXPANSION = "prime.query.expansion";
-export const SPAN_BUDGET = "prime.query.budget";
+export const SPAN_PLAN = "aoe.query.plan";
+export const SPAN_RETRIEVAL = "aoe.query.retrieval";
+export const SPAN_EXPANSION = "aoe.query.expansion";
+export const SPAN_BUDGET = "aoe.query.budget";
 
 interface Rejection {
   readonly candidate: SelectionCandidateIR;
@@ -180,7 +180,7 @@ export function runRetrieval(
     SPAN_RETRIEVAL,
     {
       ...(options.traceParent === undefined ? {} : { parent: options.traceParent }),
-      attributes: { "prime.request_id": request.requestId, "prime.profile_ref": request.profile },
+      attributes: { "aoe.request_id": request.requestId, "aoe.profile_ref": request.profile },
     },
     span => {
       const result = retrieve(request, ctx, options);
@@ -189,13 +189,13 @@ export function runRetrieval(
       // generation funnel, and a dashboard that has to derive it from a plan
       // payload is a second implementation of the engine's own arithmetic.
       span.setAttributes({
-        "prime.admitted_units": result.admission.graph.units.length,
-        "prime.acl_denied_units": result.admission.aclDeniedCount,
-        "prime.request_filtered_units": result.admission.filtered.length,
-        "prime.candidates": result.candidates.length,
-        "prime.generators": result.profile.candidateGenerators.map(entry => entry.name),
-        "prime.reranker": result.reranker ?? "",
-        "prime.capability_gaps": result.capabilityGaps.length,
+        "aoe.admitted_units": result.admission.graph.units.length,
+        "aoe.acl_denied_units": result.admission.aclDeniedCount,
+        "aoe.request_filtered_units": result.admission.filtered.length,
+        "aoe.candidates": result.candidates.length,
+        "aoe.generators": result.profile.candidateGenerators.map(entry => entry.name),
+        "aoe.reranker": result.reranker ?? "",
+        "aoe.capability_gaps": result.capabilityGaps.length,
       });
       return result;
     },
@@ -306,7 +306,7 @@ export function planSelection(
     SPAN_PLAN,
     {
       ...(options.traceParent === undefined ? {} : { parent: options.traceParent }),
-      attributes: { "prime.request_id": request.requestId, "prime.profile_ref": request.profile, "prime.max_tokens": request.maxTokens },
+      attributes: { "aoe.request_id": request.requestId, "aoe.profile_ref": request.profile, "aoe.max_tokens": request.maxTokens },
     },
     span => {
       // Every phase below re-parents onto this span. Rebuilding `options` is how
@@ -315,12 +315,12 @@ export function planSelection(
       // adopt each other's children.
       const plan = buildPlan(request, ctx, { ...options, tracer, traceParent: span.context });
       span.setAttributes({
-        "prime.selected_units": plan.selected.length,
-        "prime.rejected_units": plan.rejections.length,
-        "prime.conflicts": plan.conflicts.length,
-        "prime.consumed_tokens": plan.budget.consumedTokens ?? 0,
-        "prime.corpus_release": plan.snapshot.corpusRelease,
-        "prime.corpus_digest": plan.snapshot.corpusDigest,
+        "aoe.selected_units": plan.selected.length,
+        "aoe.rejected_units": plan.rejections.length,
+        "aoe.conflicts": plan.conflicts.length,
+        "aoe.consumed_tokens": plan.budget.consumedTokens ?? 0,
+        "aoe.corpus_release": plan.snapshot.corpusRelease,
+        "aoe.corpus_digest": plan.snapshot.corpusDigest,
       });
       // `ok` rather than left `unset`: the engine reached the end of the pipeline
       // and is making that claim. A conflict is a recorded outcome, not a failed
@@ -373,10 +373,10 @@ function buildPlan(
       options.maxExpansionDepth ?? 8,
     );
     span.setAttributes({
-      "prime.seed_units": ranked.length,
-      "prime.discovered_units": result.discovered.length,
-      "prime.expansions": result.expansions.length,
-      "prime.max_expansion_depth": options.maxExpansionDepth ?? 8,
+      "aoe.seed_units": ranked.length,
+      "aoe.discovered_units": result.discovered.length,
+      "aoe.expansions": result.expansions.length,
+      "aoe.max_expansion_depth": options.maxExpansionDepth ?? 8,
     });
     return result;
   });
@@ -479,12 +479,12 @@ function buildPlan(
     // needs after the fact: how much of the ceiling was used, and how many units
     // the ceiling cost them.
     span.setAttributes({
-      "prime.max_tokens": request.maxTokens,
-      "prime.consumed_tokens": result.consumedTokens,
-      "prime.offered_units": loadOrder.ordered.length,
-      "prime.assigned_units": result.assignments.length,
-      "prime.budget_rejected_units": result.rejections.length,
-      "prime.projection_chain": [...chain],
+      "aoe.max_tokens": request.maxTokens,
+      "aoe.consumed_tokens": result.consumedTokens,
+      "aoe.offered_units": loadOrder.ordered.length,
+      "aoe.assigned_units": result.assignments.length,
+      "aoe.budget_rejected_units": result.rejections.length,
+      "aoe.projection_chain": [...chain],
     });
     return result;
   });

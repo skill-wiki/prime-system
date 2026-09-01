@@ -8,7 +8,7 @@
  * the check to invent a cleanup protocol.
  */
 
-import type { LoadedModel } from "@skill-wiki/model-schema";
+import type { LoadedModel } from "@aoe/model-schema";
 import { canonicalJson } from "./canonical.ts";
 import { emitMcpTools, type McpToolDocument } from "./emit-mcp.ts";
 import { emitClient, emitTypes, typeScriptNames, GENERATOR_ID } from "./emit-typescript.ts";
@@ -52,7 +52,7 @@ export function generateSdk(model: LoadedModel): GeneratedSdk {
 /**
  * Verify a `schema.json` emitted next to a generated SDK still hashes to the digest
  * it claims. This is the *generator* side of the §14.3 contract — the client side
- * lives in `@skill-wiki/sdk` (`assertGeneratedArtifactUsable`) — and it catches the
+ * lives in `@aoe/sdk` (`assertGeneratedArtifactUsable`) — and it catches the
  * one case the client gate cannot: a generated artifact whose stamped digest was
  * edited to match a snapshot it was never generated from.
  */

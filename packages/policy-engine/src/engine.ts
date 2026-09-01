@@ -1,4 +1,4 @@
-import type { ActionDefinition, Diagnostic, LoadedModel } from "@skill-wiki/model-schema";
+import type { ActionDefinition, Diagnostic, LoadedModel } from "@aoe/model-schema";
 import type { PolicyMatch, PolicyRule, PolicySet } from "./schema.ts";
 
 export interface Evidence { readonly kind: string; readonly value: string }

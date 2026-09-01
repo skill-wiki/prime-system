@@ -46,21 +46,21 @@ The name change does not silently rewrite stable identities.
 - Existing `prime/*` protocol identifiers remain valid until a versioned
   migration defines replacements.
 - `prime` remains a CLI alias while `aoe` becomes the preferred command.
-- Published `@skill-wiki/*` packages remain compatibility packages until the
+- Published `@aoe/*` packages remain compatibility packages until the
   `@aoe/*` scope is created and dual publishing is verified.
 - Existing GitHub repositories and Pages URLs keep their current remote names
   until external rename and redirect operations are completed.
 
 Documentation must label these as compatibility surfaces. It must not describe
-Skill Wiki or Prime System as the current product.
+AOE or Prime System as the current product.
 
 ## Repository target names
 
 The intended remote layout is:
 
 ```text
-kernary-engine
-kernary-frontend-design
+aoe-engine
+aoe-frontend-design
 aoe-registry
 aoe-docs
 aoe-workspace
@@ -84,7 +84,7 @@ workspace-only rename that breaks clone and update instructions.
 
 ## Rejected alternatives
 
-- **Skill Wiki** describes a narrower, mostly read-only product and overstates
+- **AOE** describes a narrower, mostly read-only product and overstates
   the role of Skills.
 - **Prime** is retained for compatibility but is too overloaded to distinguish
   the current product.

@@ -32,9 +32,9 @@ import {
   createOtlpHttpExporter,
   createRecordingTracer,
   type Tracer,
-} from "@skill-wiki/observability";
-import type { QueryEngineContext } from "@skill-wiki/query-engine";
-import { createEmbeddedTransport, type EmbeddedHost } from "@skill-wiki/sdk";
+} from "@aoe/observability";
+import type { QueryEngineContext } from "@aoe/query-engine";
+import { createEmbeddedTransport, type EmbeddedHost } from "@aoe/sdk";
 import { createBearerAuthenticator, parseCredentialSpec, type Credential } from "./auth.ts";
 import { describeExposure, startServer, type RunningServer } from "./server.ts";
 

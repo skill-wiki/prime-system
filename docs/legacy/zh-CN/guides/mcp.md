@@ -75,7 +75,7 @@ aoe_query({
 ## Server 实际加载什么
 
 ```bash
-AOE_CORPUS_DIR=/abs/path/to/compiled bunx @prime-lang/mcp-server-core
+AOE_CORPUS_DIR=/abs/path/to/compiled bunx @aoe/mcp-server-core
 # 或者，本地开发时直接从源码运行：
 AOE_CORPUS_DIR=/abs/path/to/compiled bun packages/mcp-server-core/src/index.ts
 ```
@@ -90,7 +90,7 @@ AOE_CORPUS_DIR=/abs/path/to/compiled bun packages/mcp-server-core/src/index.ts
 就这些。没 DB，没向量库，没 warm-up。900 atom 的 corpus 启动约 80 ms。
 
 ```bash
-$ AOE_CORPUS_DIR=./compiled-v3-final bunx @prime-lang/mcp-server-core
+$ AOE_CORPUS_DIR=./compiled-v3-final bunx @aoe/mcp-server-core
 [prime-mcp-core] 899 atoms · 51234 tokens · 12 clusters
 [prime-mcp-core] ready · tool: aoe_query · stdio transport active
 ```
@@ -106,7 +106,7 @@ $ AOE_CORPUS_DIR=./compiled-v3-final bunx @prime-lang/mcp-server-core
   "mcpServers": {
     "skill-wiki": {
       "command": "bunx",
-      "args": ["@prime-lang/mcp-server-core"],
+      "args": ["@aoe/mcp-server-core"],
       "env": {
         "AOE_CORPUS_DIR": "/abs/path/to/compiled-v3-final"
       }
@@ -151,12 +151,12 @@ MCP 协议是 stdio（或 SSE）上的 JSON-RPC。任何符合协议的客户端
 mcpServers:
   - name: skill-wiki
     command: bunx
-    args: ["@prime-lang/mcp-server-core"]
+    args: ["@aoe/mcp-server-core"]
     env:
       AOE_CORPUS_DIR: /abs/path/to/compiled
 ```
 
-**Cline / Cursor / 自己的 runtime**：把 `bunx @prime-lang/mcp-server-core`
+**Cline / Cursor / 自己的 runtime**：把 `bunx @aoe/mcp-server-core`
 起成子进程，设置 `AOE_CORPUS_DIR` 环境变量，用 `Content-Length` 帧化的 JSON-RPC
 通信。`mcp-server-core` 依赖上游的 `@modelcontextprotocol/sdk`，所以任何
 符合 MCP v1 的客户端都能直接用。
@@ -170,7 +170,7 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio";
 
 const transport = new StdioClientTransport({
   command: "bunx",
-  args: ["@prime-lang/mcp-server-core"],
+  args: ["@aoe/mcp-server-core"],
   env: { ...process.env, AOE_CORPUS_DIR: "/abs/path/to/compiled" },
 });
 const client = new Client({ name: "my-agent", version: "0.1.0" }, {});

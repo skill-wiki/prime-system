@@ -138,11 +138,11 @@
 
 ---
 
-## §4 · 检索——`prime_query`
+## §4 · 检索——`aoe_query`
 
-协议暴露**一个 MCP 工具**：`prime_query`。领域包装器可在此基础上附加额外工具；附带的前端设计包装器提供五个工具（见 [`FRONTEND-DESIGN-DOMAIN-v1.zh-CN.md`](./FRONTEND-DESIGN-DOMAIN-v1.zh-CN.md) §5）。
+协议暴露**一个 MCP 工具**：`aoe_query`。领域包装器可在此基础上附加额外工具；附带的前端设计包装器提供五个工具（见 [`FRONTEND-DESIGN-DOMAIN-v1.zh-CN.md`](./FRONTEND-DESIGN-DOMAIN-v1.zh-CN.md) §5）。
 
-### `prime_query`
+### `aoe_query`
 
 ```
 输入：
@@ -167,7 +167,7 @@
   }
 ```
 
-**评分**：关键词匹配 × quality.overall。不同类型无特权。需要类型优先级重排的领域包装器在接收 `prime_query` 结果后在自己的层中应用。若要在语料库范围内提升特定类型，设置 `PRIME_KIND_BOOSTS='{"rule":0.5,"check":0.4}'`（JSON 映射；默认为空——28 种类型平等对待）。
+**评分**：关键词匹配 × quality.overall。不同类型无特权。需要类型优先级重排的领域包装器在接收 `aoe_query` 结果后在自己的层中应用。若要在语料库范围内提升特定类型，设置 `PRIME_KIND_BOOSTS='{"rule":0.5,"check":0.4}'`（JSON 映射；默认为空——28 种类型平等对待）。
 
 **轴检索**是领域级概念，不是协议保证。领域在 `domain.yaml` 中声明自己的轴；协议提供底层关键词匹配 + 边图引擎。详见 [`DOMAIN-EXTENSION-SPEC.zh-CN.md`](./DOMAIN-EXTENSION-SPEC.zh-CN.md) §2。
 
@@ -197,7 +197,7 @@
 | `GET /atoms/:id.prime` | GET | 获取原子 `:id` 的原始 `.prime` 源文件 |
 | `GET /health` | GET | 存活检查 |
 
-`prime install @scope/name --remote <url>` 从此端点拉取缺失原子，写入本地源目录。
+`aoe install @scope/name --remote <url>` 从此端点拉取缺失原子，写入本地源目录。
 
 ---
 
@@ -266,7 +266,7 @@ Prime 实现分层验证流水线：
 
 **v1 限制**：编译器当前不在构建时强制执行生命周期检查，计划在 v1.1 实现。
 
-**Semver 注册中心**（`prime install`）：原子作为源文件分发于 `<corpus>/primes/sources/` 目录树中。跨团队分发：`prime install @scope/name --remote <url>`。
+**Semver 注册中心**（`aoe install`）：原子作为源文件分发于 `<corpus>/primes/sources/` 目录树中。跨团队分发：`aoe install @scope/name --remote <url>`。
 
 ---
 
@@ -274,11 +274,11 @@ Prime 实现分层验证流水线：
 
 ```bash
 # 编译语料库
-prime compile --src primes/sources --out primes/compiled
+aoe compile --src primes/sources --out primes/compiled
 
-# 启动 MCP 服务器（单工具：prime_query）
-PRIME_DIR=/abs/path/to/compiled \
-  bunx @prime-lang/mcp-server-core
+# 启动 MCP 服务器（单工具：aoe_query）
+AOE_CORPUS_DIR=/abs/path/to/compiled \
+  bunx @aoe/mcp-server-core
 ```
 
 运行时依赖：Node 22+（原生 TS 剥离）或 Bun。无需 esbuild。

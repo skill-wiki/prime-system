@@ -1,5 +1,5 @@
 /**
- * @module @skill-wiki/parser
+ * @module @aoe/parser
  * Parser for .prime source files.
  *
  * Converts .prime source text into an AST (Abstract Syntax Tree).
@@ -7,7 +7,7 @@
  *
  * @example — legacy `prime` syntax
  * ```typescript
- * import { parse } from '@skill-wiki/parser';
+ * import { parse } from '@aoe/parser';
  *
  * const { ast, errors } = parse(`
  *   prime Example extends Knowledge {
@@ -20,7 +20,7 @@
  *
  * @example — kind form (the type name is not a keyword)
  * ```typescript
- * import { parse } from '@skill-wiki/parser';
+ * import { parse } from '@aoe/parser';
  *
  * const { ast, errors } = parse(`
  *   fact WcagFocusContrast {
@@ -36,7 +36,7 @@
  * ```
  */
 
-import type { SyntaxAST, LegacySyntaxAST } from "@skill-wiki/types";
+import type { SyntaxAST, LegacySyntaxAST } from "@aoe/types";
 import { tokenize } from "./lexer.ts";
 import { Parser } from "./parser.ts";
 import { ParseError } from "./errors.ts";

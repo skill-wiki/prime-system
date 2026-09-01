@@ -8,7 +8,7 @@
  * obligation carried by `loadOrder`/`cyclePolicy` about the *shape* of the
  * selected set, not about whether a single unit belongs to it.
  */
-import type { ConflictSeverityIR, CyclePolicyIR, LoadOrderIR, TraversalIR } from "@skill-wiki/ir";
+import type { ConflictSeverityIR, CyclePolicyIR, LoadOrderIR, TraversalIR } from "@aoe/ir";
 
 /** Stable, content-derived identifier. Same input graph -> same refs, in the same order. */
 export type ConstraintRef = string;

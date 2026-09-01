@@ -1,6 +1,6 @@
 # 变更日志
 
-本文记录 Kernary Engine 的重要变更。Domain Package（如 `kernary-frontend-design`）维护各自独立的变更日志。
+本文记录 Kernary Engine 的重要变更。Domain Package（如 `aoe-frontend-design`）维护各自独立的变更日志。
 
 格式参照 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，版本规范遵循 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)。
 
@@ -31,7 +31,7 @@
 - `packages/runtime/` — 原子加载器、投影解析器（`summary` / `core` / `full`）、领域插件宿主存根。
 - `packages/registry/` — HTTP 包注册中心，支持发布（PUT）和安装（GET）端点，基于 Token 的鉴权。
 - `packages/cli/` — `prime` 命令，支持动词：`init`、`compile`、`check`、`ls`、`show`、`graph`、`deps`、`publish`、`install`、`mcp`。
-- `packages/mcp-server-core/` — 约 200 行的通用 MCP 服务器，通过任意编译语料库暴露单一工具 `prime_query`。
+- `packages/mcp-server-core/` — 约 200 行的通用 MCP 服务器，通过任意编译语料库暴露单一工具 `aoe_query`。
 - `spec/PRIME-PROTOCOL-v1.md` — 协议规范，v1.0。
 - `spec/FRONTEND-DESIGN-DOMAIN-v1.md` — 前端设计领域包装规范。
 - `examples/hello-world/` — 5 个原子的语料库，演示在简单领域（烧水、泡茶）的完整流程。
@@ -42,7 +42,7 @@
 
 ### 设计决策
 
-- **双仓库拆分。** Engine（本仓库）仅承载协议实现。Frontend Design Domain Package（`kernary-frontend-design`）承载历史 899-unit corpus，以及领域专用的 intent / retrieval / composition / validator-html / MCP 工具。
+- **双仓库拆分。** Engine（本仓库）仅承载协议实现。Frontend Design Domain Package（`aoe-frontend-design`）承载历史 899-unit corpus，以及领域专用的 intent / retrieval / composition / validator-html / MCP 工具。
 - **许可证：Apache-2.0。** 专利授权明确。NOTICE 在所有仓库中保留。
 - **无模型锁定。** L2 / intent / 美学验证可使用任何支持 chat-completions 兼容 API 的 LLM。
 - **仅支持 Node 22+。** 通过 `--experimental-transform-types` 实现原生 TS 剥离，无需打包器即可运行；支持 Bun 作为更快的安装/测试运行器。
@@ -55,5 +55,5 @@
 
 ---
 
-[Unreleased]: https://github.com/skill-wiki/kernary-engine/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/skill-wiki/kernary-engine/releases/tag/v0.1.0
+[Unreleased]: https://github.com/kernary-aoe/aoe-engine/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/kernary-aoe/aoe-engine/releases/tag/v0.1.0

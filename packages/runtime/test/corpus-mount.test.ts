@@ -101,19 +101,19 @@ describe("mountCorpus", () => {
     // The declared value is what reaches a public aoe:// URI now, and the
     // divergence is still reported so a stale artifact cannot hide.
     const dir = bundle(root, "bundle-a", "compiled-v3-final", "2026-08-29");
-    const declaration = declarationAt(root, "pkg-a", "com.github.skill-wiki/frontend-design");
+    const declaration = declarationAt(root, "pkg-a", "com.kernary.aoe/frontend-design");
     const outcome = mountCorpus({ path: dir, declarationRoot: declaration });
     expect(outcome.ok).toBe(true);
     if (!outcome.ok) return;
-    expect(outcome.mount.namespace).toBe("com.github.skill-wiki/frontend-design");
-    expect(outcome.mount.declaredNamespace).toBe("com.github.skill-wiki/frontend-design");
+    expect(outcome.mount.namespace).toBe("com.kernary.aoe/frontend-design");
+    expect(outcome.mount.declaredNamespace).toBe("com.kernary.aoe/frontend-design");
     // The manifest's own value is kept, not overwritten: it is the evidence that
     // the bundle on disk was built from a different declaration.
     expect(outcome.mount.manifestCorpus).toBe("compiled-v3-final");
-    expect(outcome.mount.key).toBe(corpusMountKey("com.github.skill-wiki/frontend-design", "2026-08-29"));
+    expect(outcome.mount.key).toBe(corpusMountKey("com.kernary.aoe/frontend-design", "2026-08-29"));
     const mismatch = outcome.mount.diagnostics.find(d => d.code === "MOUNT_NAMESPACE_MISMATCH");
     expect(mismatch?.severity).toBe("warning");
-    expect(mismatch?.context?.["served"]).toBe("com.github.skill-wiki/frontend-design");
+    expect(mismatch?.context?.["served"]).toBe("com.kernary.aoe/frontend-design");
     expect(mismatch?.context?.["namespaceSource"]).toBe("declaration");
   }));
 
@@ -123,18 +123,18 @@ describe("mountCorpus", () => {
     // namespace, so the warning fired on every mount that read a declaration at
     // all — i.e. it reported "a declaration exists". Now the compiler stamps the
     // declared value, so a warning means the two authorities really disagree.
-    const dir = bundle(root, "bundle-a", "com.github.skill-wiki/frontend-design", "2026-08-29");
-    const declaration = declarationAt(root, "pkg-a", "com.github.skill-wiki/frontend-design");
+    const dir = bundle(root, "bundle-a", "com.kernary.aoe/frontend-design", "2026-08-29");
+    const declaration = declarationAt(root, "pkg-a", "com.kernary.aoe/frontend-design");
     const outcome = mountCorpus({ path: dir, declarationRoot: declaration });
     expect(outcome.ok).toBe(true);
     if (!outcome.ok) return;
-    expect(outcome.mount.namespace).toBe("com.github.skill-wiki/frontend-design");
+    expect(outcome.mount.namespace).toBe("com.kernary.aoe/frontend-design");
     expect(outcome.mount.diagnostics).toEqual([]);
   }));
 
   it("keeps the manifest value verbatim, unchecked, only when asked", () => withRoot((root) => {
     const dir = bundle(root, "bundle-a", "compiled-v3-final", "2026-08-29");
-    const declaration = declarationAt(root, "pkg-a", "com.github.skill-wiki/frontend-design");
+    const declaration = declarationAt(root, "pkg-a", "com.kernary.aoe/frontend-design");
     const kept = mountCorpus({ path: dir, declarationRoot: declaration }, { namespaceSource: "manifest" });
     expect(kept.ok).toBe(true);
     if (!kept.ok) return;

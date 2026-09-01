@@ -54,7 +54,7 @@ If you imported `FRONTEND_DESIGN_DOMAIN` or `createDefaultDomainRegistry` in v0.
 
 ```typescript
 // Before (v0.0.x) — REMOVED
-import { FRONTEND_DESIGN_DOMAIN, createDefaultDomainRegistry } from "@prime-lang/runtime";
+import { FRONTEND_DESIGN_DOMAIN, createDefaultDomainRegistry } from "@aoe/runtime";
 const registry = createDefaultDomainRegistry();
 ```
 
@@ -62,7 +62,7 @@ Replace with:
 
 ```typescript
 // After (v0.1.0+) — load from the corpus's domain.yaml
-import { loadDomainFromFile, DomainRegistry, registerAll } from "@prime-lang/runtime";
+import { loadDomainFromFile, DomainRegistry, registerAll } from "@aoe/runtime";
 const registry = new DomainRegistry();
 registerAll(registry, [
   loadDomainFromFile("./corpora/frontend-design/domain.yaml"),
@@ -72,7 +72,7 @@ registerAll(registry, [
 Or use the convenience factory:
 
 ```typescript
-import { createConfigDrivenRegistry } from "@prime-lang/runtime";
+import { createConfigDrivenRegistry } from "@aoe/runtime";
 // Scans for domain.yaml files under cwd/corpora/** (depth ≤ 4)
 const registry = createConfigDrivenRegistry();
 ```
@@ -496,7 +496,7 @@ Each key under `contract:` is a contract field definition:
 Validators are domain-specific output checks intended to run after retrieval.
 
 > **v0.1.0 status:** Validators declared in `domain.yaml` are parsed and stored
-> by the runtime, but the execution engine (`@prime-lang/validator-core`) is not
+> by the runtime, but the execution engine (`@aoe/validator-core`) is not
 > yet shipped. All `builtin:` and `regex:` validators are silently no-ops in
 > v0.1.0. Authors may declare them today to future-proof their configuration;
 > the runner will be wired in v0.2. No error or warning is emitted when a
@@ -579,7 +579,7 @@ This constant limits how many directory levels below the root the recursive scan
 ### 5.3 Environment Variable Override
 
 ```
-PRIME_DOMAINS_DIR=/path/to/my/corpora prime query "..."
+PRIME_DOMAINS_DIR=/path/to/my/corpora aoe query "..."
 ```
 
 When `PRIME_DOMAINS_DIR` is set:
@@ -870,7 +870,7 @@ my-project/
   CLAUDE.md
 ```
 
-When `prime query "how do I make a pan sauce"` runs from `my-project/`, it loads both domains and returns cooking-biased results. When asked `"cite-style for judicial opinions"`, it returns legal-biased results.
+When `aoe query "how do I make a pan sauce"` runs from `my-project/`, it loads both domains and returns cooking-biased results. When asked `"cite-style for judicial opinions"`, it returns legal-biased results.
 
 ### Corpus package with domains/ subdirectory
 

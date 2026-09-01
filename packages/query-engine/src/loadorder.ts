@@ -10,7 +10,7 @@
  * set fall back to unit id, so the order never depends on `Map` iteration.
  */
 
-import type { DiagnosticIR } from "@skill-wiki/ir";
+import type { DiagnosticIR } from "@aoe/ir";
 import { compareStrings } from "./deterministic.ts";
 import type { OrderConstraint } from "./expansion.ts";
 

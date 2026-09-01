@@ -4,7 +4,7 @@
  */
 
 import { describe, expect, test } from "bun:test";
-import type { ProjectionDefIR } from "@skill-wiki/ir";
+import type { ProjectionDefIR } from "@aoe/ir";
 import { ProjectionCatalog, levelFromDefinition, levelFromIR } from "../src/profile.ts";
 import { levelAppliesToUnit } from "../src/select.ts";
 import { projectionDef, unit } from "./fixtures.ts";

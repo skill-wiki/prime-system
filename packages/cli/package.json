@@ -1,5 +1,5 @@
 {
-  "name": "@skill-wiki/cli",
+  "name": "@aoe/cli",
   "version": "0.2.0",
   "description": "AOE CLI — author, compile, inspect, query, and operate Agent Ontology Packages.",
   "type": "module",
@@ -19,16 +19,16 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@skill-wiki/action-runtime": "workspace:*",
-    "@skill-wiki/bundle": "workspace:*",
-    "@skill-wiki/compiler": "workspace:*",
-    "@skill-wiki/event-store": "workspace:*",
-    "@skill-wiki/ir": "workspace:*",
-    "@skill-wiki/language-server": "workspace:*",
-    "@skill-wiki/model-schema": "workspace:*",
-    "@skill-wiki/parser": "workspace:*",
-    "@skill-wiki/runtime": "workspace:*",
-    "@skill-wiki/types": "workspace:*"
+    "@aoe/action-runtime": "workspace:*",
+    "@aoe/bundle": "workspace:*",
+    "@aoe/compiler": "workspace:*",
+    "@aoe/event-store": "workspace:*",
+    "@aoe/ir": "workspace:*",
+    "@aoe/language-server": "workspace:*",
+    "@aoe/model-schema": "workspace:*",
+    "@aoe/parser": "workspace:*",
+    "@aoe/runtime": "workspace:*",
+    "@aoe/types": "workspace:*"
   },
   "keywords": [
     "aoe",
@@ -42,12 +42,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/skill-wiki/kernary-engine.git",
+    "url": "git+https://github.com/kernary-aoe/aoe-engine.git",
     "directory": "packages/cli"
   },
-  "homepage": "https://github.com/skill-wiki/kernary-engine/tree/main/packages/cli#readme",
+  "homepage": "https://github.com/kernary-aoe/aoe-engine/tree/main/packages/cli#readme",
   "bugs": {
-    "url": "https://github.com/skill-wiki/kernary-engine/issues"
+    "url": "https://github.com/kernary-aoe/aoe-engine/issues"
   },
   "publishConfig": {
     "access": "public",

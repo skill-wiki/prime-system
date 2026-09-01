@@ -1,4 +1,4 @@
-import type { LoadedModel, ModelDefinition, ProjectionDefinition, RelationDefinition, TypeDefinition } from "@skill-wiki/model-schema";
+import type { LoadedModel, ModelDefinition, ProjectionDefinition, RelationDefinition, TypeDefinition } from "@aoe/model-schema";
 import { check, finding, report, skipped, type CheckOutcome, type Finding, type SuiteReport } from "./diagnostics.ts";
 import { computeContentDigest, computeUnitDigest, type CorpusPackage, type CorpusUnitRecord } from "./corpus.ts";
 

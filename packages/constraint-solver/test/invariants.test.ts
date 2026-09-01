@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import type { ConstraintRefIR } from "@skill-wiki/ir";
+import type { ConstraintRefIR } from "@aoe/ir";
 import { solve, type Constraint, type HardConstraint, type RuntimePolicyConstraint, type SolveRequest, type WeightBearingKinds } from "../src/index.ts";
 import { edge, relation, relations, snapshot, unit } from "./support.ts";
 

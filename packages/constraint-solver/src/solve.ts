@@ -14,7 +14,7 @@
  * core: the candidate set is seeded from the blocker and its support chains, then
  * shrunk by deletion until every remaining ref is load-bearing.
  */
-import type { ConstraintKindIR, ConstraintRefIR, DiagnosticIR, GraphEdgeIR, RelationDefIR, SelectionCandidateIR, SelectionPlanIR, SnapshotRef, UnitIR, ValueIR } from "@skill-wiki/ir";
+import type { ConstraintKindIR, ConstraintRefIR, DiagnosticIR, GraphEdgeIR, RelationDefIR, SelectionCandidateIR, SelectionPlanIR, SnapshotRef, UnitIR, ValueIR } from "@aoe/ir";
 import {
   type ConstraintRef,
   type ConstraintSet,

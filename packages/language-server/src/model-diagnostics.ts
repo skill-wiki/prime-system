@@ -9,8 +9,8 @@
  * by construction. Callers get both lists and the `stage` tag distinguishes them.
  */
 
-import type { AtomDeclaration, FieldNode, SyntaxAST, UnitDeclaration } from "@skill-wiki/types";
-import type { TypeDefinition } from "@skill-wiki/model-schema";
+import type { AtomDeclaration, FieldNode, SyntaxAST, UnitDeclaration } from "@aoe/types";
+import type { TypeDefinition } from "@aoe/model-schema";
 import type { LspDiagnostic } from "./diagnostics";
 import type { ModelIndex, ModelState } from "./model-index";
 import type { TextDocument } from "./text-document";

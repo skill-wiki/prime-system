@@ -10,9 +10,9 @@
  */
 import { describe, expect, it } from "bun:test";
 import { join, resolve } from "node:path";
-import { loadCorpusSnapshot, loadAtomMeta, loadIndex } from "@skill-wiki/runtime";
-import type { SnapshotRef as IrSnapshotRef } from "@skill-wiki/ir";
-import type { Principal } from "@skill-wiki/query-engine";
+import { loadCorpusSnapshot, loadAtomMeta, loadIndex } from "@aoe/runtime";
+import type { SnapshotRef as IrSnapshotRef } from "@aoe/ir";
+import type { Principal } from "@aoe/query-engine";
 import { buildCorpusGraph } from "../src/corpus-graph";
 import { cheaperProjections, loadServeModel, resolveModelRoot } from "../src/model-context";
 import { executeAoeQuery, resolveAoeUri, type ServeOptions } from "../src/serve";

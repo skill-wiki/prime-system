@@ -20,8 +20,8 @@
  */
 
 import { beforeAll, describe, expect, test } from "bun:test";
-import type { SelectionCandidateIR } from "@skill-wiki/ir";
-import type { RetrievalProfile } from "@skill-wiki/model-schema";
+import type { SelectionCandidateIR } from "@aoe/ir";
+import type { RetrievalProfile } from "@aoe/model-schema";
 import {
   FEATURE_AXIS_NOT_APPLICABLE,
   FEATURE_AXIS_UNPRODUCED,

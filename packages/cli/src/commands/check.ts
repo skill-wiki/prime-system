@@ -18,9 +18,9 @@
 import { resolve, basename } from 'path';
 import { header, success, error, diagnosticLine, createSpinner, green, red, yellow } from '../utils/display';
 import { readFile, fileExists } from '../utils/fs';
-import { parseLegacy } from '@skill-wiki/parser';
-import { checkL1 } from '@skill-wiki/compiler';
-import type { Diagnostic } from '@skill-wiki/compiler';
+import { parseLegacy } from '@aoe/parser';
+import { checkL1 } from '@aoe/compiler';
+import type { Diagnostic } from '@aoe/compiler';
 
 export async function checkCommand(args: string[]) {
   const file = args[0];

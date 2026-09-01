@@ -12,8 +12,8 @@
  * the way the language defines them, and a second scanner would drift.
  */
 
-import { tokenize, TokenType, type Token } from "@skill-wiki/parser";
-import type { SyntaxAST } from "@skill-wiki/types";
+import { tokenize, TokenType, type Token } from "@aoe/parser";
+import type { SyntaxAST } from "@aoe/types";
 import type { ModelIndex, ModelState } from "./model-index";
 import type { Position, TextDocument } from "./text-document";
 

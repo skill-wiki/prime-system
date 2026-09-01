@@ -1,9 +1,9 @@
 /**
- * @module @skill-wiki/sdk
+ * @module @aoe/sdk
  *
  * Layer 2 of plan §10.1 — the Engine client. It owns the uniform Query/Plan/Action/
  * Events surface, the transport SPI, and the generated-artifact digest gate that
- * layer 3 (Model-generated SDK, produced by `@skill-wiki/sdk-codegen`) stamps and
+ * layer 3 (Model-generated SDK, produced by `@aoe/sdk-codegen`) stamps and
  * relies on.
  *
  * It owns no domain vocabulary: there is not one type name, relation name, facet
@@ -32,10 +32,10 @@ export {
 
 /**
  * Re-exported so a *generated* model SDK needs exactly one dependency edge
- * (`@skill-wiki/sdk`) instead of also naming the engine package that happens to
+ * (`@aoe/sdk`) instead of also naming the engine package that happens to
  * own the run types today. A generated file is not hand-maintained, so every extra
  * import it carries is an extra thing a package split can break.
  */
-export type { ActionRun, EffectPlan, EventRecord, RequestContext } from "@skill-wiki/action-runtime";
-export type { QueryRequest } from "@skill-wiki/query-engine";
-export type { SelectionPlanIR, SnapshotRef } from "@skill-wiki/ir";
+export type { ActionRun, EffectPlan, EventRecord, RequestContext } from "@aoe/action-runtime";
+export type { QueryRequest } from "@aoe/query-engine";
+export type { SelectionPlanIR, SnapshotRef } from "@aoe/ir";

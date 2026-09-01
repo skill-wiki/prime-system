@@ -22,7 +22,7 @@
  */
 
 import { createHash } from 'node:crypto';
-import type { LoadedModel, ProjectionDefinition, RelationDefinition, TypeDefinition } from '@skill-wiki/model-schema';
+import type { LoadedModel, ProjectionDefinition, RelationDefinition, TypeDefinition } from '@aoe/model-schema';
 import type { AuditedCorpus, AuditedEdge } from './corpus';
 
 /** Model-declared severity, plus the structural default for rules the model does not grade. */

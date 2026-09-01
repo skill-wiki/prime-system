@@ -1,12 +1,12 @@
 # AOE CLI
 
-`@skill-wiki/cli` provides the AOE command line for Agent Ontology Engine
+`@aoe/cli` provides the AOE command line for Agent Ontology Engine
 packages. It installs the `aoe` binary.
 
 The CLI requires Bun because the Action run surface uses the Bun SQLite runtime.
 
 ```bash
-bun add --global @skill-wiki/cli
+bun add --global @aoe/cli
 aoe --help
 ```
 

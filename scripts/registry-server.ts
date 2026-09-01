@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * scripts/registry-server.ts — minimal HTTP registry for `prime install --remote`
+ * scripts/registry-server.ts — minimal HTTP registry for `aoe install --remote`
  * and `prime publish --remote` round-trip testing.
  *
  * Endpoints:
@@ -152,8 +152,8 @@ const server = Bun.serve({
   },
 });
 
-console.error(`[prime-registry] listening on http://localhost:${server.port}`);
-console.error(`[prime-registry] storage: ${ROOT}`);
-console.error(`[prime-registry] auth: ${TOKEN ? "Bearer token required" : "open (set AOE_REGISTRY_TOKEN to require)"}`);
-console.error(`[prime-registry] try:  curl http://localhost:${server.port}/healthz`);
-console.error(`[prime-registry]        curl http://localhost:${server.port}/atoms`);
+console.error(`[aoe-registry] listening on http://localhost:${server.port}`);
+console.error(`[aoe-registry] storage: ${ROOT}`);
+console.error(`[aoe-registry] auth: ${TOKEN ? "Bearer token required" : "open (set AOE_REGISTRY_TOKEN to require)"}`);
+console.error(`[aoe-registry] try:  curl http://localhost:${server.port}/healthz`);
+console.error(`[aoe-registry]        curl http://localhost:${server.port}/atoms`);

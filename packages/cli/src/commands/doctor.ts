@@ -1,4 +1,4 @@
-import { loadCorpusSnapshot, loadIndex, PrimeBundleError, type SnapshotRef } from "@skill-wiki/runtime";
+import { loadCorpusSnapshot, loadIndex, PrimeBundleError, type SnapshotRef } from "@aoe/runtime";
 
 export interface DoctorOptions { dir: string; strictManifest: boolean; json: boolean; }
 export type DoctorArgs = { kind: "help" } | { kind: "options"; options: DoctorOptions } | { kind: "error"; message: string; json: boolean; code: "AOE_CORPUS_DIR_REQUIRED" | "DOCTOR_ARGUMENT_INVALID" };

@@ -16,11 +16,11 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
-import { NAMESPACE } from "@skill-wiki/corpus-schema";
+import { NAMESPACE } from "@aoe/corpus-schema";
 import {
   CORPUS_INDEX_FILE, CORPUS_MANIFEST_FILE, PrimeBundleError, loadCorpusSnapshot, verifyCorpusSignature,
   type LoadedCorpusSnapshot,
-} from "@skill-wiki/runtime";
+} from "@aoe/runtime";
 import { check, finding, report, skipped, type CheckOutcome, type Finding, type SuiteReport } from "./diagnostics.ts";
 
 /** The per-unit artifact every emitted unit directory carries. */

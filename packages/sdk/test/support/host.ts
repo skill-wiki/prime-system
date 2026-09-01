@@ -14,15 +14,15 @@
  */
 
 import { resolve } from "node:path";
-import type { GraphIR, SnapshotRef, TypedValueIR, UnitIR } from "@skill-wiki/ir";
-import { loadModelOrThrow, type ProjectionDefinition, type RelationDefinition, type RetrievalProfile } from "@skill-wiki/model-schema";
+import type { GraphIR, SnapshotRef, TypedValueIR, UnitIR } from "@aoe/ir";
+import { loadModelOrThrow, type ProjectionDefinition, type RelationDefinition, type RetrievalProfile } from "@aoe/model-schema";
 import {
   CandidateGeneratorRegistry,
   createFacetGenerator,
   createGraphGenerator,
   createLexicalGenerator,
   type QueryEngineContext,
-} from "@skill-wiki/query-engine";
+} from "@aoe/query-engine";
 
 export const MODEL_ROOT = resolve(import.meta.dir, "../../../testkit/fixtures/security-model");
 

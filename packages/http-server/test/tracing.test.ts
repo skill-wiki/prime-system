@@ -7,16 +7,16 @@
  */
 
 import { describe, expect, test } from "bun:test";
-import { SPAN_BUDGET, SPAN_EXPANSION, SPAN_PLAN, SPAN_RETRIEVAL } from "@skill-wiki/query-engine";
-import { SPAN_PROJECTION } from "@skill-wiki/sdk";
+import { SPAN_BUDGET, SPAN_EXPANSION, SPAN_PLAN, SPAN_RETRIEVAL } from "@aoe/query-engine";
+import { SPAN_PROJECTION } from "@aoe/sdk";
 import {
   TRACEPARENT_HEADER,
   formatTraceparent,
   toOtlpTracePayload,
-} from "@skill-wiki/observability";
+} from "@aoe/observability";
 import { mountCorpora, switchRelease, EVENT_CORPUS_MOUNTED, EVENT_CORPUS_MOUNT_FAILED, EVENT_CORPUS_SWITCHED, SPAN_CORPUS_ACTIVATE, SPAN_CORPUS_MOUNT } from "../src/corpus.ts";
 import { SPAN_HTTP_REQUEST } from "../src/handler.ts";
-import { InMemorySpanSink, createRecordingTracer, createStepClock } from "@skill-wiki/observability";
+import { InMemorySpanSink, createRecordingTracer, createStepClock } from "@aoe/observability";
 import { PUBLIC_TOKEN, harness, post } from "./support/host.ts";
 
 const query = (profile: string): unknown => ({ profile, maxTokens: 4000, text: "authentication" });

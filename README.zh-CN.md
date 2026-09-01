@@ -14,8 +14,8 @@
 
 <p align="center">
   <a href="./README.md">English</a> ·
-  <a href="https://skill-wiki.github.io/zh/docs">中文文档</a> ·
-  <a href="https://github.com/skill-wiki/kernary-engine/actions/workflows/ci.yml"><img src="https://github.com/skill-wiki/kernary-engine/actions/workflows/ci.yml/badge.svg" alt="CI"></a> ·
+  <a href="https://kernary-aoe.github.io/zh/docs">中文文档</a> ·
+  <a href="https://github.com/kernary-aoe/aoe-engine/actions/workflows/ci.yml"><img src="https://github.com/kernary-aoe/aoe-engine/actions/workflows/ci.yml/badge.svg" alt="CI"></a> ·
   <a href="LICENSE">Apache-2.0</a>
 </p>
 
@@ -130,8 +130,8 @@ precondition、幂等策略和审批要求。Runtime 可以执行 preflight 与 
 HTTP/MCP 的消费者可以使用 Node.js 22+。
 
 ```bash
-git clone https://github.com/skill-wiki/kernary-engine.git
-cd kernary-engine
+git clone https://github.com/kernary-aoe/aoe-engine.git
+cd aoe-engine
 bun install --frozen-lockfile
 
 bun run typecheck
@@ -196,7 +196,7 @@ my-domain/
 - [Actions 与 Policies](docs/guides/actions-and-policies.zh-CN.md)
 - [Releases 与 Migrations](docs/operations/releases-and-migrations.zh-CN.md)
 
-[Frontend Design Domain Package](https://github.com/skill-wiki/kernary-frontend-design)
+[Frontend Design Domain Package](https://github.com/kernary-aoe/aoe-frontend-design)
 只是一个参考实现。Workspace 中的 Security、Backend、Mobile 和 Cooking
 Corpus 是额外的通用性测试夹具，不是 Core 功能。
 

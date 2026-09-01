@@ -8,7 +8,7 @@
  * from which denied units and their edges are already gone.
  */
 
-import type { GraphIR, UnitIR } from "@skill-wiki/ir";
+import type { GraphIR, UnitIR } from "@aoe/ir";
 import { describeFacet, matchesFacet } from "./facets.ts";
 import { compareStrings, orderedRecord, sortedKeys } from "./deterministic.ts";
 import type { FacetSelector, Principal, QueryRequest, UnitLifecycle } from "./types.ts";

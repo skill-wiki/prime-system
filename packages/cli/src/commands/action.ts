@@ -1,6 +1,6 @@
 /**
  * `aoe action preflight|run` — plan §11.4's action surface, and the bin entry
- * that makes `@skill-wiki/action-runtime` and `@skill-wiki/event-store` reachable
+ * that makes `@aoe/action-runtime` and `@aoe/event-store` reachable
  * from something that actually runs.
  *
  * Scope is deliberately the §16 Phase 4 use case and nothing more: a

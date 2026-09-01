@@ -1,5 +1,5 @@
 /**
- * @module @skill-wiki/http-server
+ * @module @aoe/http-server
  *
  * The HTTP transport of plan §10.4 (`TransportKind: "remote"` seen from a client),
  * and the Phase 5 `http-server` package.

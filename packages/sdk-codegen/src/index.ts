@@ -1,5 +1,5 @@
 /**
- * @module @skill-wiki/sdk-codegen
+ * @module @aoe/sdk-codegen
  *
  * Layer 3 of plan §10.1 — the Model-generated SDK — produced from `SchemaIR` per
  * §14.3, never by re-parsing YAML. `buildCodegenSchema` is the single place a

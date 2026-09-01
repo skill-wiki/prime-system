@@ -1,7 +1,7 @@
 /**
  * atom-loader.ts
  *
- * Projection-based runtime loader for Prime v3 atom directories.
+ * Projection-based runtime loader for AOE v3 atom directories.
  *
  * Responsibilities:
  *  - loadIndex(primeDir)              → parse _index.xml into GlobalIndex
@@ -216,7 +216,7 @@ function atomDir(primeDir: string, atomId: string): string {
 // ---------------------------------------------------------------------------
 
 /**
- * Load and parse _index.xml from the given Prime directory.
+ * Load and parse _index.xml from the given AOE directory.
  * Returns a structured GlobalIndex object.
  * Throws if _index.xml is missing or unparseable.
  */
@@ -291,7 +291,7 @@ export function loadAtomMeta(primeDir: string, atomId: string): AtomMeta {
  * The agent should use this path with the Read tool.
  * This function DOES NOT read the file.
  *
- * @param primeDir  - Root Prime directory (${AOE_CORPUS_DIR})
+ * @param primeDir  - Root AOE directory (${AOE_CORPUS_DIR})
  * @param atomId    - Atom identifier, e.g. "@community/method-modal-focus"
  * @param level     - Projection level: "summary" | "core" | "full"
  * @returns Absolute path to the chunk file

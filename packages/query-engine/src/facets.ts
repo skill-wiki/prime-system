@@ -6,7 +6,7 @@
  * another when it excludes.
  */
 
-import type { UnitIR } from "@skill-wiki/ir";
+import type { UnitIR } from "@aoe/ir";
 import type { FacetSelector } from "./types.ts";
 import { resolvePath, typedValueMatches } from "./values.ts";
 

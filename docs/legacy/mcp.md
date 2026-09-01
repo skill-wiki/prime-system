@@ -79,7 +79,7 @@ edge walks, kind filters, simple substring match against the index.
 ## What the server actually loads
 
 ```bash
-AOE_CORPUS_DIR=/abs/path/to/compiled bunx @prime-lang/mcp-server-core
+AOE_CORPUS_DIR=/abs/path/to/compiled bunx @aoe/mcp-server-core
 # or, during local development directly from source:
 AOE_CORPUS_DIR=/abs/path/to/compiled bun packages/mcp-server-core/src/index.ts
 ```
@@ -95,7 +95,7 @@ That's it. There is no DB, no embedding store, no warming step. Boot
 time on a 900-atom corpus is ~80 ms.
 
 ```bash
-$ AOE_CORPUS_DIR=./compiled-v3-final bunx @prime-lang/mcp-server-core
+$ AOE_CORPUS_DIR=./compiled-v3-final bunx @aoe/mcp-server-core
 [prime-mcp-core] 899 atoms · 51234 tokens · 12 clusters
 [prime-mcp-core] ready · tool: aoe_query · stdio transport active
 ```
@@ -111,7 +111,7 @@ $ AOE_CORPUS_DIR=./compiled-v3-final bunx @prime-lang/mcp-server-core
   "mcpServers": {
     "skill-wiki": {
       "command": "bunx",
-      "args": ["@prime-lang/mcp-server-core"],
+      "args": ["@aoe/mcp-server-core"],
       "env": {
         "AOE_CORPUS_DIR": "/abs/path/to/compiled-v3-final"
       }
@@ -158,12 +158,12 @@ speaks it works.
 mcpServers:
   - name: skill-wiki
     command: bunx
-    args: ["@prime-lang/mcp-server-core"]
+    args: ["@aoe/mcp-server-core"]
     env:
       AOE_CORPUS_DIR: /abs/path/to/compiled
 ```
 
-**Cline / Cursor / any custom runtime**: spawn `bunx @prime-lang/mcp-server-core`
+**Cline / Cursor / any custom runtime**: spawn `bunx @aoe/mcp-server-core`
 as a subprocess with `AOE_CORPUS_DIR` set, and send JSON-RPC framed by
 `Content-Length`. The `mcp-server-core` package depends on the upstream
 `@modelcontextprotocol/sdk` so any client conforming to MCP v1 protocol works.
@@ -177,7 +177,7 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio";
 
 const transport = new StdioClientTransport({
   command: "bunx",
-  args: ["@prime-lang/mcp-server-core"],
+  args: ["@aoe/mcp-server-core"],
   env: { ...process.env, AOE_CORPUS_DIR: "/abs/path/to/compiled" },
 });
 const client = new Client({ name: "my-agent", version: "0.1.0" }, {});

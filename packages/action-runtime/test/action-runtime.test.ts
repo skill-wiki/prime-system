@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { loadModelOrThrow, type LoadedModel } from "@skill-wiki/model-schema";
+import { loadModelOrThrow, type LoadedModel } from "@aoe/model-schema";
 import { ActionProviderRegistry, ActionRuntime, FunctionProviderRegistry, InMemoryEventStore } from "../src/index.ts";
 
 const model = loadModelOrThrow(new URL("../../model-schema/test/fixtures/ticket-model", import.meta.url).pathname);

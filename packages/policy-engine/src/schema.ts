@@ -1,4 +1,4 @@
-import { ActionDefinitionSchema } from "@skill-wiki/model-schema";
+import { ActionDefinitionSchema } from "@aoe/model-schema";
 import { z } from "zod";
 
 const semver = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;

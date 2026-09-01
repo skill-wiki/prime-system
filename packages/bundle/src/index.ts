@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
 import { existsSync, lstatSync, mkdirSync, readdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { join, parse as parsePath, resolve, sep } from "node:path";
-import { buildGlobalIndexXml, type AtomMeta } from "@skill-wiki/compiler";
-import type { CompiledUnitIR } from "@skill-wiki/ir";
-import { compareCanonicalStrings, computeCorpusContentDigest, loadCorpusSnapshot, validateCorpusManifest, type CorpusManifest } from "@skill-wiki/runtime";
+import { buildGlobalIndexXml, type AtomMeta } from "@aoe/compiler";
+import type { CompiledUnitIR } from "@aoe/ir";
+import { compareCanonicalStrings, computeCorpusContentDigest, loadCorpusSnapshot, validateCorpusManifest, type CorpusManifest } from "@aoe/runtime";
 
 export interface CorpusIndexEntry { readonly id: string; readonly kind: string; readonly version: string; readonly description: string; readonly domain: string; readonly tags: readonly string[]; readonly tokens: Readonly<Record<string, number>>; readonly lifecycle?: "active" | "deprecated"; readonly deprecatedAt?: string; readonly supersededBy?: string; }
 export interface BundleManifestMetadata { readonly protocolVersion: string; readonly irVersion: string; readonly compilerVersion: string; readonly emitterVersion: string; readonly corpus: string; readonly release: string; readonly sourceRevision: string; readonly models: Readonly<Record<string, string>>; readonly schemaDigest: string; readonly createdAt: string; }
@@ -70,4 +70,4 @@ export function finalizeCorpusBundle(options: FinalizeCorpusBundleOptions): Fina
 }
 
 /** Re-export the Runtime authority for callers that need to inspect artifacts before finalizing. */
-export { computeCorpusContentDigest } from "@skill-wiki/runtime";
+export { computeCorpusContentDigest } from "@aoe/runtime";

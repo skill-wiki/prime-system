@@ -42,8 +42,8 @@ Snapshot 包含编译后的 Unit artifact、模型定义的 Projection、Index�
 ### 1. 安装 Engine
 
 ```bash
-git clone https://github.com/skill-wiki/kernary-engine.git
-cd kernary-engine
+git clone https://github.com/kernary-aoe/aoe-engine.git
+cd aoe-engine
 bun install --frozen-lockfile
 ```
 

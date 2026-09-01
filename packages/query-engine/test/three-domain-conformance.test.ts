@@ -23,7 +23,7 @@
  */
 
 import { beforeAll, describe, expect, test } from "bun:test";
-import type { SelectionPlanIR } from "@skill-wiki/ir";
+import type { SelectionPlanIR } from "@aoe/ir";
 import { RERANKER_APPLIED, builtinRerankers, planSelection, type QueryRequest } from "../src/index.ts";
 import {
   DOMAINS,

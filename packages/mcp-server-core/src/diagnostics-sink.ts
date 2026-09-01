@@ -50,7 +50,7 @@
  */
 import { writeFileSync } from "fs";
 import { join } from "path";
-import type { DiagnosticIR } from "@skill-wiki/ir";
+import type { DiagnosticIR } from "@aoe/ir";
 
 /** How a dropped edge should be remedied. Ordered most to least mechanical. */
 export type DanglingClass =

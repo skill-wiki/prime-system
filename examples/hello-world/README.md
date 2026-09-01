@@ -1,8 +1,8 @@
 # Hello World — Tea Basics
 
-> Five atoms. One method. The smoke test for any Skill Wiki installation.
+> Five atoms. One method. The smoke test for any AOE installation.
 
-This corpus contains the smallest meaningful demonstration of the Skill Wiki / Prime DSL:
+This corpus contains the smallest meaningful demonstration of the AOE / AOE DSL:
 enough thermophysics to brew a correct cup of tea anywhere in the world.
 Read it in two minutes; compile it in one command; then throw it away and write your own.
 
@@ -16,7 +16,7 @@ Five atoms, seven edges, one compile command. If that works, your parser, compil
 runtime are all operational. Everything else is domain knowledge layered on top of the
 same protocol.
 
-A secondary goal: show every learner that Skill Wiki is **not** about frontend design.
+A secondary goal: show every learner that AOE is **not** about frontend design.
 These atoms are physics and cooking. The DSL, edge verbs, and projection levels are
 identical to what the 899-atom frontend corpus uses.
 
@@ -69,7 +69,7 @@ From the repo root:
 
 ```bash
 cd examples/hello-world
-prime compile primes/sources --out primes/compiled
+aoe compile primes/sources --out primes/compiled
 # [build] parsing 5 .prime files...
 # [build] resolving edges... 7 edges across 5 atoms
 # [build] L1 checks: PASS
@@ -86,7 +86,7 @@ bun scripts/build-atom-dirs.ts --src primes/sources --out primes/compiled
 Check what was compiled:
 
 ```bash
-prime ls
+aoe ls
 # @example/collection-tea-basics     collection  "Bundles the four atoms above into one installable unit."
 # @example/fact-water-boils-at-100c  fact        "Pure water boils at 100°C at 1 atm"
 # @example/method-make-tea           method      "Heat water, steep leaves, strain"
@@ -101,19 +101,19 @@ prime ls
 **Show a specific atom** at full projection:
 
 ```bash
-prime show @example/method-make-tea
+aoe show @example/method-make-tea
 ```
 
 **Show only the summary** (index level):
 
 ```bash
-prime show @example/method-make-tea --level summary
+aoe show @example/method-make-tea --level summary
 ```
 
 **Traverse the graph** — what does `method-make-tea` depend on?
 
 ```bash
-prime deps @example/method-make-tea
+aoe deps @example/method-make-tea
 # requires: @example/fact-water-boils-at-100c
 # requires: @example/rule-altitude-affects-boiling
 ```
@@ -121,7 +121,7 @@ prime deps @example/method-make-tea
 **Explore neighbors**:
 
 ```bash
-prime graph @example/fact-water-boils-at-100c --depth 1
+aoe graph @example/fact-water-boils-at-100c --depth 1
 # → @example/term-celsius           (related)
 # → @example/rule-altitude-affects-boiling (related)
 # → @example/method-make-tea        (supplies-to)
@@ -134,9 +134,9 @@ prime graph @example/fact-water-boils-at-100c --depth 1
 Boot the generic MCP server against this corpus:
 
 ```bash
-PRIME_DIR=$(pwd)/primes/compiled bun ../../packages/mcp-server-core/src/index.ts
-# [prime-mcp-core] 5 atoms · 348 tokens · 1 clusters
-# [prime-mcp-core] ready · tool: prime_query · stdio transport active
+AOE_CORPUS_DIR=$(pwd)/primes/compiled bun ../../packages/mcp-server-core/src/index.ts
+# [aoe-mcp-core] 5 atoms · 348 tokens · 1 clusters
+# [aoe-mcp-core] ready · tool: aoe_query · stdio transport active
 ```
 
 Wire it into Claude Code (`.claude/mcp-servers.json`):
@@ -145,7 +145,7 @@ Wire it into Claude Code (`.claude/mcp-servers.json`):
 {
   "mcpServers": {
     "tea-basics": {
-      "command": "prime",
+      "command": "aoe",
       "args": ["mcp", "serve", "--corpus", "/abs/path/to/hello-world/primes/compiled"]
     }
   }
@@ -155,7 +155,7 @@ Wire it into Claude Code (`.claude/mcp-servers.json`):
 Then in a conversation, the agent can call:
 
 ```
-prime_query({ scope: "atoms", query: "how do I make tea", level: "full" })
+aoe_query({ scope: "atoms", query: "how do I make tea", level: "full" })
 ```
 
 The runtime returns `method-make-tea` at full projection, plus its `requires` edges resolved

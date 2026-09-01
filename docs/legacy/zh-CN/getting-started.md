@@ -33,7 +33,7 @@ node --version
 讲烧水泡茶。
 
 ```bash
-git clone https://github.com/skill-wiki/prime-system.git
+git clone https://github.com/kernary-aoe/prime-system.git
 cd prime-system
 bun install        # 或 npm/pnpm install
 bun run build      # 编译全部 7 个 package
@@ -120,7 +120,7 @@ Server 在 stdio 上讲 Model Context Protocol。任何 MCP 客户端都能调
   "mcpServers": {
     "skill-wiki": {
       "command": "bunx",
-      "args": ["@prime-lang/mcp-server-core"],
+      "args": ["@aoe/mcp-server-core"],
       "env": { "AOE_CORPUS_DIR": "/abs/path/to/your/compiled" }
     }
   }
@@ -149,7 +149,7 @@ hello-world 跑通后，两条路：
 899 原子的前端设计 corpus 在另一个仓库。
 
 ```bash
-git clone https://github.com/skill-wiki/prime-corpus-frontend.git
+git clone https://github.com/kernary-aoe/prime-corpus-frontend.git
 cd prime-corpus-frontend
 bun install
 bun run build           # 编译 899 原子
@@ -158,7 +158,7 @@ AOE_CORPUS_DIR=compiled bun ../prime-system/packages/mcp-server-core/src/index.t
 
 这个 corpus 有自己的 MCP wrapper（5 个工具，不是 1 个；带意图分类
 + 6 轴检索）。完整接入指南看
-[corpus 仓库的 README](https://github.com/skill-wiki/prime-corpus-frontend)。
+[corpus 仓库的 README](https://github.com/kernary-aoe/prime-corpus-frontend)。
 
 ### B 路 —— 写你自己的
 
@@ -188,7 +188,7 @@ my-corpus/
 | 现象 | 原因 | 怎么解 |
 |---|---|---|
 | `Unknown option: --experimental-transform-types` | Node 版本太老 | 升 Node 22+ |
-| `Cannot find module '@prime-lang/types'` | Package 没编 | 仓库根跑 `bun run build` |
+| `Cannot find module '@aoe/types'` | Package 没编 | 仓库根跑 `bun run build` |
 | `parse error: unexpected token at line 12` | `.prime` 文件语法错 | 跑 `prime check <file>`，会指出精确位置 |
 | `unresolved reference: @example/foo` | Atom ID 写错 / 原子不在 corpus 里 | 看目标原子的 `id:` 字段；确认文件在 sources 目录 |
 | `[L3] cycle detected: A → B → A` | 两个原子互相 `requires` | 选一个方向；另一个改 `enhances` |

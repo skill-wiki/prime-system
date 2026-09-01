@@ -1,9 +1,9 @@
 /**
- * @module @skill-wiki/corpus-schema
+ * @module @aoe/corpus-schema
  *
  * The plan §4.3 Corpus Package declaration — schema, loader and resolution.
  *
- * Why this is not folded into `@skill-wiki/model-schema`: the two packages hold
+ * Why this is not folded into `@aoe/model-schema`: the two packages hold
  * two different documents with two different authors. A Model Package (§4.2)
  * declares *semantics* — types, relations, projections, retrieval profiles — and
  * is written by whoever owns the domain vocabulary. A Corpus Package (§4.3)

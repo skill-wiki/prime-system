@@ -32,9 +32,9 @@ import type {
   ParameterShorthandNode,
   ThresholdNode,
   ValueNode,
-} from "@skill-wiki/types";
-import type { ProjectionDefinition } from "@skill-wiki/model-schema";
-import { loadModelOrThrow } from "@skill-wiki/model-schema";
+} from "@aoe/types";
+import type { ProjectionDefinition } from "@aoe/model-schema";
+import { loadModelOrThrow } from "@aoe/model-schema";
 import { defaultRelationIndex } from "./relation-semantics";
 
 /**

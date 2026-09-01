@@ -1,5 +1,5 @@
 /**
- * @module @skill-wiki/compiler
+ * @module @aoe/compiler
  * Compiler for `.prime` sources.
  *
  * Compilation pipeline (plan §8.1):
@@ -75,9 +75,9 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, resolve as resolvePath } from "node:path";
 import { fileURLToPath } from "node:url";
-import { parseLegacy } from "@skill-wiki/parser";
-import { loadModelOrThrow, type LoadedModel } from "@skill-wiki/model-schema";
-import type { AtomDeclaration, PrimeAST } from "@skill-wiki/types";
+import { parseLegacy } from "@aoe/parser";
+import { loadModelOrThrow, type LoadedModel } from "@aoe/model-schema";
+import type { AtomDeclaration, PrimeAST } from "@aoe/types";
 import { compileNormalizedUnit, emitCompiledUnit } from "./generic-unit";
 import { deriveV1AtomId, normalizePrimeV1Atom } from "./normalizer";
 import type { InstalledPrime } from "./types";

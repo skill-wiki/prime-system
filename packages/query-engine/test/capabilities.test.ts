@@ -19,7 +19,7 @@
  */
 
 import { beforeAll, describe, expect, test } from "bun:test";
-import type { RetrievalProfile } from "@skill-wiki/model-schema";
+import type { RetrievalProfile } from "@aoe/model-schema";
 import {
   RERANKER_APPLIED,
   RERANKER_NOT_IMPLEMENTED,

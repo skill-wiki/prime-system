@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import type { RelationDefIR } from "@skill-wiki/ir";
+import type { RelationDefIR } from "@aoe/ir";
 import { solve, type SolveRequest } from "../src/index.ts";
 import { edge, relation, relations, snapshot, unit } from "./support.ts";
 

@@ -1,6 +1,6 @@
 /**
  * @module errors
- * Parse error types for the Prime parser.
+ * Parse error types for the AOE parser.
  */
 
 /**

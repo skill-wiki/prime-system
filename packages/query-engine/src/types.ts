@@ -15,8 +15,8 @@ import type {
   SelectionCandidateIR,
   UnitIR,
   ValueIR,
-} from "@skill-wiki/ir";
-import type { ProjectionDefinition, RelationDefinition, RetrievalProfile } from "@skill-wiki/model-schema";
+} from "@aoe/ir";
+import type { ProjectionDefinition, RelationDefinition, RetrievalProfile } from "@aoe/model-schema";
 
 export type UnitVisibility = UnitIR["visibility"];
 export type UnitLifecycle = UnitIR["lifecycle"];

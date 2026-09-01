@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import type { SelectionCandidateIR } from "@skill-wiki/ir";
-import type { RetrievalProfile } from "@skill-wiki/model-schema";
+import type { SelectionCandidateIR } from "@aoe/ir";
+import type { RetrievalProfile } from "@aoe/model-schema";
 import { scoreCandidates, type CandidateGenerator, type GeneratorOutput } from "../src/index.ts";
 
 function stub(name: string, axis: string, values: Readonly<Record<string, number>>): GeneratorOutput {

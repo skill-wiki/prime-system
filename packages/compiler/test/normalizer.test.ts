@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import { join } from "node:path";
-import { parse } from "@skill-wiki/parser";
-import { loadModel } from "@skill-wiki/model-schema";
+import { parse } from "@aoe/parser";
+import { loadModel } from "@aoe/model-schema";
 import { normalizeUnit, normalizePrimeV1Atom, applyV1SyntaxMacro } from "../src/normalizer.ts";
 const modelResult=loadModel(join(import.meta.dir,"../../model-schema/test/fixtures/ticket-model")); if(!modelResult.ok) throw new Error("fixture model failed"); const context={corpus:"test",version:"1.0.0",digest:"sha256:test"};
 test("normalizes generic unit with every typed value kind",()=>{const r=parse('unit TicketOne : Ticket { title: "x" priority: 2 active: true owner: Owner.alice metadata: { nested: ["s", 1, false, Owner.alice] } }',"ticket.prime");expect(r.errors).toHaveLength(0);if(r.ast.type!=="UnitDeclaration")throw new Error("not unit");const n=normalizeUnit(r.ast,modelResult.value,context);expect(n.ok).toBe(true);if(n.ok){expect(n.value.fields.title?.kind).toBe("string");expect(n.value.fields.priority?.kind).toBe("number");expect(n.value.fields.active?.kind).toBe("boolean");expect(n.value.fields.owner?.kind).toBe("reference");expect(n.value.fields.metadata?.kind).toBe("object");const object=n.value.fields.metadata;if(object?.kind==="object")expect(object.fields.nested?.kind).toBe("array");expect(n.value.provenance.source.filename).toBe("ticket.prime");}});

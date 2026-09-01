@@ -8,14 +8,14 @@
  * property name that needs quoting, a type referenced before it is declared).
  *
  * Output goes under this package's own directory, not `os.tmpdir()`, because the
- * generated `client.ts` imports `@skill-wiki/sdk` and module resolution has to be
+ * generated `client.ts` imports `@aoe/sdk` and module resolution has to be
  * able to walk up to `packages/sdk-codegen/node_modules`.
  */
 
 import { afterAll, describe, expect, test } from "bun:test";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { loadModelOrThrow, type LoadedModel } from "@skill-wiki/model-schema";
+import { loadModelOrThrow, type LoadedModel } from "@aoe/model-schema";
 import { assertSchemaDigestSelfConsistent, generateSdk, type GeneratedSdk } from "../src/index.ts";
 
 const REPO = resolve(import.meta.dir, "../../..");

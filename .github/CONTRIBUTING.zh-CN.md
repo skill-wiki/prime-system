@@ -1,10 +1,10 @@
-# 为 Skill Wiki / Prime 贡献代码
+# 为 AOE / Prime 贡献代码
 
 [English](./CONTRIBUTING.md) · [中文](./CONTRIBUTING.zh-CN.md)
 
-感谢你考虑为 Skill Wiki 系统做贡献。这份文档面向**扩展系统本身**的人 ——
+感谢你考虑为 AOE 系统做贡献。这份文档面向**扩展系统本身**的人 ——
 parser、compiler、runtime、registry 或 CLI。如果你想写原子（知识内容），你找
-错仓库了；请去对应的 Domain Package 仓库（比如 `kernary-frontend-design`），看那边的
+错仓库了；请去对应的 Domain Package 仓库（比如 `aoe-frontend-design`），看那边的
 CONTRIBUTING。
 
 ---
@@ -27,7 +27,7 @@ CONTRIBUTING。
 
 ## 什么属于这里，什么属于 corpus 仓库
 
-**这个仓库 —— `kernary-engine`：**
+**这个仓库 —— `aoe-engine`：**
 - `.prime` DSL parser（`packages/parser/`）
 - 编译器 L1、L2、L3 passes（`packages/compiler/`）
 - Runtime：原子加载器、投影解析器、domain plugin host（`packages/runtime/`）
@@ -39,7 +39,7 @@ CONTRIBUTING。
 - 示例语料库（`examples/`）
 - 系统级测试
 
-**Domain Package 仓库（例如 `kernary-frontend-design`）：**
+**Domain Package 仓库（例如 `aoe-frontend-design`）：**
 - 原子 `.prime` 源文件
 - 领域专属的意图识别器
 - 领域专属的检索逻辑
@@ -59,8 +59,8 @@ CONTRIBUTING。
 - **Bun**（推荐，install 和 test 更快；npm 和 pnpm 也可以）
 
 ```bash
-git clone https://github.com/skill-wiki/kernary-engine.git
-cd kernary-engine
+git clone https://github.com/kernary-aoe/aoe-engine.git
+cd aoe-engine
 bun install
 bun run build
 ```
@@ -138,7 +138,7 @@ packages/
 │       └── commands/         # 每个 verb 一个文件
 └── mcp-server-core/  # 通用 MCP server（约 200 行）
     └── src/
-        └── server.ts         # prime_query 跑在任何编译好的语料库上
+        └── server.ts         # aoe_query 跑在任何编译好的语料库上
 ```
 
 ---
@@ -289,7 +289,7 @@ export type EdgeVerb =
 
 ## 依赖策略
 
-Skill Wiki 系统刻意保持精简。添加新的 runtime 依赖需要说明理由。
+AOE 系统刻意保持精简。添加新的 runtime 依赖需要说明理由。
 
 **规则：**
 
@@ -334,4 +334,4 @@ Skill Wiki 系统刻意保持精简。添加新的 runtime 依赖需要说明理
 
 ---
 
-*Skill Wiki v0.1.0 · Apache-2.0*
+*AOE v0.1.0 · Apache-2.0*

@@ -15,7 +15,7 @@
 import { beforeAll, describe, expect, test } from "bun:test";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import type { RetrievalProfile } from "@skill-wiki/model-schema";
+import type { RetrievalProfile } from "@aoe/model-schema";
 import { planSelection } from "../src/index.ts";
 import { DOMAINS, loadDomainPackage, ordinaryPrincipal, type LoadedDomain } from "./support/domains.ts";
 import { GOLDEN_CASES, canonical, runGolden, type GoldenObservation } from "./support/golden.ts";

@@ -1,13 +1,13 @@
 /**
- * aoe publish-marketplace — Submit your compiled Prime corpus to the
- * Skill Wiki marketplace via an automated GitHub PR.
+ * aoe publish-marketplace — Submit your compiled AOE corpus to the
+ * AOE marketplace via an automated GitHub PR.
  *
  * What it does:
- *   1. Verifies cwd has a `pack.yaml` (Prime manifest) and a compiled output dir.
+ *   1. Verifies cwd has a `pack.yaml` (AOE manifest) and a compiled output dir.
  *   2. Reads `pack.yaml` for name / version / description / compiled subdir.
  *   3. Detects the GitHub repo from `git remote get-url origin`.
  *   4. Confirms `gh auth status` is healthy.
- *   5. Forks `skill-wiki/skill-wiki.github.io` (or reuses an existing fork),
+ *   5. Forks `kernary-aoe/kernary-aoe.github.io` (or reuses an existing fork),
  *      clones it to a temp dir, appends a YAML entry to `data/skills.yaml`,
  *      validates the YAML still parses, branches, commits, pushes, and
  *      opens a PR via `gh pr create`.
@@ -21,7 +21,7 @@ import { spawnSync } from 'child_process';
 import { tmpdir } from 'os';
 import { header, success, error, info, warn, bold, gray, cyan, green } from '../utils/display';
 
-const MARKETPLACE_REPO = 'skill-wiki/skill-wiki.github.io';
+const MARKETPLACE_REPO = 'kernary-aoe/kernary-aoe.github.io';
 const SKILLS_YAML_PATH = 'data/skills.yaml';
 
 interface PackManifest {
@@ -49,14 +49,14 @@ export async function publishMarketplaceCommand(args: string[]) {
     return;
   }
 
-  header('Publish to Skill Wiki marketplace');
+  header('Publish to AOE marketplace');
 
   // ── 1. Locate pack.yaml ──
   const cwd = process.cwd();
   const packPath = join(cwd, 'pack.yaml');
   if (!existsSync(packPath)) {
     error(`No pack.yaml found in ${cwd}`);
-    info('Run this command from the root of your Prime corpus repo.');
+    info('Run this command from the root of your AOE corpus repo.');
     info('A minimal pack.yaml needs `name`, `version`, `description`, `compiled`.');
     process.exit(1);
   }
@@ -157,8 +157,8 @@ export async function publishMarketplaceCommand(args: string[]) {
   success('Fork ready.');
 
   // ── 7. Clone the fork to a temp dir ──
-  const work = mkdtempSync(join(tmpdir(), 'skill-wiki-pr-'));
-  const forkRepo = `${ghUser}/skill-wiki.github.io`;
+  const work = mkdtempSync(join(tmpdir(), 'kernary-aoe-pr-'));
+  const forkRepo = `${ghUser}/kernary-aoe.github.io`;
   info(`Cloning ${forkRepo} → ${work}`);
   const clone = sh('gh', ['repo', 'clone', forkRepo, work, '--', '--depth', '1'], {});
   if (clone.status !== 0) {
@@ -250,7 +250,7 @@ function parseArgs(args: string[]): PublishOpts {
 
 function printHelp() {
   console.log(`
-${bold('aoe publish-marketplace')} — automate a PR to skill-wiki/skill-wiki.github.io
+${bold('aoe publish-marketplace')} — automate a PR to kernary-aoe/kernary-aoe.github.io
 
 Usage:
   aoe publish-marketplace [options]
@@ -347,7 +347,7 @@ function wrap(text: string, w: number): string[] {
 }
 
 function renderPrBody(pack: PackManifest, repo: string, slug: string): string {
-  return `## Add \`${pack.name}\` to the Skill Wiki marketplace
+  return `## Add \`${pack.name}\` to the AOE marketplace
 
 - **Source repo:** https://github.com/${repo}
 - **Slug:** \`${slug}\`

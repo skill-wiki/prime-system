@@ -94,7 +94,7 @@ YAML 扩展。规范自己管语法。
 `compiled/<atom-id>/summary.json`、`compiled/<atom-id>/core.json`、
 `compiled/<atom-id>/full.json`。
 
-MCP server（`AOE_CORPUS_DIR=... bunx @prime-lang/mcp-server-core`）是一个便利层，它把这种文件系统访问包装成结构
+MCP server（`AOE_CORPUS_DIR=... bunx @aoe/mcp-server-core`）是一个便利层，它把这种文件系统访问包装成结构
 化查询接口（`aoe_query`），并处理边遍历。在以下情况下它有用：
 
 - 你想把语料库暴露给没有直接文件系统访问权限的 agent（比如远程或沙盒 agent）。

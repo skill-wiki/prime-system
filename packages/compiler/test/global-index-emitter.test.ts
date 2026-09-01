@@ -3,7 +3,7 @@
  *
  * These assertions moved here from `atom-dir-emitter.test.ts` when W7-A deleted
  * the legacy atom-dir emitter and the `emitGlobalIndex` file writer. The builder
- * outlived both because `@skill-wiki/bundle` calls it from
+ * outlived both because `@aoe/bundle` calls it from
  * `finalizeCorpusBundle`, so the properties it is asserted on — domain
  * clustering, determinism regardless of input order, and the index token budget
  * — are still load-bearing for every compiled corpus.

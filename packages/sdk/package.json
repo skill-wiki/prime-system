@@ -1,16 +1,16 @@
 {
-  "name": "@skill-wiki/sdk",
+  "name": "@aoe/sdk",
   "version": "0.2.0",
-  "description": "Kernary client with one Query, Plan, Action, and Events surface over interchangeable transports",
+  "description": "AOE client with one Query, Plan, Action, and Events surface over interchangeable transports",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "scripts": { "test": "bun test", "typecheck": "tsc --noEmit -p tsconfig.json" },
   "license": "Apache-2.0",
   "dependencies": {
-    "@skill-wiki/action-runtime": "workspace:*",
-    "@skill-wiki/ir": "workspace:*",
-    "@skill-wiki/model-schema": "workspace:*",
-    "@skill-wiki/observability": "workspace:*",
-    "@skill-wiki/query-engine": "workspace:*"
+    "@aoe/action-runtime": "workspace:*",
+    "@aoe/ir": "workspace:*",
+    "@aoe/model-schema": "workspace:*",
+    "@aoe/observability": "workspace:*",
+    "@aoe/query-engine": "workspace:*"
   }
 }

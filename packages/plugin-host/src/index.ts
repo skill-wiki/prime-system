@@ -1,5 +1,5 @@
 /**
- * `@skill-wiki/plugin-host` — plan §12.
+ * `@aoe/plugin-host` — plan §12.
  *
  * Entry order mirrors the trust chain: what a plugin claims (`manifest`), what it
  * is allowed to name (`paths`), what it is allowed to do (`capabilities`), what

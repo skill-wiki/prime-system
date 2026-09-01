@@ -15,13 +15,13 @@
  * another lane owns.
  */
 
-import { NOOP_TRACER, withSpan, type SpanContext, type Tracer } from "@skill-wiki/observability";
+import { NOOP_TRACER, withSpan, type SpanContext, type Tracer } from "@aoe/observability";
 import {
   CorpusRegistry,
   type CorpusMountRequest,
   type FailedMount,
   type MountedCorpus,
-} from "@skill-wiki/runtime";
+} from "@aoe/runtime";
 
 export const SPAN_CORPUS_MOUNT = "aoe.corpus.mount";
 export const SPAN_CORPUS_ACTIVATE = "aoe.corpus.activate";

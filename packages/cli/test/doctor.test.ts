@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { doctorCommand, formatDoctorHuman, formatDoctorJson, parseDoctorArgs, runDoctor } from "../src/commands/doctor";
-import { PrimeBundleError } from "@skill-wiki/runtime";
+import { PrimeBundleError } from "@aoe/runtime";
 import { cpSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";

@@ -20,7 +20,7 @@ import { loadEngineContext, registry, SNAPSHOT } from "./support/host.ts";
 
 const header: GeneratedArtifactHeader = {
   protocol: GENERATED_ARTIFACT_PROTOCOL,
-  generator: "@skill-wiki/sdk-codegen",
+  generator: "@aoe/sdk-codegen",
   model: { name: "security-controls", version: "1.0.0", digest: SNAPSHOT.modelDigest },
 };
 
@@ -42,7 +42,7 @@ describe("generated-artifact digest gate", () => {
       const mismatch = error as ModelDigestMismatchError;
       expect(mismatch.expected).toBe("sha256:deadbeef");
       expect(mismatch.actual).toBe(SNAPSHOT.modelDigest);
-      expect(mismatch.message).toContain("@skill-wiki/sdk-codegen");
+      expect(mismatch.message).toContain("@aoe/sdk-codegen");
     }
   });
 

@@ -77,7 +77,7 @@ Each corpus is independent. It lives in its own directory with its own `primes/s
 and `primes/compiled/`. The system repo provides the tools; corpora provide the knowledge.
 
 ```
-kernary-engine/        ← this repo (tools, parser, compiler, runtime)
+aoe-engine/        ← this repo (tools, parser, compiler, runtime)
   examples/
     hello-world/       ← tiny corpus, ships here for smoke-testing
     recipes/           ← medium corpus, ships here as cross-domain proof
@@ -87,7 +87,7 @@ kernary-engine/        ← this repo (tools, parser, compiler, runtime)
     compiler/
     ...
 
-kernary-frontend-design/ ← separate Domain Package
+aoe-frontend-design/ ← separate Domain Package
 your-corpus/           ← your domain, your namespace, your atoms
 ```
 
@@ -105,10 +105,10 @@ After reading these examples, follow the authoring guide:
 - [`spec/PRIME-PROTOCOL-v1.md §1.2`](../spec/PRIME-PROTOCOL-v1.md) — all 28 atom kinds with required fields
 
 The short version:
-1. `prime init my-corpus/` — scaffold the directory
+1. `aoe init my-corpus/` — scaffold the directory
 2. Write `.prime` files in `my-corpus/primes/sources/@myscope/`
-3. `prime compile my-corpus/primes/sources --out my-corpus/primes/compiled`
-4. `PRIME_DIR=my-corpus/primes/compiled bunx @prime-lang/mcp-server-core`
+3. `aoe compile my-corpus/primes/sources --out my-corpus/primes/compiled`
+4. `AOE_CORPUS_DIR=my-corpus/primes/compiled bunx @aoe/mcp-server-core`
 5. Wire the MCP server into your agent
 
 You do not need to publish to a registry to use a corpus locally.

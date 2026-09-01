@@ -1,5 +1,5 @@
 {
-  "name": "@skill-wiki/model-schema",
+  "name": "@aoe/model-schema",
   "version": "0.2.0",
   "description": "Strict external model package schema and YAML loader",
   "main": "src/index.ts",

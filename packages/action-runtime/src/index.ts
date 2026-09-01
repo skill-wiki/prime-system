@@ -1,6 +1,6 @@
-import { ExpressionError, evaluateExpression } from "@skill-wiki/evaluation-engine";
-import type { DiagnosticIR, ExecutionPlanIR, ExecutionPlanNodeIR, SnapshotRef, ValueIR } from "@skill-wiki/ir";
-import type { ActionDefinition, FunctionDefinition, LoadedModel, TypeDefinition } from "@skill-wiki/model-schema";
+import { ExpressionError, evaluateExpression } from "@aoe/evaluation-engine";
+import type { DiagnosticIR, ExecutionPlanIR, ExecutionPlanNodeIR, SnapshotRef, ValueIR } from "@aoe/ir";
+import type { ActionDefinition, FunctionDefinition, LoadedModel, TypeDefinition } from "@aoe/model-schema";
 /**
  * `snapshot` stays a plain id because it is the scope key of §12.4 — the thing a
  * tenant's index, cache and idempotency record are filed under. `snapshotRef`
@@ -21,7 +21,7 @@ export interface RunScopeTuple { readonly tenant: string; readonly workspace: st
 export interface IdempotencyRecordRef { readonly runId: string; readonly fingerprint: string }
 export interface IdempotencyClaimRequest extends IdempotencyRecordRef { readonly scope: RunScopeTuple; readonly action: string; readonly idempotencyKey: string }
 /**
- * Deliberately not an import of `@skill-wiki/event-store`: the forced dependency
+ * Deliberately not an import of `@aoe/event-store`: the forced dependency
  * direction is consumer -> store (§15.4), so the runtime declares the narrow
  * surface it needs and any store that happens to satisfy it structurally can be
  * passed in. The method names match `PersistentEventStore` for exactly that

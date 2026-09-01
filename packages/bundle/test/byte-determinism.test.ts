@@ -4,9 +4,9 @@ import { mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, statSync 
 import { tmpdir } from "node:os";
 import { join, relative, sep } from "node:path";
 import { finalizeCorpusBundle } from "../src/index";
-import { compileUnit, emitCompiledUnit } from "@skill-wiki/compiler";
-import { loadModelOrThrow } from "@skill-wiki/model-schema";
-import type { CompiledUnitIR } from "@skill-wiki/ir";
+import { compileUnit, emitCompiledUnit } from "@aoe/compiler";
+import { loadModelOrThrow } from "@aoe/model-schema";
+import type { CompiledUnitIR } from "@aoe/ir";
 
 /**
  * Phase 2 acceptance ③: "the same input produces a byte-deterministic Bundle".

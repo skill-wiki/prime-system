@@ -10,8 +10,8 @@
 
 import { readdirSync, readFileSync } from "fs";
 import { join } from "path";
-import { parseLegacy as parse } from "@skill-wiki/parser";
-import type { PrimeAST, AtomDeclaration, FieldNode, ArrayNode, StringNode, LinkShorthandNode } from "@skill-wiki/types";
+import { parseLegacy as parse } from "@aoe/parser";
+import type { PrimeAST, AtomDeclaration, FieldNode, ArrayNode, StringNode, LinkShorthandNode } from "@aoe/types";
 
 type AnyAST = PrimeAST | AtomDeclaration;
 

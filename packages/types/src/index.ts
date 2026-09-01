@@ -1,6 +1,6 @@
 /**
- * @module @skill-wiki/types
- * Syntax-level type definitions for the Prime language.
+ * @module @aoe/types
+ * Syntax-level type definitions for the AOE language.
  *
  * This package is deliberately small: it describes the *shape of source text*
  * and nothing about any domain. It exports

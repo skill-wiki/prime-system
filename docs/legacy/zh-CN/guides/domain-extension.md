@@ -235,19 +235,19 @@ validators:
 
 ## 从 v0.0.x 代码定义领域的迁移指南
 
-v0.0.x 版本的 `@prime-lang/runtime` 导出了 `FRONTEND_DESIGN_DOMAIN` 和 `createDefaultDomainRegistry`，两者均已移除。
+v0.0.x 版本的 `@aoe/runtime` 导出了 `FRONTEND_DESIGN_DOMAIN` 和 `createDefaultDomainRegistry`，两者均已移除。
 
 **迁移前（v0.0.x）：**
 
 ```typescript
-import { FRONTEND_DESIGN_DOMAIN, createDefaultDomainRegistry } from "@prime-lang/runtime";
+import { FRONTEND_DESIGN_DOMAIN, createDefaultDomainRegistry } from "@aoe/runtime";
 const registry = createDefaultDomainRegistry(); // 自动注册 frontend-design 领域
 ```
 
 **迁移后（v0.1.0+）：**
 
 ```typescript
-import { loadDomainFromFile, DomainRegistry, registerAll } from "@prime-lang/runtime";
+import { loadDomainFromFile, DomainRegistry, registerAll } from "@aoe/runtime";
 
 const registry = new DomainRegistry();
 registerAll(registry, [
@@ -258,7 +258,7 @@ registerAll(registry, [
 或使用自动发现工厂函数（推荐用于 MCP 服务器启动）：
 
 ```typescript
-import { createConfigDrivenRegistry } from "@prime-lang/runtime";
+import { createConfigDrivenRegistry } from "@aoe/runtime";
 // 递归扫描 cwd 下的 domain.yaml 文件（深度 ≤ 4）
 const registry = createConfigDrivenRegistry();
 ```
@@ -301,7 +301,7 @@ description: 这个知识库覆盖内容的简短说明。
 **手动校验**：
 
 ```typescript
-import { loadDomainFromFile } from "@prime-lang/runtime";
+import { loadDomainFromFile } from "@aoe/runtime";
 const p = loadDomainFromFile("corpora/my-domain/domain.yaml");
 console.log(p.name, p.tags.length, "个标签");
 ```

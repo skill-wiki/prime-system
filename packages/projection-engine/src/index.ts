@@ -1,5 +1,5 @@
 /**
- * @module @skill-wiki/projection-engine
+ * @module @aoe/projection-engine
  *
  * Model-driven projection selection, transport and redaction over compiled
  * bundles. Contains zero domain vocabulary: every profile, level, field list and

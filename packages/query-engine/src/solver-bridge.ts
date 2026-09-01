@@ -1,7 +1,7 @@
 /**
  * @module solver-bridge
  *
- * Wiring between this package and `@skill-wiki/constraint-solver`. The division of
+ * Wiring between this package and `@aoe/constraint-solver`. The division of
  * labour is deliberate and matches coordinator decision D-2:
  *
  *   query-engine   which units are *plausible*, and why (features, reasons)
@@ -30,15 +30,15 @@ import type {
   RelationSemanticsIR,
   SelectionCandidateIR,
   SelectionPlanIR,
-} from "@skill-wiki/ir";
+} from "@aoe/ir";
 import {
   solve,
   type BlockerKind,
   type PolicyRequirement,
   type PrincipalView,
   type SolveResult,
-} from "@skill-wiki/constraint-solver";
-import type { RelationDefinition } from "@skill-wiki/model-schema";
+} from "@aoe/constraint-solver";
+import type { RelationDefinition } from "@aoe/model-schema";
 import { degradeToFit, type BudgetHandoff } from "./degrade.ts";
 import { canonicalStrings, compareStrings, orderedRecord, sortedKeys } from "./deterministic.ts";
 import { runRetrieval, type PlanSelectionOptions, type RetrievalResult } from "./engine.ts";

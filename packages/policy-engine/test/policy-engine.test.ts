@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { mkdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import type { ActionDefinition, LoadedModel } from "@skill-wiki/model-schema";
+import type { ActionDefinition, LoadedModel } from "@aoe/model-schema";
 import { PolicyEngine, PolicySetSchema, loadPolicySets, selectPolicySet, validatePolicySet, type PolicySet } from "../src/index.ts";
 
 const root = join(import.meta.dir, `.tmp-policy-${process.pid}`);

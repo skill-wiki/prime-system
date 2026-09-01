@@ -1,9 +1,9 @@
 {
-  "name": "@skill-wiki/registry",
+  "name": "@aoe/registry",
   "version": "0.2.0",
   "private": true,
   "license": "Apache-2.0",
-  "description": "Kernary Registry API for discovering and distributing typed packages",
+  "description": "AOE Registry API for discovering and distributing typed packages",
   "type": "module",
   "scripts": {
     "dev": "bun --watch src/index.ts",
@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "hono": "^4.7.6",
-    "@skill-wiki/parser": "workspace:*",
-    "@skill-wiki/types": "workspace:*"
+    "@aoe/parser": "workspace:*",
+    "@aoe/types": "workspace:*"
   }
 }

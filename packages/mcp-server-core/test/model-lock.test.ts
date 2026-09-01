@@ -11,7 +11,7 @@ import { mkdtempSync, rmSync, writeFileSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { loadServeModel, resolveModelRoot } from "../src/model-context";
-import { createModelLock } from "@skill-wiki/model-schema";
+import { createModelLock } from "@aoe/model-schema";
 import {
   MODEL_LOCK_FILE,
   ModelLockError,

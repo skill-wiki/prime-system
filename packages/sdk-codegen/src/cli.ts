@@ -2,7 +2,7 @@
 /**
  * @module cli
  *
- * `prime-sdk-codegen --model <dir> --out <dir>`.
+ * `aoe-sdk-codegen --model <dir> --out <dir>`.
  *
  * This exists because codegen is a *toolchain* step (plan §8/§14: the LSP and the
  * generators are Toolchain, not production Runtime), so the way it affects the
@@ -13,7 +13,7 @@
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { isAbsolute, join, resolve } from "node:path";
-import { loadModel } from "@skill-wiki/model-schema";
+import { loadModel } from "@aoe/model-schema";
 import { generateSdk } from "./generate.ts";
 
 interface Options {
@@ -22,7 +22,7 @@ interface Options {
 }
 
 function usage(message: string): never {
-  process.stderr.write(`${message}\n\nUsage: prime-sdk-codegen --model <model-package-dir> --out <output-dir>\n`);
+  process.stderr.write(`${message}\n\nUsage: aoe-sdk-codegen --model <model-package-dir> --out <output-dir>\n`);
   process.exit(2);
 }
 

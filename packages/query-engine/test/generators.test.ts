@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import type { DiagnosticIR } from "@skill-wiki/ir";
+import type { DiagnosticIR } from "@aoe/ir";
 import {
   CandidateGeneratorRegistry,
   QueryEngineError,

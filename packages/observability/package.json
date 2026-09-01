@@ -1,5 +1,5 @@
 {
-  "name": "@skill-wiki/observability",
+  "name": "@aoe/observability",
   "version": "0.2.0",
   "description": "Tracing API package: OTel-shaped Span/Tracer SPI, W3C trace context, and OTLP/HTTP JSON export. No dependencies, so an engine package can emit a span without acquiring an SDK.",
   "main": "src/index.ts",

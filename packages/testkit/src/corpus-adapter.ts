@@ -1,8 +1,8 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { parse } from "@skill-wiki/parser";
-import type { ArrayNode, FieldNode, ObjectNode, ValueNode } from "@skill-wiki/types";
-import type { LoadedModel, ModelDefinition } from "@skill-wiki/model-schema";
+import { parse } from "@aoe/parser";
+import type { ArrayNode, FieldNode, ObjectNode, ValueNode } from "@aoe/types";
+import type { LoadedModel, ModelDefinition } from "@aoe/model-schema";
 import type { CorpusPackage, CorpusRelationRecord, CorpusUnitRecord } from "./corpus.ts";
 
 /**

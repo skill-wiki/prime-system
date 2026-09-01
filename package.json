@@ -1,15 +1,15 @@
 {
-  "name": "kernary-engine",
+  "name": "aoe-engine",
   "version": "0.2.0",
   "description": "AOE — Agent Ontology Engine for domain-aware software.",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/skill-wiki/kernary-engine",
+  "homepage": "https://github.com/kernary-aoe/aoe-engine",
   "repository": {
     "type": "git",
-    "url": "https://github.com/skill-wiki/kernary-engine.git"
+    "url": "https://github.com/kernary-aoe/aoe-engine.git"
   },
   "bugs": {
-    "url": "https://github.com/skill-wiki/kernary-engine/issues"
+    "url": "https://github.com/kernary-aoe/aoe-engine/issues"
   },
   "keywords": [
     "aoe",

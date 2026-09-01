@@ -6,8 +6,8 @@
  * know. If a test needed a real domain name to pass, that would itself be the bug.
  */
 
-import type { ProjectionDefinition } from "@skill-wiki/model-schema";
-import type { SnapshotRef, TypedValueIR, UnitIR } from "@skill-wiki/ir";
+import type { ProjectionDefinition } from "@aoe/model-schema";
+import type { SnapshotRef, TypedValueIR, UnitIR } from "@aoe/ir";
 import type { ProjectionScope } from "../src/engine.ts";
 
 export const loc = { line: 1, column: 1, offset: 0 } as const;

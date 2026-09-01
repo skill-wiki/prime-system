@@ -104,7 +104,7 @@ can read atoms directly using its `Read` tool. The index is at
 `compiled/_index.xml`. Individual atoms are at `compiled/<atom-id>/summary.json`,
 `compiled/<atom-id>/core.json`, `compiled/<atom-id>/full.json`.
 
-The MCP server (`bunx @prime-lang/mcp-server-core` with `AOE_CORPUS_DIR` set) is a convenience layer that wraps this
+The MCP server (`bunx @aoe/mcp-server-core` with `AOE_CORPUS_DIR` set) is a convenience layer that wraps this
 filesystem access with a structured query interface (`aoe_query`) and handles
 edge traversal. It is useful when:
 

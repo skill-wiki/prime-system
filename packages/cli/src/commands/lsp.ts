@@ -3,7 +3,7 @@
  *
  * ## Why this exists
  *
- * `@skill-wiki/language-server` implements §14.1's first four capabilities
+ * `@aoe/language-server` implements §14.1's first four capabilities
  * (incremental document store, syntax diagnostics, model/schema diagnostics,
  * type/field completion) and until now **nothing in the workspace imported it**.
  * The package-wiring gate reported it as 949 unreached lines across 7 modules,
@@ -15,11 +15,11 @@
  *
  * The language server reuses Parser, Model Resolver and Checker and **does not
  * compile a production bundle**. This command inherits that boundary and must
- * keep it: it imports only `@skill-wiki/language-server`, writes no artifact,
+ * keep it: it imports only `@aoe/language-server`, writes no artifact,
  * and has no `--emit`/`--out` of any kind. Anything that would produce a runtime
  * bundle belongs to `aoe compile`, not here. `packages/language-server/test/
  * boundary.test.ts` asserts the server half; the import list below is the CLI
- * half — adding `@skill-wiki/compiler` here would breach it.
+ * half — adding `@aoe/compiler` here would breach it.
  *
  * ## Subcommands
  *
@@ -38,7 +38,7 @@
  */
 
 import { resolve } from 'path';
-import { createLanguageServer, type LspDiagnostic } from '@skill-wiki/language-server';
+import { createLanguageServer, type LspDiagnostic } from '@aoe/language-server';
 import { header, success, error, info, warn, diagnosticLine, bold, gray, green, red, yellow } from '../utils/display';
 import { readFile, fileExists } from '../utils/fs';
 

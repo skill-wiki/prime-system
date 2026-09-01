@@ -35,7 +35,7 @@ import type {
   ReferenceNode,
   LinkShorthandNode,
   DecoratorNode,
-} from "@skill-wiki/types";
+} from "@aoe/types";
 import type { Diagnostic, InstalledPrime } from "./types";
 import { defaultRelationIndex, type RelationIndex } from "./relation-semantics";
 
@@ -85,7 +85,7 @@ function getThresholds(ast: AnyAST): ThresholdNode[] {
 }
 
 /**
- * Extract all referenced Prime identifiers from use[] field.
+ * Extract all referenced AOE identifiers from use[] field.
  */
 function getUseReferences(ast: AnyAST): Array<{ name: string; line: number }> {
   const useField = findField(ast, "use");
@@ -210,10 +210,10 @@ function toKebabCase(name: string): string {
 // ─── Main Checker ──────────────────────────────────────────────────────────
 
 /**
- * Run Level 1 structural checks on a parsed Prime AST.
+ * Run Level 1 structural checks on a parsed AOE AST.
  *
  * @param ast - The parsed AST from the parser
- * @param installedPrimes - Map of installed Prime names for reference checking
+ * @param installedPrimes - Map of installed AOE names for reference checking
  * @returns Array of diagnostics (errors and warnings)
  */
 export function checkL1(
@@ -312,7 +312,7 @@ export function checkL1(
       push(
         "error",
         ref.line,
-        `Referenced Prime "${ref.name}" not found in installed primes`,
+        `Referenced AOE "${ref.name}" not found in installed primes`,
         `Install "${kebabName}" or remove the reference`
       );
     }
@@ -371,7 +371,7 @@ export function checkL1(
   }
 
   // ── 7. @abstract must not be directly instantiated ────────────────────
-  // Check if any use[] reference targets an @abstract Prime directly
+  // Check if any use[] reference targets an @abstract AOE directly
   for (const ref of useRefs) {
     const target = installedPrimes.get(ref.name);
     if (target?.decorators?.includes("@abstract")) {

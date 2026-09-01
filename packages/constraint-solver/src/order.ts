@@ -10,9 +10,9 @@
  * most conservative one wins (reject > collapse > allow). A model that declares a
  * relation acyclic must not lose that guarantee because another relation is lax.
  */
-import type { DiagnosticIR } from "@skill-wiki/ir";
+import type { DiagnosticIR } from "@aoe/ir";
 import type { ConstraintRef, OrderingObligation } from "./constraints.ts";
-import type { CyclePolicyIR } from "@skill-wiki/ir";
+import type { CyclePolicyIR } from "@aoe/ir";
 
 export interface UnitComponent {
   readonly key: string;

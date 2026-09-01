@@ -33,7 +33,7 @@ import type {
   SourceLocation,
   UnitDeclaration,
   SyntaxAST,
-} from "@skill-wiki/types";
+} from "@aoe/types";
 
 import { type Token, TokenType } from "./lexer.ts";
 import { ParseError } from "./errors.ts";

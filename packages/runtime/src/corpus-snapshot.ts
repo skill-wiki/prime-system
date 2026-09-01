@@ -7,7 +7,7 @@
 import { existsSync, lstatSync, readFileSync, readdirSync } from "fs";
 import { createHash } from "crypto";
 import { isAbsolute, join, parse as parsePath, relative, resolve, sep } from "path";
-import { CORPUS_DECLARATION_FILE, NAMESPACE, loadCorpusPackage } from "@skill-wiki/corpus-schema";
+import { CORPUS_DECLARATION_FILE, NAMESPACE, loadCorpusPackage } from "@aoe/corpus-schema";
 import { CORPUS_SIGNATURE_FILE, verifyCorpusSignature } from "./corpus-signature.ts";
 
 export const CORPUS_MANIFEST_FILE = "corpus.manifest.json";
@@ -28,7 +28,7 @@ export const SUPPORTED_CORPUS_IR_VERSION = "2";
  * invalidates every previously emitted bundle, which is the intended coupling:
  * an emitter change and the Runtime that accepts its output ship together.
  *
- * This is declared here rather than imported from `@skill-wiki/compiler` on
+ * This is declared here rather than imported from `@aoe/compiler` on
  * purpose — plan §15.4 forbids the Runtime→Compiler edge. Same shape as
  * `SUPPORTED_CORPUS_IR_VERSION` above: the producer states what it emitted, the
  * Runtime states what it accepts, and a mismatch is an error rather than a

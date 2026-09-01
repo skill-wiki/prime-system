@@ -1,12 +1,12 @@
 # 负责任地报告安全问题
 
-感谢你帮助保护 Skill Wiki 用户的安全。
+感谢你帮助保护 AOE 用户的安全。
 
 ## 报告方式
 
 请私下报告安全问题，不要开公开 Issue。
 
-- 首选方式：提交 [GitHub 安全公告](https://github.com/skill-wiki/skill-wiki/security/advisories/new)——这是追踪和确认披露的推荐渠道。
+- 首选方式：提交 [GitHub 安全公告](https://github.com/kernary-aoe/kernary-aoe/security/advisories/new)——这是追踪和确认披露的推荐渠道。
 
 如果你无法访问 GitHub 安全公告，请直接联系 `MAINTAINERS.md` 中列出的某位维护者，通过其 GitHub 主页上的地址联系。v0.1.0 阶段项目不设公用 `security@` 邮箱。
 
@@ -26,7 +26,7 @@
 ## 覆盖范围
 
 **在范围内：**
-- 本仓库中 `@prime-lang/*` 包
+- 本仓库中 `@aoe/*` 包
 - `prime` CLI
 - `mcp-server-core` 包
 - 按文档说明使用的示例注册中心服务器（`scripts/registry-server.ts`）

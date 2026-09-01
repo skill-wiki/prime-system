@@ -13,7 +13,7 @@ body:
     attributes:
       label: What happened?
       description: A clear and concise description of the defect.
-      placeholder: e.g. `prime compile` exits 0 but emits no chunks for atoms with multi-line strings.
+      placeholder: e.g. `aoe compile` exits 0 but emits no chunks for atoms with multi-line strings.
     validations:
       required: true
 
@@ -24,7 +24,7 @@ body:
       description: Minimal commands or a small `.prime` file that triggers the issue.
       render: shell
       placeholder: |
-        $ prime compile foo.prime --out /tmp/out
+        $ aoe compile foo.prime --out /tmp/out
         $ ls /tmp/out/@example/foo/chunks/
         # expected: summary.md core.md full.md
         # got: (empty)
@@ -41,7 +41,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: Skill Wiki version / commit
+      label: AOE version / commit
       placeholder: 0.1.0 or commit hash
     validations:
       required: true

@@ -15,7 +15,7 @@
  * different model.
  */
 
-import type { SnapshotRef } from "@skill-wiki/ir";
+import type { SnapshotRef } from "@aoe/ir";
 import { SdkError } from "./types.ts";
 
 export const GENERATED_ARTIFACT_PROTOCOL = "prime/generated/v1";

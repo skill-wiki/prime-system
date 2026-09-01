@@ -13,7 +13,7 @@ import { afterEach, describe, expect, test } from "bun:test";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadModelOrThrow } from "@skill-wiki/model-schema";
+import { loadModelOrThrow } from "@aoe/model-schema";
 import { buildCodegenSchema, emitMcpTools, emitTypes, generateSdk, parseTypeRef, typeScriptNames } from "../src/index.ts";
 
 const roots: string[] = [];

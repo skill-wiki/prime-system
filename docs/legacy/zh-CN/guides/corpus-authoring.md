@@ -170,7 +170,7 @@ $ vim sources/@me/method-render-bacon.prime
 $ prime compile sources/@me/method-render-bacon.prime --dir --output ./compiled
 
 # 查询（通过通用 MCP server）
-$ AOE_CORPUS_DIR=$(pwd)/compiled bunx @prime-lang/mcp-server-core &
+$ AOE_CORPUS_DIR=$(pwd)/compiled bunx @aoe/mcp-server-core &
 $ # ... 在 Claude Code 里问「怎么 render bacon」
 $ # ... 或者 CLI 直接看：
 $ prime show @me/method-render-bacon
@@ -255,7 +255,7 @@ server —— 前端 corpus 仓库的五工具 wrapper 就用的这个模式。
 要启动核心 server，使用真实命令：
 
 ```bash
-AOE_CORPUS_DIR=/abs/path/to/compiled bunx @prime-lang/mcp-server-core
+AOE_CORPUS_DIR=/abs/path/to/compiled bunx @aoe/mcp-server-core
 ```
 
 或者写进 `.mcp.json`：
@@ -265,7 +265,7 @@ AOE_CORPUS_DIR=/abs/path/to/compiled bunx @prime-lang/mcp-server-core
   "mcpServers": {
     "skill-wiki": {
       "command": "bunx",
-      "args": ["@prime-lang/mcp-server-core"],
+      "args": ["@aoe/mcp-server-core"],
       "env": { "AOE_CORPUS_DIR": "/abs/path/to/compiled" }
     }
   }

@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 /** Writes a throwaway model package and returns its root. */
 export function writeModel(files: Readonly<Record<string, string>>): string {
-  const root = mkdtempSync(join(tmpdir(), "prime-testkit-"));
+  const root = mkdtempSync(join(tmpdir(), "aoe-testkit-"));
   for (const [name, content] of Object.entries(files)) {
     const path = join(root, name);
     mkdirSync(join(path, ".."), { recursive: true });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { parseProjectionUri } from "@skill-wiki/projection-engine";
+import { parseProjectionUri } from "@aoe/projection-engine";
 import { createAoeQueryResponse, createAoeResourceUri, type QueryResult } from "../src/query-response";
 
 const SNAPSHOT = {
@@ -101,12 +101,12 @@ describe("createAoeResourceUri", () => {
   it("emits the adopted corpus namespace with its slash percent-encoded", () => {
     const identity = {
       tenant: "local",
-      corpus: "com.github.skill-wiki/frontend-design",
+      corpus: "com.kernary.aoe/frontend-design",
       release: "2026-08-29",
     };
     const uri = createAoeResourceUri(identity, "@impeccable/persona-stripe-fintech", "core", "summary");
     expect(uri).toBe(
-      "aoe://local/com.github.skill-wiki%2Ffrontend-design@2026-08-29" +
+      "aoe://local/com.kernary.aoe%2Ffrontend-design@2026-08-29" +
         "/units/%40impeccable%2Fpersona-stripe-fintech/projections/core/summary",
     );
     // No raw slash may survive inside the corpus segment: that is the failure the
@@ -115,6 +115,6 @@ describe("createAoeResourceUri", () => {
     expect(uri.slice("aoe://local/".length).split("/")).toHaveLength(6);
     const parsed = parseProjectionUri(uri);
     expect(parsed.ok).toBe(true);
-    if (parsed.ok) expect(parsed.value.corpus).toBe("com.github.skill-wiki/frontend-design");
+    if (parsed.ok) expect(parsed.value.corpus).toBe("com.kernary.aoe/frontend-design");
   });
 });

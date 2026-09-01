@@ -15,8 +15,8 @@
  */
 
 import { resolve } from "node:path";
-import type { GraphIR, SnapshotRef, TypedValueIR, UnitIR } from "@skill-wiki/ir";
-import { loadModelOrThrow, type ProjectionDefinition, type RelationDefinition, type RetrievalProfile } from "@skill-wiki/model-schema";
+import type { GraphIR, SnapshotRef, TypedValueIR, UnitIR } from "@aoe/ir";
+import { loadModelOrThrow, type ProjectionDefinition, type RelationDefinition, type RetrievalProfile } from "@aoe/model-schema";
 import {
   CandidateGeneratorRegistry,
   createFacetGenerator,
@@ -24,9 +24,9 @@ import {
   createLexicalGenerator,
   type Principal,
   type QueryEngineContext,
-} from "@skill-wiki/query-engine";
-import { InMemorySpanSink, createRecordingTracer, createStepClock, type Tracer } from "@skill-wiki/observability";
-import { createEmbeddedTransport, type EmbeddedHost } from "@skill-wiki/sdk";
+} from "@aoe/query-engine";
+import { InMemorySpanSink, createRecordingTracer, createStepClock, type Tracer } from "@aoe/observability";
+import { createEmbeddedTransport, type EmbeddedHost } from "@aoe/sdk";
 import { createBearerAuthenticator, type Authenticator, type Credential } from "../../src/auth.ts";
 import { createRequestHandler } from "../../src/handler.ts";
 import type { TraceScope } from "../../src/corpus.ts";

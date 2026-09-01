@@ -17,8 +17,8 @@
  * thing the id exists to prevent.
  */
 
-import type { ValueIR } from "@skill-wiki/ir";
-import type { FacetSelector, Principal, QueryRequest, UnitLifecycle } from "@skill-wiki/query-engine";
+import type { ValueIR } from "@aoe/ir";
+import type { FacetSelector, Principal, QueryRequest, UnitLifecycle } from "@aoe/query-engine";
 
 /** Fields a caller may not set, and why, quoted into the error it gets back. */
 export const SERVER_OWNED_FIELDS: Readonly<Record<string, string>> = {

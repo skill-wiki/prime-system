@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
 import { existsSync, lstatSync, mkdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { basename, join, parse as parsePath, relative, resolve, sep } from "node:path";
-import { parse } from "@skill-wiki/parser";
-import type { LoadedModel, ProjectionDefinition } from "@skill-wiki/model-schema";
-import type { CompiledUnitIR, ProjectionArtifactIR, TypedValueIR, UnitIR, ValueIR } from "@skill-wiki/ir";
+import { parse } from "@aoe/parser";
+import type { LoadedModel, ProjectionDefinition } from "@aoe/model-schema";
+import type { CompiledUnitIR, ProjectionArtifactIR, TypedValueIR, UnitIR, ValueIR } from "@aoe/ir";
 import type { AtomMeta } from "./global-index-emitter";
 import { buildChunkProjectionRules, chunkNamedLayers, estimateTokens, usesSectionVocabulary, type ChunkableAST, type ChunkProjectionRules } from "./chunker";
 import { normalizeUnit, type NormalizeContext, type NormalizeDiagnostic } from "./normalizer";
@@ -17,7 +17,7 @@ export interface CompileUnitOptions { readonly projections?: readonly string[]; 
  * it. Bump it whenever `emitCompiledUnit` changes what it writes — file set,
  * file layout, digest framing, or `meta.yaml` shape — and every previously
  * emitted bundle then fails `validateCorpusManifestCompatibility` in
- * `@skill-wiki/runtime` (`SUPPORTED_CORPUS_EMITTER_VERSION`) instead of being
+ * `@aoe/runtime` (`SUPPORTED_CORPUS_EMITTER_VERSION`) instead of being
  * served as if it matched. Do not bump it for a refactor that leaves the bytes
  * identical: the point is artifact identity, not source churn.
  *
@@ -30,7 +30,7 @@ export interface CompileUnitOptions { readonly projections?: readonly string[]; 
  * NOTE (L13-B): removing the per-unit `graph.yaml` is a file-set change, so this
  * constant is owed a bump to "4" by the rule stated above. The bump is not made
  * here because it cannot land atomically inside this lane's write scope:
- * `SUPPORTED_CORPUS_EMITTER_VERSION` in `@skill-wiki/runtime`,
+ * `SUPPORTED_CORPUS_EMITTER_VERSION` in `@aoe/runtime`,
  * `packages/cli/src/audit/report.ts` and the hand-written `"3"` in
  * `scripts/build-atom-dirs.ts` all have to move in the same commit, and
  * `compiled-v3-final/corpus.manifest.json` records `"3"`. Coordinator: sequence

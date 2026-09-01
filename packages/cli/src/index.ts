@@ -19,7 +19,7 @@
  *   aoe install <name>          Install a package release
  *   aoe install                 Install all Primes declared in SKILL.md
  *   aoe publish                 Publish to prime.dev
- *   aoe publish-marketplace     Open a PR to add this corpus to skill-wiki marketplace
+ *   aoe publish-marketplace     Open a PR to add this corpus to kernary-aoe marketplace
  *   aoe search <query>          Search the registry
  *   aoe info <name>             View package details
  *   aoe ls                      List installed Primes (.primes/ dir)
@@ -81,7 +81,7 @@ Registry (local):
 Package Management:
   install [name]          Install package releases from a registry
   publish                 Publish a package release
-  publish-marketplace     Submit corpus to skill-wiki marketplace via GitHub PR
+  publish-marketplace     Submit corpus to kernary-aoe marketplace via GitHub PR
   search <query>          Search the registry
   info <name>             View package details
   ls                      List installed Primes (.primes/)

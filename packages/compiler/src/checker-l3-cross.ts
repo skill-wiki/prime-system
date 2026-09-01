@@ -27,7 +27,7 @@ import type {
   LinkShorthandNode,
   ObjectNode,
   ValueNode,
-} from "@skill-wiki/types";
+} from "@aoe/types";
 import type { Diagnostic } from "./types";
 import { defaultRelationIndex, type RelationIndex } from "./relation-semantics";
 

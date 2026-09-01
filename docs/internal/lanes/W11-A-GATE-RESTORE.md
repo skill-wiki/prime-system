@@ -73,40 +73,40 @@ no `DOMAIN_TERM_EXEMPTION_STALE` finding.
 ### Gate 2 — `aoe lsp`
 - NEW `packages/cli/src/commands/lsp.ts` (221 lines): `lsp diagnostics <file...>` (default
   subcommand) and `lsp completion <file> --at <line>:<char>`, both `--model <dir>`.
-  Imports **only** `@skill-wiki/language-server` — no `@skill-wiki/compiler`, no emit path,
+  Imports **only** `@aoe/language-server` — no `@aoe/compiler`, no emit path,
   so the §2.4/§14/ADR-8 Toolchain boundary holds on the CLI side too.
 - `packages/cli/src/index.ts`: import + `case 'lsp'` + usage block + header comment.
-- `packages/cli/package.json`: declared `@skill-wiki/language-server: workspace:*`.
-- `packages/cli/node_modules/@skill-wiki/language-server` symlink created by hand
+- `packages/cli/package.json`: declared `@aoe/language-server: workspace:*`.
+- `packages/cli/node_modules/@aoe/language-server` symlink created by hand
   (`-> ../../../language-server`, the same shape bun install produces). **bun.lock has NOT
   been regenerated** — coordinator must run `bun install` so the lockfile records the new
   workspace dependency. I did not run it: bun.lock is a shared tracked file and other lanes
   are writing this tree concurrently.
-- Result: `PACKAGE_UNREACHED_LIBRARY [@skill-wiki/language-server]` is **gone** from the
+- Result: `PACKAGE_UNREACHED_LIBRARY [@aoe/language-server]` is **gone** from the
   wiring report.
 
 ### FINDING F2 — concurrent lane is writing inside my declared write scope
 `packages/testkit/src/model-conformance.ts` is ` M` in `git status` and I did not touch it.
-Diff adds `import { assertSchemaDigestSelfConsistent, generateSdk } from "@skill-wiki/sdk-codegen"`
+Diff adds `import { assertSchemaDigestSelfConsistent, generateSdk } from "@aoe/sdk-codegen"`
 plus an `sdkCompileCheck` / MC-SDK-COMPILE block (+84 lines). It appeared *between* two of my
 runs (`bun ... wiring` succeeded at ~01:47, then failed at ~01:48 with
-`Cannot find module '@skill-wiki/sdk-codegen'`; the symlink
-`packages/testkit/node_modules/@skill-wiki/sdk-codegen` is dated 01:50).
+`Cannot find module '@aoe/sdk-codegen'`; the symlink
+`packages/testkit/node_modules/@aoe/sdk-codegen` is dated 01:50).
 `scripts/build-atom-dirs.ts` is also ` M` and is not in my scope either.
 
 Consequence for my acceptance: `wiring` now reports a **different** error,
-`error/PACKAGE_IMPORT_UNDECLARED [@skill-wiki/testkit]: production code imports
-@skill-wiki/sdk-codegen, which is not declared as a dependency`. That is that lane's
+`error/PACKAGE_IMPORT_UNDECLARED [@aoe/testkit]: production code imports
+@aoe/sdk-codegen, which is not declared as a dependency`. That is that lane's
 unfinished edit, not mine. Whether `sdk-codegen` belongs in testkit's `dependencies` or the
 new check belongs in test-only code is that lane's call, so I did not decide it for them.
 
 ### Cross-lane repair I did make
 `packages/testkit/package.json` **is** in my write scope, so I closed the
 `PACKAGE_IMPORT_UNDECLARED` error there rather than leaving the gate red:
-added `"@skill-wiki/sdk-codegen": "workspace:*"` to `dependencies`.
+added `"@aoe/sdk-codegen": "workspace:*"` to `dependencies`.
 This is correct independent of that lane's intent: `model-conformance.ts` is testkit
 *production* code (reachable from `src/index.ts` / `src/cli.ts`), so a static import of
-`@skill-wiki/sdk-codegen` must be a real dependency or an npm consumer's install breaks.
+`@aoe/sdk-codegen` must be a real dependency or an npm consumer's install breaks.
 If that lane instead moves `sdkCompileCheck` out of production code, my line degrades to a
 `PACKAGE_DEPENDENCY_UNUSED` **warning**, not an error — so the failure mode is benign either
 way. I did NOT touch `model-conformance.ts` itself.

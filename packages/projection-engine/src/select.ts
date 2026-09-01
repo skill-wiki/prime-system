@@ -15,7 +15,7 @@
  * literal purpose names: the engine has no opinion about what purposes exist.
  */
 
-import type { UnitIR } from "@skill-wiki/ir";
+import type { UnitIR } from "@aoe/ir";
 import type { ProjectionCatalog, ProjectionLevel } from "./profile.ts";
 import type { TransportKind } from "./transport.ts";
 

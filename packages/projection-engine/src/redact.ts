@@ -11,7 +11,7 @@
  * `content` is still disclosed.
  */
 
-import type { TypedValueIR, UnitIR } from "@skill-wiki/ir";
+import type { TypedValueIR, UnitIR } from "@aoe/ir";
 
 /** One policy rule: when a unit carries `label`, treat these fields as secret. */
 export interface RedactionRule {

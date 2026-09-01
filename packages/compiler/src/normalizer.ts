@@ -1,6 +1,6 @@
-import type { AtomDeclaration, UnitDeclaration, ValueNode } from "@skill-wiki/types";
-import type { LoadedModel, TypeDefinition } from "@skill-wiki/model-schema";
-import type { GraphEdgeIR, SourceRefIR, TypedValueIR, UnitIR, ValueIR } from "@skill-wiki/ir";
+import type { AtomDeclaration, UnitDeclaration, ValueNode } from "@aoe/types";
+import type { LoadedModel, TypeDefinition } from "@aoe/model-schema";
+import type { GraphEdgeIR, SourceRefIR, TypedValueIR, UnitIR, ValueIR } from "@aoe/ir";
 import { buildRelationIndex, type RelationIndex } from "./relation-semantics";
 
 export interface NormalizeDiagnostic { readonly code: string; readonly message: string; readonly field?: string; readonly typeRef?: string; readonly source: SourceRefIR }

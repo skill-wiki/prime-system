@@ -1,5 +1,5 @@
 /**
- * @module @skill-wiki/observability
+ * @module @aoe/observability
  *
  * The engine's tracing API package (plan §5 telemetry, Phase 5 "接
  * OpenTelemetry"). It plays the role `@opentelemetry/api` plays in an OTel

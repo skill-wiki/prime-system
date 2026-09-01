@@ -12,9 +12,9 @@
  */
 
 import { basename } from "node:path";
-import { parse } from "@skill-wiki/parser";
-import type { ParseError } from "@skill-wiki/parser";
-import type { SyntaxAST } from "@skill-wiki/types";
+import { parse } from "@aoe/parser";
+import type { ParseError } from "@aoe/parser";
+import type { SyntaxAST } from "@aoe/types";
 import { TextDocument, type ContentChange } from "./text-document";
 
 export interface ParsedDocument {

@@ -30,10 +30,10 @@ import {
   type AuthorizationDecision,
   type PrincipalAuthorizer,
   type RequestContext,
-} from '@skill-wiki/action-runtime';
-import { SqliteEventStore, type PersistentEventStore } from '@skill-wiki/event-store';
-import type { SnapshotRef } from '@skill-wiki/ir';
-import { loadModelOrThrow, type ActionDefinition, type LoadedModel } from '@skill-wiki/model-schema';
+} from '@aoe/action-runtime';
+import { SqliteEventStore, type PersistentEventStore } from '@aoe/event-store';
+import type { SnapshotRef } from '@aoe/ir';
+import { loadModelOrThrow, type ActionDefinition, type LoadedModel } from '@aoe/model-schema';
 import { loadAuditedCorpus, toSnapshotRef, type AuditedCorpus } from './corpus';
 import { AuditActionProvider } from './provider';
 

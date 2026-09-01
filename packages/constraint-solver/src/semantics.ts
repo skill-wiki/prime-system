@@ -1,5 +1,5 @@
 /**
- * The runtime witness of the semantics vocabulary that `@skill-wiki/ir` types.
+ * The runtime witness of the semantics vocabulary that `@aoe/ir` types.
  *
  * `RelationSemanticsIR` states the closed five-field set once, for every engine.
  * That type is a claim about a JSON payload, not a check of it: an IR value that
@@ -20,7 +20,7 @@ import type {
   SelectionSemanticsIR,
   TraversalIR,
   ValueIR,
-} from "@skill-wiki/ir";
+} from "@aoe/ir";
 
 export const TRAVERSAL_VALUES = ["none", "one-hop", "transitive"] as const;
 export const SELECTION_VALUES = ["informational", "expand", "closure", "exclude"] as const;

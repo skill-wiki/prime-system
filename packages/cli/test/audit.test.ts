@@ -12,11 +12,11 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { buildGlobalIndexXml, type AtomMeta } from "@skill-wiki/compiler";
-import { finalizeCorpusBundle } from "@skill-wiki/bundle";
-import { SqliteEventStore } from "@skill-wiki/event-store";
-import type { ActionRun } from "@skill-wiki/action-runtime";
-import { loadModelOrThrow, type ActionDefinition } from "@skill-wiki/model-schema";
+import { buildGlobalIndexXml, type AtomMeta } from "@aoe/compiler";
+import { finalizeCorpusBundle } from "@aoe/bundle";
+import { SqliteEventStore } from "@aoe/event-store";
+import type { ActionRun } from "@aoe/action-runtime";
+import { loadModelOrThrow, type ActionDefinition } from "@aoe/model-schema";
 import { assembleAudit, auditContext, openRunLog, snapshotIdOf, AuditAssemblyError } from "../src/audit/assemble";
 import { runAudit, selectRules } from "../src/audit/checks";
 import { loadAuditedCorpus, toSnapshotRef } from "../src/audit/corpus";

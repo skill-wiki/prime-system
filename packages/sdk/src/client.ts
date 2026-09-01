@@ -7,9 +7,9 @@
  * remote paths could execute differently.
  */
 
-import type { SelectionPlanIR, SnapshotRef } from "@skill-wiki/ir";
-import type { QueryRequest } from "@skill-wiki/query-engine";
-import type { ActionRun, EffectPlan, EventRecord } from "@skill-wiki/action-runtime";
+import type { SelectionPlanIR, SnapshotRef } from "@aoe/ir";
+import type { QueryRequest } from "@aoe/query-engine";
+import type { ActionRun, EffectPlan, EventRecord } from "@aoe/action-runtime";
 import {
   assertGeneratedArtifactUsable,
   parseGeneratedArtifactHeader,

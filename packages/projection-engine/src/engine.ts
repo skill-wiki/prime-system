@@ -8,7 +8,7 @@
  * happens after the scope is assembled so a key can never be missing its tenant.
  */
 
-import type { DiagnosticIR, SnapshotRef, UnitIR } from "@skill-wiki/ir";
+import type { DiagnosticIR, SnapshotRef, UnitIR } from "@aoe/ir";
 import type { ProjectionCatalog, ProjectionLevel } from "./profile.ts";
 import { candidateLevels, resolveProfile, type ProjectionRequest, type PurposeRouting } from "./select.ts";
 import { solveBudget, type BudgetPlan } from "./budget.ts";

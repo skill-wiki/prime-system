@@ -10,7 +10,7 @@
  * the model package changed it (coordinator decision D-7).
  *
  * There is deliberately no narrowing code here: `RelationDefinitionSchema` in
- * `@skill-wiki/model-schema` is a zod schema, so `semantics.loadOrder` and
+ * `@aoe/model-schema` is a zod schema, so `semantics.loadOrder` and
  * friends arrive already typed as their enums. D-3 forbids a third hand-written
  * narrowing implementation and this module does not add one — it only builds a
  * spelling-to-definition lookup and names the three questions the compiler asks.
@@ -18,8 +18,8 @@
 
 import { dirname, resolve as resolvePath } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadModelOrThrow } from "@skill-wiki/model-schema";
-import type { LoadedModel, RelationDefinition } from "@skill-wiki/model-schema";
+import { loadModelOrThrow } from "@aoe/model-schema";
+import type { LoadedModel, RelationDefinition } from "@aoe/model-schema";
 
 /** Temporal direction as the dependency graph records it. */
 export type LoadDirection = "before" | "after" | "during" | "any";

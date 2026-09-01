@@ -7,7 +7,7 @@
  * corpus order is a plan that changes when a file is renamed.
  */
 
-import type { GraphEdgeIR, GraphIR, UnitIR } from "@skill-wiki/ir";
+import type { GraphEdgeIR, GraphIR, UnitIR } from "@aoe/ir";
 import { compareStrings } from "./deterministic.ts";
 
 export interface Adjacency {

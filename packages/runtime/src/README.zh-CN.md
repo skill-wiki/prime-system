@@ -1,4 +1,4 @@
-# `@skill-wiki/runtime`
+# `@aoe/runtime`
 
 这个兼容 Scope Package 负责 Kernary 不可变 Corpus 的激活与 Projection 读取。
 它不编译 Source、不执行 Retrieval，也不运行 Action。
@@ -15,7 +15,7 @@ Compiler 与 Bundle 创建不可变 Artifact；Runtime 只验证和读取；Quer
 产生 Selection Plan；Projection Engine 读取通过 Admission 的 Projection；Action
 Runtime 负责受控执行与 Event evidence。
 
-`atom-loader` 名称与 Atom-shaped artifact 属于 v1 兼容格式。Kernary Core 使用领域
+`atom-loader` 名称与 Atom-shaped artifact 属于 v1 兼容格式。AOE Core 使用领域
 无关 Unit IR，不拥有固定 Atom kind list。通用 MCP Transport、Bundle Finalizer、
 CLI Diagnostic 与 Frontend Design Domain Package 都复用同一组 Loader；另写一套
 Transport-specific Snapshot Loader 会破坏 Contract。

@@ -1,5 +1,5 @@
 {
-  "name": "@skill-wiki/event-store",
+  "name": "@aoe/event-store",
   "version": "0.2.0",
   "description": "Append-only, multi-tenant event and run-record store with replay and persistent idempotency",
   "main": "src/index.ts",

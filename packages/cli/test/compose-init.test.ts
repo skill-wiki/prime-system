@@ -82,7 +82,7 @@ describe('generateTemplate', () => {
   });
 
   test('round-trips through the parser', async () => {
-    const { parse } = await import('@skill-wiki/parser');
+    const { parse } = await import('@aoe/parser');
     const { ast, errors } = parse(generateTemplate('my-thing', 'Quuxoid', 'd', ['a', 'b']), 'my-thing.prime');
     expect(errors).toEqual([]);
     expect(ast.type).toBe('AtomDeclaration');

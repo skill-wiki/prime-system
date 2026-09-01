@@ -1,6 +1,6 @@
 import { existsSync, lstatSync, readFileSync, readdirSync, realpathSync } from "node:fs";
 import { isAbsolute, join, relative, resolve } from "node:path";
-import type { Diagnostic } from "@skill-wiki/model-schema";
+import type { Diagnostic } from "@aoe/model-schema";
 import { parse } from "yaml";
 import { PolicySetSchema, type PolicySet } from "./schema.ts";
 

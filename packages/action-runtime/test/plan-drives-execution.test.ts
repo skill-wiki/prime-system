@@ -15,8 +15,8 @@
  * refused with its reason on the run and in the log, never skipped quietly.
  */
 import { describe, expect, test } from "bun:test";
-import type { ExecutionPlanIR, ExecutionPlanNodeIR } from "@skill-wiki/ir";
-import { loadModelOrThrow } from "@skill-wiki/model-schema";
+import type { ExecutionPlanIR, ExecutionPlanNodeIR } from "@aoe/ir";
+import { loadModelOrThrow } from "@aoe/model-schema";
 import {
   ActionProviderRegistry,
   ActionRuntime,

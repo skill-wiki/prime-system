@@ -5,7 +5,7 @@
  * table of relation names anywhere: two relations with identical semantics are
  * indistinguishable to this module, which is the whole point of the refactor.
  */
-import type { DiagnosticIR, GraphEdgeIR, RelationDefIR, RelationSemanticsIR, UnitIR } from "@skill-wiki/ir";
+import type { DiagnosticIR, GraphEdgeIR, RelationDefIR, RelationSemanticsIR, UnitIR } from "@aoe/ir";
 import {
   type AdvisoryExclusion,
   type ConstraintSet,

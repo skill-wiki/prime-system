@@ -69,7 +69,7 @@ TypeScript 团队的风格指南。4 条强制规则，3 种推荐模式，
 和 `primes/compiled/`。系统仓库提供工具；语料库提供知识。
 
 ```
-kernary-engine/        ← 此仓库（工具、parser、compiler、runtime）
+aoe-engine/        ← 此仓库（工具、parser、compiler、runtime）
   examples/
     hello-world/       ← 精简语料库，随此仓库发布，用于冒烟测试
     recipes/           ← 中型语料库，随此仓库发布，跨领域证明
@@ -79,7 +79,7 @@ kernary-engine/        ← 此仓库（工具、parser、compiler、runtime）
     compiler/
     ...
 
-kernary-frontend-design/ ← 独立 Domain Package
+aoe-frontend-design/ ← 独立 Domain Package
 your-corpus/           ← 你的领域、你的命名空间、你的原子
 ```
 
@@ -97,10 +97,10 @@ your-corpus/           ← 你的领域、你的命名空间、你的原子
 - [`spec/PRIME-PROTOCOL-v1.md §1.2`](../spec/PRIME-PROTOCOL-v1.md) — 全部 28 种原子类型及必填字段
 
 简短流程：
-1. `prime init my-corpus/` — 初始化目录
+1. `aoe init my-corpus/` — 初始化目录
 2. 在 `my-corpus/primes/sources/@myscope/` 中编写 `.prime` 文件
-3. `prime compile my-corpus/primes/sources --out my-corpus/primes/compiled`
-4. `PRIME_DIR=my-corpus/primes/compiled bunx @prime-lang/mcp-server-core`
+3. `aoe compile my-corpus/primes/sources --out my-corpus/primes/compiled`
+4. `AOE_CORPUS_DIR=my-corpus/primes/compiled bunx @aoe/mcp-server-core`
 5. 将 MCP 服务器接入你的 Agent
 
 本地使用语料库不需要发布到注册中心。

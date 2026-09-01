@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import type { RelationDefinition } from "@skill-wiki/model-schema";
+import type { RelationDefinition } from "@aoe/model-schema";
 import {
   admit,
   buildAdjacency,

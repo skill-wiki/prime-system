@@ -21,7 +21,7 @@ import { describe, test, expect } from "bun:test";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { compileSource, type Diagnostic as CompilerDiagnostic } from "@skill-wiki/compiler";
+import { compileSource, type Diagnostic as CompilerDiagnostic } from "@aoe/compiler";
 import { asCompilerDiagnostic, createLanguageServer } from "../src/index";
 
 /** A stable ordering so the comparison is set-wise, not emission-order-wise. */

@@ -104,4 +104,4 @@ Model 与 Corpus 各自拥有版本。Corpus 声明它适用的 Model range，Co
 
 发布流程请阅读[编译与 Snapshot](./compilation-and-snapshots.zh-CN.md)。要看完整的
 外部 Package，请参考
-[Frontend Design Domain Package](https://github.com/skill-wiki/kernary-frontend-design)。
+[Frontend Design Domain Package](https://github.com/kernary-aoe/aoe-frontend-design)。

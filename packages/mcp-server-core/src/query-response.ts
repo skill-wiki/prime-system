@@ -1,6 +1,6 @@
-import type { SnapshotRef } from "@skill-wiki/runtime";
-import type { SelectionPlanIR } from "@skill-wiki/ir";
-import { formatProjectionUri } from "@skill-wiki/projection-engine";
+import type { SnapshotRef } from "@aoe/runtime";
+import type { SelectionPlanIR } from "@aoe/ir";
+import { formatProjectionUri } from "@aoe/projection-engine";
 
 /**
  * One delivered projection.
@@ -99,7 +99,7 @@ export function createAoeQueryResponse(
 }
 
 /**
- * The §11.3 resource URI, produced by `@skill-wiki/projection-engine` so that the
+ * The §11.3 resource URI, produced by `@aoe/projection-engine` so that the
  * server's identities and the engine's parser cannot drift apart.
  *
  * This replaces a locally-built grammar that had six segments and neither a

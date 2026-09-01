@@ -14,8 +14,8 @@
 
 <p align="center">
   <a href="./README.zh-CN.md">中文</a> ·
-  <a href="https://skill-wiki.github.io/docs">Documentation</a> ·
-  <a href="https://github.com/skill-wiki/kernary-engine/actions/workflows/ci.yml"><img src="https://github.com/skill-wiki/kernary-engine/actions/workflows/ci.yml/badge.svg" alt="CI"></a> ·
+  <a href="https://kernary-aoe.github.io/docs">Documentation</a> ·
+  <a href="https://github.com/kernary-aoe/aoe-engine/actions/workflows/ci.yml"><img src="https://github.com/kernary-aoe/aoe-engine/actions/workflows/ci.yml/badge.svg" alt="CI"></a> ·
   <a href="LICENSE">Apache-2.0</a>
 </p>
 
@@ -139,8 +139,8 @@ installation, builds, and tests. Node.js 22+ is useful for consumers of the
 HTTP and MCP entry points.
 
 ```bash
-git clone https://github.com/skill-wiki/kernary-engine.git
-cd kernary-engine
+git clone https://github.com/kernary-aoe/aoe-engine.git
+cd aoe-engine
 bun install --frozen-lockfile
 
 # confidence check
@@ -209,7 +209,7 @@ Core constant. Start with:
 - [Actions and policies](docs/guides/actions-and-policies.md)
 - [Releases and migrations](docs/operations/releases-and-migrations.md)
 
-The reference [Frontend Design Domain Package](https://github.com/skill-wiki/kernary-frontend-design)
+The reference [Frontend Design Domain Package](https://github.com/kernary-aoe/aoe-frontend-design)
 is one example of this boundary. Security, backend, mobile, and cooking
 corpora in the workspace are additional conformance fixtures, not Core
 features.

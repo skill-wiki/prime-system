@@ -1,11 +1,11 @@
 {
-  "name": "@skill-wiki/action-runtime",
+  "name": "@aoe/action-runtime",
   "version": "0.2.0",
   "description": "Governed, model-defined action and function runtime",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "scripts": { "test": "bun test", "typecheck": "tsc --noEmit -p tsconfig.json" },
   "license": "Apache-2.0",
-  "dependencies": { "@skill-wiki/evaluation-engine": "workspace:*", "@skill-wiki/ir": "workspace:*", "@skill-wiki/model-schema": "workspace:*" },
-  "devDependencies": { "@skill-wiki/policy-engine": "workspace:*" }
+  "dependencies": { "@aoe/evaluation-engine": "workspace:*", "@aoe/ir": "workspace:*", "@aoe/model-schema": "workspace:*" },
+  "devDependencies": { "@aoe/policy-engine": "workspace:*" }
 }

@@ -1,10 +1,10 @@
 {
-  "name": "@skill-wiki/corpus-tools",
+  "name": "@aoe/corpus-tools",
   "version": "0.2.0",
   "description": "Corpus reconciliation: three-way ancestry mapping between a legacy source tree, a migrated tree, and a compiled bundle",
   "main": "src/reconcile.ts",
   "types": "src/reconcile.ts",
-  "bin": { "prime-corpus-reconcile": "src/cli.ts" },
+  "bin": { "aoe-corpus-reconcile": "src/cli.ts" },
   "scripts": { "test": "bun test", "typecheck": "tsc --noEmit -p tsconfig.json" },
   "license": "Apache-2.0",
   "dependencies": {

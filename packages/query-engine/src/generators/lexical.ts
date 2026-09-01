@@ -14,7 +14,7 @@
  * the best score in this query and land in [0, 1] like every other axis.
  */
 
-import type { GraphIR, SelectionCandidateIR, UnitIR } from "@skill-wiki/ir";
+import type { GraphIR, SelectionCandidateIR, UnitIR } from "@aoe/ir";
 import { compareStrings, orderedRecord, quantize } from "../deterministic.ts";
 import { collectStrings, resolvePath } from "../values.ts";
 import type { CandidateGenerator, GeneratorContext, QueryRequest } from "../types.ts";

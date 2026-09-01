@@ -26,8 +26,8 @@
  * "not implemented".
  */
 
-import type { DiagnosticIR } from "@skill-wiki/ir";
-import type { RetrievalProfile } from "@skill-wiki/model-schema";
+import type { DiagnosticIR } from "@aoe/ir";
+import type { RetrievalProfile } from "@aoe/model-schema";
 import type { RerankerRegistry } from "./reranker.ts";
 
 /** A profile declared a reranker this engine has no implementation for. */

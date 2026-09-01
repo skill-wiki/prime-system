@@ -26,7 +26,7 @@
  */
 
 import { createHash, timingSafeEqual } from "node:crypto";
-import type { Principal } from "@skill-wiki/query-engine";
+import type { Principal } from "@aoe/query-engine";
 
 export const AUTHORIZATION_HEADER = "authorization";
 export const BEARER_PREFIX = "Bearer ";

@@ -28,7 +28,7 @@
  * failure modes are avoided by the endpoint having no content.
  */
 
-import type { SelectionPlanIR } from "@skill-wiki/ir";
+import type { SelectionPlanIR } from "@aoe/ir";
 import {
   TRACEPARENT_HEADER,
   formatTraceparent,
@@ -37,12 +37,12 @@ import {
   type Span,
   type SpanContext,
   type Tracer,
-} from "@skill-wiki/observability";
-import { QueryEngineError, type Principal, type QueryEngineContext } from "@skill-wiki/query-engine";
-import type { EngineTransport, QueryResult } from "@skill-wiki/sdk";
+} from "@aoe/observability";
+import { QueryEngineError, type Principal, type QueryEngineContext } from "@aoe/query-engine";
+import type { EngineTransport, QueryResult } from "@aoe/sdk";
 import type { Authenticator } from "./auth.ts";
 import { switchRelease, type TraceScope } from "./corpus.ts";
-import type { CorpusRegistry } from "@skill-wiki/runtime";
+import type { CorpusRegistry } from "@aoe/runtime";
 import { RESOURCE_PATH_PREFIX, listResources, readResource } from "./resources.ts";
 import { WireError, decodeQueryRequest, readJsonBody } from "./wire.ts";
 

@@ -1,7 +1,7 @@
 # examples/recipes/domain.yaml
 #
 # Domain configuration for the recipes cooking corpus.
-# Drop this file in your corpus directory and Prime will load it automatically
+# Drop this file in your corpus directory and AOE will load it automatically
 # at startup — no code changes required.
 #
 # Schema reference: spec/DOMAIN-EXTENSION-SPEC.md

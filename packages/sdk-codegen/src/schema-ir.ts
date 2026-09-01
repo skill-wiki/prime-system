@@ -3,7 +3,7 @@
  *
  * Model Package -> `SchemaIR`. Plan §14.3 requires codegen to consume SchemaIR
  * rather than re-parse YAML, and nothing in this repo produced a `SchemaIR` yet
- * (`grep -rln SchemaIR packages/` finds only the declaration in `@skill-wiki/ir`
+ * (`grep -rln SchemaIR packages/` finds only the declaration in `@aoe/ir`
  * and `projection-engine`'s consumer of its `projections` slice). This module is
  * that producer, and it is the *only* place in this package that reads a
  * `LoadedModel`: every emitter downstream takes `CodegenSchema` and cannot reach
@@ -11,7 +11,7 @@
  *
  * ── Where SchemaIR is lossy, and why there is a sidecar ──────────────────────
  *
- * Three things a generator needs are declared by `@skill-wiki/model-schema` and
+ * Three things a generator needs are declared by `@aoe/model-schema` and
  * *absent* from the IR contract:
  *
  *  - `TypeDefIR.fields` is `Record<string, TypeRef>` — a field's `required` flag is
@@ -43,9 +43,9 @@ import type {
   SchemaIR,
   TypeDefIR,
   ValueIR,
-} from "@skill-wiki/ir";
-import type { LoadedModel, ModelDefinition } from "@skill-wiki/model-schema";
-import { BUILTIN_TYPE_REFS as MODEL_BUILTIN_TYPE_REFS, isBuiltinTypeRef as modelIsBuiltinTypeRef, parseTypeRef } from "@skill-wiki/model-schema";
+} from "@aoe/ir";
+import type { LoadedModel, ModelDefinition } from "@aoe/model-schema";
+import { BUILTIN_TYPE_REFS as MODEL_BUILTIN_TYPE_REFS, isBuiltinTypeRef as modelIsBuiltinTypeRef, parseTypeRef } from "@aoe/model-schema";
 import { canonicalJson, sha256 } from "./canonical.ts";
 
 /** A field as the Model Package declares it, before SchemaIR flattens it. */

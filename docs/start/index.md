@@ -44,8 +44,8 @@ best-effort read.
 ### 1. Install the engine
 
 ```bash
-git clone https://github.com/skill-wiki/kernary-engine.git
-cd kernary-engine
+git clone https://github.com/kernary-aoe/aoe-engine.git
+cd aoe-engine
 bun install --frozen-lockfile
 ```
 

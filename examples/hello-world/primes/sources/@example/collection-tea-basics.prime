@@ -3,7 +3,7 @@ collection TeaBasics {
   version: "1.0.0"
 
   name: "Tea Basics"
-  description: "A minimal corpus demonstrating the Skill Wiki / Prime DSL. Five atoms — one fact, one term, one rule, one method, and this collection — cover enough thermophysics to brew a correct cup of tea anywhere in the world."
+  description: "A minimal AOE corpus. Five units — one fact, one term, one rule, one method, and this collection — cover enough thermophysics to brew a correct cup of tea anywhere in the world."
 
   domain: [cooking, physics]
   target: learners

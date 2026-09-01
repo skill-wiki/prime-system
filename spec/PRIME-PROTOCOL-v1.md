@@ -140,11 +140,11 @@ Domain wrappers may define additional typed sub-fields (e.g. `typography-require
 
 ---
 
-## §4 · Retrieval — `prime_query`
+## §4 · Retrieval — `aoe_query`
 
-The protocol exposes **one MCP tool**: `prime_query`. Domain wrappers MAY ship additional tools on top; the bundled frontend-design wrapper ships five (documented in [`FRONTEND-DESIGN-DOMAIN-v1.md`](./FRONTEND-DESIGN-DOMAIN-v1.md) §5).
+The protocol exposes **one MCP tool**: `aoe_query`. Domain wrappers MAY ship additional tools on top; the bundled frontend-design wrapper ships five (documented in [`FRONTEND-DESIGN-DOMAIN-v1.md`](./FRONTEND-DESIGN-DOMAIN-v1.md) §5).
 
-### `prime_query`
+### `aoe_query`
 
 ```
 Input:
@@ -169,7 +169,7 @@ Output:
   }
 ```
 
-**Scoring**: keyword-match × quality.overall. No kind is privileged. Domain wrappers that need kind-priority reranking apply it in their own layer after receiving `prime_query` results. For corpus-wide kind boosts, set `PRIME_KIND_BOOSTS='{"rule":0.5,"check":0.4}'` (JSON map; default: empty — equal treatment for all 28 kinds).
+**Scoring**: keyword-match × quality.overall. No kind is privileged. Domain wrappers that need kind-priority reranking apply it in their own layer after receiving `aoe_query` results. For corpus-wide kind boosts, set `PRIME_KIND_BOOSTS='{"rule":0.5,"check":0.4}'` (JSON map; default: empty — equal treatment for all 28 kinds).
 
 **Axis retrieval** is a domain-level concept, not a protocol guarantee. Domains declare their axes in `domain.yaml`; the protocol provides the underlying keyword-match + edge-graph engine. See [`DOMAIN-EXTENSION-SPEC.md`](./DOMAIN-EXTENSION-SPEC.md) §2.
 
@@ -199,7 +199,7 @@ The package registry (`packages/registry/`) serves atoms over HTTP.
 | `GET /atoms/:id.prime` | GET | Fetch raw `.prime` source for atom `:id` |
 | `GET /health` | GET | Liveness check |
 
-`prime install @scope/name --remote <url>` fetches missing atoms from this endpoint and writes them into the local sources directory.
+`aoe install @scope/name --remote <url>` fetches missing atoms from this endpoint and writes them into the local sources directory.
 
 ---
 
@@ -268,7 +268,7 @@ Atoms carry a `version` semver field. Lifecycle states:
 
 **v1 limitation**: the compiler does not currently enforce lifecycle checks at build time. Enforcement is planned for v1.1.
 
-**Semver registry** (`prime install`): atoms are distributed as source files in the `<corpus>/primes/sources/` directory tree. Cross-team distribution via `prime install @scope/name --remote <url>`.
+**Semver registry** (`aoe install`): atoms are distributed as source files in the `<corpus>/primes/sources/` directory tree. Cross-team distribution via `aoe install @scope/name --remote <url>`.
 
 ---
 
@@ -276,11 +276,11 @@ Atoms carry a `version` semver field. Lifecycle states:
 
 ```bash
 # Compile a corpus
-prime compile --src primes/sources --out primes/compiled
+aoe compile --src primes/sources --out primes/compiled
 
-# Start the MCP server (one tool: prime_query)
-PRIME_DIR=/abs/path/to/compiled \
-  bunx @prime-lang/mcp-server-core
+# Start the MCP server (one tool: aoe_query)
+AOE_CORPUS_DIR=/abs/path/to/compiled \
+  bunx @aoe/mcp-server-core
 ```
 
 Runtime dependencies: Node 22+ (native TS strip) or Bun. No esbuild required.

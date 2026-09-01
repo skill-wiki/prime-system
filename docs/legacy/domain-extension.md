@@ -331,12 +331,12 @@ The regex pattern must be in `/pattern/flags` format. Supported flags: `i` (case
 
 ## Migration: From v0.0.x Code-Defined Domains
 
-In v0.0.x, the `@prime-lang/runtime` package exported `FRONTEND_DESIGN_DOMAIN` and `createDefaultDomainRegistry`. Both have been removed. Here is the migration path:
+In v0.0.x, the `@aoe/runtime` package exported `FRONTEND_DESIGN_DOMAIN` and `createDefaultDomainRegistry`. Both have been removed. Here is the migration path:
 
 ### Before (v0.0.x)
 
 ```typescript
-import { FRONTEND_DESIGN_DOMAIN, createDefaultDomainRegistry } from "@prime-lang/runtime";
+import { FRONTEND_DESIGN_DOMAIN, createDefaultDomainRegistry } from "@aoe/runtime";
 
 // auto-registered the frontend-design domain
 const registry = createDefaultDomainRegistry();
@@ -347,7 +347,7 @@ const registry = createDefaultDomainRegistry();
 Load from the corpus's `domain.yaml` file:
 
 ```typescript
-import { loadDomainFromFile, DomainRegistry, registerAll } from "@prime-lang/runtime";
+import { loadDomainFromFile, DomainRegistry, registerAll } from "@aoe/runtime";
 
 const registry = new DomainRegistry();
 registerAll(registry, [
@@ -358,7 +358,7 @@ registerAll(registry, [
 Or use the auto-discovery convenience factory (recommended for MCP server startup):
 
 ```typescript
-import { createConfigDrivenRegistry } from "@prime-lang/runtime";
+import { createConfigDrivenRegistry } from "@aoe/runtime";
 
 // Recursively discovers all domain.yaml files under cwd (depth ≤ 4)
 const registry = createConfigDrivenRegistry();
@@ -411,7 +411,7 @@ ls corpora/my-domain/domain.yaml   # must exist
 **Check 3: Validate the schema manually.** Use Node/Bun REPL:
 
 ```typescript
-import { loadDomainFromFile } from "@prime-lang/runtime";
+import { loadDomainFromFile } from "@aoe/runtime";
 const p = loadDomainFromFile("corpora/my-domain/domain.yaml");
 console.log(p.name, p.tags.length, "tags");
 ```

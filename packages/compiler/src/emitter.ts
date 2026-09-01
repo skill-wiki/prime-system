@@ -30,7 +30,7 @@ import type {
   ObjectNode,
   ParameterShorthandNode,
   ReferenceNode,
-} from "@skill-wiki/types";
+} from "@aoe/types";
 import type { DependencyGraph, InstalledPrime } from "./types";
 
 type AnyAST = PrimeAST | AtomDeclaration;
@@ -104,9 +104,9 @@ function getRequire(ast: AnyAST): string[] {
 // ─── Markdown Emitter ──────────────────────────────────────────────────────
 
 /**
- * Emit optimized Markdown from a Prime AST.
+ * Emit optimized Markdown from a AOE AST.
  *
- * @param ast - The parsed Prime AST
+ * @param ast - The parsed AOE AST
  * @returns Optimized Markdown string
  */
 export function emitMarkdown(ast: AnyAST): string {
@@ -423,7 +423,7 @@ export function emitMarkdown(ast: AnyAST): string {
 /**
  * Emit a bundle Markdown that inlines all dependency content.
  *
- * @param ast - The root Prime AST
+ * @param ast - The root AOE AST
  * @param graph - Resolved dependency graph
  * @param installedPrimes - Map of installed Primes with compiled content
  * @returns Bundle Markdown string
@@ -464,7 +464,7 @@ export function emitBundle(
     }
   }
 
-  // Emit the main Prime
+  // Emit the main AOE
   const mainMd = emitMarkdown(ast);
   const mainLines = mainMd.split("\n");
   // Replace the first header-style line with a [main] marker
@@ -481,7 +481,7 @@ export function emitBundle(
 /**
  * Emit a YAML index entry for the Registry.
  *
- * @param ast - The parsed Prime AST
+ * @param ast - The parsed AOE AST
  * @param graph - Resolved dependency graph
  * @param sourceTokenCount - Approximate token count of the source
  * @param compiledTokenCount - Approximate token count of compiled output

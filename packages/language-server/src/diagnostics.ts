@@ -4,7 +4,7 @@
  *
  * ADR-8 / §18.5: the Language Server reuses Parser and Checker but does not
  * build bundles. So this module imports `checkL1` and `resolve` from
- * `@skill-wiki/compiler` and imports **nothing** from its emitter: no
+ * `@aoe/compiler` and imports **nothing** from its emitter: no
  * `emitMarkdown`, no `emitBundle`, no `emitCompiledUnit`, no `compileSource`.
  * `test/boundary.test.ts` pins that as a grep over this directory.
  *
@@ -15,8 +15,8 @@
  * hold that is to run one sequence, not two.
  */
 
-import { checkL1, resolve, discoverInstalledPrimes, type Diagnostic as CompilerDiagnostic } from "@skill-wiki/compiler";
-import type { LegacySyntaxAST } from "@skill-wiki/types";
+import { checkL1, resolve, discoverInstalledPrimes, type Diagnostic as CompilerDiagnostic } from "@aoe/compiler";
+import type { LegacySyntaxAST } from "@aoe/types";
 import type { ParsedDocument } from "./document-store";
 import { documentPath } from "./document-store";
 import type { Range } from "./text-document";

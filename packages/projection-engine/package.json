@@ -1,5 +1,5 @@
 {
-  "name": "@skill-wiki/projection-engine",
+  "name": "@aoe/projection-engine",
   "version": "0.2.0",
   "description": "Model-driven projection selection, transport and redaction over compiled bundles",
   "main": "src/index.ts",
@@ -7,7 +7,7 @@
   "scripts": { "test": "bun test", "typecheck": "tsc --noEmit -p tsconfig.json" },
   "license": "Apache-2.0",
   "dependencies": {
-    "@skill-wiki/ir": "workspace:*",
-    "@skill-wiki/model-schema": "workspace:*"
+    "@aoe/ir": "workspace:*",
+    "@aoe/model-schema": "workspace:*"
   }
 }

@@ -16,8 +16,8 @@
  * (`include`/`exclude`/`typeGroups`/`rules`) are read, never authored here.
  */
 
-import type { ProjectionDefinition } from "@skill-wiki/model-schema";
-import type { ProjectionDefIR, ValueIR } from "@skill-wiki/ir";
+import type { ProjectionDefinition } from "@aoe/model-schema";
+import type { ProjectionDefIR, ValueIR } from "@aoe/ir";
 
 /** One resolved level: the selector program for a single token budget. */
 export interface ProjectionLevel {

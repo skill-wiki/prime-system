@@ -6,8 +6,8 @@
  * wiring is known to the engine.
  */
 
-import type { GraphIR } from "@skill-wiki/ir";
-import type { ProjectionDefinition, RelationDefinition, RetrievalProfile } from "@skill-wiki/model-schema";
+import type { GraphIR } from "@aoe/ir";
+import type { ProjectionDefinition, RelationDefinition, RetrievalProfile } from "@aoe/model-schema";
 import {
   CandidateGeneratorRegistry,
   createFacetGenerator,

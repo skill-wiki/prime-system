@@ -13,7 +13,7 @@
  * the lookup goes through a `Record<string, string>` view.
  */
 
-import type { UnitIR } from "@skill-wiki/ir";
+import type { UnitIR } from "@aoe/ir";
 import type { ArtifactLocator } from "../engine.ts";
 import type { ProjectionLevel } from "../profile.ts";
 

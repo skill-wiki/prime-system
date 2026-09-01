@@ -1,7 +1,7 @@
 {
-  "name": "@skill-wiki/compiler",
+  "name": "@aoe/compiler",
   "version": "0.2.0",
-  "description": "AI-powered compiler for .prime files — structural, logic, and domain checking with optimized Markdown emission",
+  "description": "AOE compiler for .prime source files — structural, logic, and domain checking with optimized Markdown emission",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "scripts": {
@@ -10,10 +10,10 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@skill-wiki/types": "workspace:*",
-    "@skill-wiki/parser": "workspace:*",
-    "@skill-wiki/model-schema": "workspace:*",
-    "@skill-wiki/ir": "workspace:*"
+    "@aoe/types": "workspace:*",
+    "@aoe/parser": "workspace:*",
+    "@aoe/model-schema": "workspace:*",
+    "@aoe/ir": "workspace:*"
   },
   "license": "Apache-2.0"
 }

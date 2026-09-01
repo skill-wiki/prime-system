@@ -1,5 +1,5 @@
 /**
- * @module @skill-wiki/query-engine
+ * @module @aoe/query-engine
  *
  * Generic, explainable selection planning. The engine holds retrieval *mechanism*
  * (BM25, facet matching, graph proximity, budgeting, determinism) and holds no

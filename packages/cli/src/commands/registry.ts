@@ -1,5 +1,5 @@
 /**
- * registry.ts — Local atom registry for the Prime CLI.
+ * registry.ts — Local atom registry for the AOE CLI.
  *
  * Provides helpers to:
  *   - resolve an @scope/name reference to an absolute file path

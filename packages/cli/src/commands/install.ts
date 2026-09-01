@@ -1,5 +1,5 @@
 /**
- * aoe install [name[@version]] — Install a Prime from registry or install all from SKILL.md.
+ * aoe install [name[@version]] — Install a AOE from registry or install all from SKILL.md.
  */
 
 import { resolve, join } from 'path';
@@ -41,7 +41,7 @@ async function installSingle(nameVersion: string) {
         spinner.stop(`${green('✅')} Installed ${bold(name)} from local primes/`);
         return;
       }
-      error(`Prime '${name}' not found on prime.dev or locally`);
+      error(`AOE '${name}' not found on prime.dev or locally`);
       info(`Create it with: aoe init ${name}`);
       process.exit(1);
     }
@@ -85,7 +85,7 @@ async function installFromSkill() {
   const skillPath = resolve('SKILL.md');
   if (!fileExists(skillPath)) {
     error('No SKILL.md found in current directory.');
-    info('Specify a Prime name: aoe install <name>');
+    info('Specify a AOE name: aoe install <name>');
     process.exit(1);
   }
 
@@ -104,7 +104,7 @@ async function installFromSkill() {
     .map(l => l.replace(/^\s+-\s+/, '').trim())
     .filter(l => l.length > 0);
 
-  console.log(`  Found ${primeRefs.length} Prime references\n`);
+  console.log(`  Found ${primeRefs.length} AOE references\n`);
 
   for (const ref of primeRefs) {
     await installSingle(ref);

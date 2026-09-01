@@ -1,10 +1,10 @@
 {
-  "name": "@skill-wiki/evaluation-engine",
+  "name": "@aoe/evaluation-engine",
   "version": "0.2.0",
   "description": "Evaluation provider orchestration: deterministic expressions, fail-closed skips and the §9.7 result envelope",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "scripts": { "test": "bun test", "typecheck": "tsc --noEmit -p tsconfig.json" },
   "license": "Apache-2.0",
-  "dependencies": { "@skill-wiki/ir": "workspace:*", "@skill-wiki/policy-engine": "workspace:*", "zod": "^4.0.0" }
+  "dependencies": { "@aoe/ir": "workspace:*", "@aoe/policy-engine": "workspace:*", "zod": "^4.0.0" }
 }

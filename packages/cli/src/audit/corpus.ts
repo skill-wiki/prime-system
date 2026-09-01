@@ -6,7 +6,7 @@
  * corpus from source would be auditing its own derivation rather than the
  * artifact that ships.
  *
- * `@skill-wiki/runtime` already owns bundle reading (`loadIndex`, `loadAtomMeta`,
+ * `@aoe/runtime` already owns bundle reading (`loadIndex`, `loadAtomMeta`,
  * `loadCorpusSnapshot`). This module only re-shapes what it returns into a view
  * whose field names carry no corpus schema: `type` is whatever string the atom
  * declares as its kind, `relation` is whatever string the edge declares. Nothing
@@ -14,14 +14,14 @@
  * never seen audits exactly as well as one it has.
  */
 
-import type { SnapshotRef } from '@skill-wiki/ir';
-import type { Manifest } from '@skill-wiki/model-schema';
+import type { SnapshotRef } from '@aoe/ir';
+import type { Manifest } from '@aoe/model-schema';
 import {
   loadAtomMeta,
   loadCorpusSnapshot,
   loadIndex,
   type SnapshotRef as BundleSnapshotRef,
-} from '@skill-wiki/runtime';
+} from '@aoe/runtime';
 
 /** One edge as the corpus declares it. `relation` is data, not a known verb. */
 export interface AuditedEdge {

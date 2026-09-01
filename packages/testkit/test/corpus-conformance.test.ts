@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { join } from "node:path";
-import { loadModelOrThrow, type LoadedModel } from "@skill-wiki/model-schema";
+import { loadModelOrThrow, type LoadedModel } from "@aoe/model-schema";
 import { canonicalJson, computeContentDigest, computeUnitDigest, loadCorpus, type CorpusPackage, type CorpusUnitRecord } from "../src/corpus.ts";
 import { runCorpusConformance } from "../src/corpus-conformance.ts";
 

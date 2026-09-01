@@ -1,6 +1,6 @@
 /**
  * These contracts are declared locally instead of imported from
- * `@skill-wiki/action-runtime` because the plan's forced dependency direction
+ * `@aoe/action-runtime` because the plan's forced dependency direction
  * (§15.4) runs consumer -> store, never the reverse. Importing the runtime here
  * would make the workspace graph circular the moment the coordinator wires
  * `action-runtime` to this package. TypeScript is structural, so a store built

@@ -22,8 +22,8 @@ import {
   type ProjectionDefinition,
   type RelationDefinition,
   type RetrievalProfile,
-} from "@skill-wiki/model-schema";
-import { ProjectionCatalog, type PurposeRouting } from "@skill-wiki/projection-engine";
+} from "@aoe/model-schema";
+import { ProjectionCatalog, type PurposeRouting } from "@aoe/projection-engine";
 
 const MODEL_MANIFEST = "prime-model.yaml";
 /** Directory a bundle may carry its own model in, relative to the corpus root. */

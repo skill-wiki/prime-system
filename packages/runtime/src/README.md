@@ -1,6 +1,6 @@
-# `@skill-wiki/runtime`
+# `@aoe/runtime`
 
-This compatibility-scoped package owns immutable Kernary Corpus activation and
+This domain-runtime package owns immutable AOE Corpus activation and
 projection reads. It does not compile source, run retrieval, or execute Actions.
 
 ## Public modules
@@ -22,7 +22,7 @@ path directly.
 - Action Runtime handles governed execution and Event evidence.
 
 The `atom-loader` name and Atom-shaped artifact files belong to the v1
-compatibility format. Kernary Core uses domain-neutral Unit IR and does not own a
+compatibility format. AOE Core uses domain-neutral Unit IR and does not own a
 fixed Atom kind list.
 
 The generic MCP transport, Bundle finalizer, CLI diagnostics, and Frontend

@@ -1,12 +1,12 @@
 # Reporting issues responsibly
 
-Thank you for helping keep Skill Wiki users safe.
+Thank you for helping keep AOE users safe.
 
 ## How to report
 
 Please report issues privately. Do not open a public issue.
 
-- Open a [GitHub security advisory](https://github.com/skill-wiki/skill-wiki/security/advisories/new) — this is the preferred channel and ensures the disclosure is tracked and acknowledged.
+- Open a [GitHub security advisory](https://github.com/kernary-aoe/kernary-aoe/security/advisories/new) — this is the preferred channel and ensures the disclosure is tracked and acknowledged.
 
 If GitHub advisories are unavailable to you, contact a maintainer listed in `MAINTAINERS.md` directly via the address on their GitHub profile. The repo does not run a shared `security@` mailbox at v0.1.0.
 
@@ -26,7 +26,7 @@ Please include:
 ## Scope
 
 In scope:
-- The `@prime-lang/*` packages in this repository
+- The `@aoe/*` packages in this repository
 - The `prime` CLI
 - The `mcp-server-core` package
 - The example registry server (`scripts/registry-server.ts`) when used as documented

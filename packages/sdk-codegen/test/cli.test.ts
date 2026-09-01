@@ -11,11 +11,11 @@ import { join, resolve } from "node:path";
 import { run } from "../src/cli.ts";
 
 const REPO = resolve(import.meta.dir, "../../..");
-const scratch = mkdtempSync(join(tmpdir(), "prime-sdk-codegen-cli-"));
+const scratch = mkdtempSync(join(tmpdir(), "aoe-sdk-codegen-cli-"));
 
 afterAll(() => rmSync(scratch, { recursive: true, force: true }));
 
-describe("prime-sdk-codegen", () => {
+describe("aoe-sdk-codegen", () => {
   test("writes every artifact for a real model package and exits 0", () => {
     const out = join(scratch, "security");
     expect(run(["--model", join(REPO, "packages/testkit/fixtures/security-model"), "--out", out])).toBe(0);

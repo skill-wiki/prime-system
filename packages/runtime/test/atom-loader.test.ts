@@ -1,5 +1,5 @@
 /**
- * Tests for atom-loader — projection-based runtime (Prime v3 model).
+ * Tests for atom-loader — projection-based runtime (AOE v3 model).
  *
  * Uses the handcrafted fixture directory at:
  *   packages/runtime/test/fixtures/atom-dir/

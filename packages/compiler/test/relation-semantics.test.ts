@@ -1,7 +1,7 @@
 import { describe, test, expect } from "bun:test";
 import { join } from "node:path";
-import { loadModelOrThrow } from "@skill-wiki/model-schema";
-import type { LoadedModel } from "@skill-wiki/model-schema";
+import { loadModelOrThrow } from "@aoe/model-schema";
+import type { LoadedModel } from "@aoe/model-schema";
 import { buildRelationIndex, defaultRelationIndex } from "../src/relation-semantics";
 
 const compat = loadModelOrThrow(join(import.meta.dir, "../../../compat/prime-v1-model"));

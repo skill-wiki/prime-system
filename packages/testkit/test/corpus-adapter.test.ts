@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { join } from "node:path";
-import { loadModelOrThrow } from "@skill-wiki/model-schema";
+import { loadModelOrThrow } from "@aoe/model-schema";
 import { corpusFromV1Sources } from "../src/corpus-adapter.ts";
 import { runCorpusConformance } from "../src/corpus-conformance.ts";
 

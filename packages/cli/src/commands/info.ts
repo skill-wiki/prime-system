@@ -1,5 +1,5 @@
 /**
- * aoe info <name> — View Prime details.
+ * aoe info <name> — View AOE details.
  */
 
 import { resolve, join } from 'path';
@@ -42,7 +42,7 @@ export async function infoCommand(args: string[]) {
         return;
       }
     } catch {}
-    console.error(`Prime '${name}' not found locally or on prime.dev`);
+    console.error(`AOE '${name}' not found locally or on prime.dev`);
     process.exit(1);
   }
 

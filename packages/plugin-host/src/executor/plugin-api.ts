@@ -4,7 +4,7 @@
  * Separate from `child.ts` on purpose, and the reason is a bug this split fixes
  * rather than a preference: `child.ts` runs `main()` at module scope — it is a
  * program, not a library. Re-exporting these types from there would mean that
- * importing `@skill-wiki/plugin-host` in the *host* process starts a sandbox
+ * importing `@aoe/plugin-host` in the *host* process starts a sandbox
  * bootstrap that attaches to the host's stdin. Types a plugin author needs must
  * therefore live in a module with no side effects at all.
  */

@@ -19,8 +19,8 @@
  * layer's job, not the solver's.
  */
 
-import type { BudgetStateIR, DiagnosticIR } from "@skill-wiki/ir";
-import type { ProjectionDefinition } from "@skill-wiki/model-schema";
+import type { BudgetStateIR, DiagnosticIR } from "@aoe/ir";
+import type { ProjectionDefinition } from "@aoe/model-schema";
 import type { ProjectionAssignment } from "./budget.ts";
 import { compareStrings } from "./deterministic.ts";
 import { fail, type TokenCostModel } from "./types.ts";

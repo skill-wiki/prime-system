@@ -1,6 +1,6 @@
 /**
- * @module @skill-wiki/language-server
- * Prime Language Server (plan §14).
+ * @module @aoe/language-server
+ * AOE Language Server (plan §14).
  *
  * ## Boundary
  *
@@ -13,9 +13,9 @@
  *
  * 1. Incremental document store — `openDocument` / `changeDocument` (range edits,
  *    version-checked) with parse memoised per version.
- * 2. Syntax diagnostics — from `@skill-wiki/parser`.
+ * 2. Syntax diagnostics — from `@aoe/parser`.
  * 3. External model/schema diagnostics — from a Model Package loaded through
- *    `@skill-wiki/model-schema`; unknown type, unknown field, missing required field.
+ *    `@aoe/model-schema`; unknown type, unknown field, missing required field.
  * 4. Type/field completion — both lists come from that Model Package.
  *
  * The remaining §14.1 items (hover, go-to-definition, relation navigation,

@@ -1,5 +1,5 @@
 /** Synthetic fixtures. Every name is neutral on purpose: no relation or type name from any domain. */
-import type { GraphEdgeIR, RelationDefIR, RelationSemanticsIR, SnapshotRef, UnitIR, ValueIR } from "@skill-wiki/ir";
+import type { GraphEdgeIR, RelationDefIR, RelationSemanticsIR, SnapshotRef, UnitIR, ValueIR } from "@aoe/ir";
 
 export const snapshot: SnapshotRef = { modelRelease: "m-1", modelDigest: "md-1", corpusRelease: "c-1", corpusDigest: "cd-1" };
 

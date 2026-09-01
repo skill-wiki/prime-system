@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import type { OrderingObligation } from "../src/index.ts";
 import { planLoadOrder } from "../src/index.ts";
-import type { CyclePolicyIR } from "@skill-wiki/ir";
+import type { CyclePolicyIR } from "@aoe/ir";
 
 function ordering(ref: string, before: string, after: string, cyclePolicy: CyclePolicyIR = "allow", relationRef = "rel-o"): OrderingObligation {
   return { kind: "ordering", ref, relationRef, edgeId: ref.replace("ord:", ""), before, after, cyclePolicy };

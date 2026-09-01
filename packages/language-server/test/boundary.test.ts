@@ -47,7 +47,7 @@ describe("the Language Server does not build bundles (ADR-8, §18.5)", () => {
   test("no source file imports the runtime or an engine package", () => {
     const engineScoped = sources.flatMap(({ name, text }) =>
       importedModules(text)
-        .filter(specifier => /^@skill-wiki\/(runtime|action-runtime|query-engine|projection-engine|event-store|bundle|mcp-server-core|cli)$/.test(specifier))
+        .filter(specifier => /^@kernary-aoe\/(runtime|action-runtime|query-engine|projection-engine|event-store|bundle|mcp-server-core|cli)$/.test(specifier))
         .map(specifier => `${name} → ${specifier}`)
     );
     expect(engineScoped).toEqual([]);
@@ -56,18 +56,18 @@ describe("the Language Server does not build bundles (ADR-8, §18.5)", () => {
 
 describe("parser and model-schema are reused, not rewritten", () => {
   test("the parser is imported", () => {
-    const importers = sources.filter(({ text }) => importedModules(text).includes("@skill-wiki/parser")).map(({ name }) => name);
+    const importers = sources.filter(({ text }) => importedModules(text).includes("@aoe/parser")).map(({ name }) => name);
     expect(importers.sort()).toEqual(["completion.ts", "document-store.ts"]);
   });
 
   test("the model loader is imported", () => {
-    const importers = sources.filter(({ text }) => importedModules(text).includes("@skill-wiki/model-schema")).map(({ name }) => name);
+    const importers = sources.filter(({ text }) => importedModules(text).includes("@aoe/model-schema")).map(({ name }) => name);
     expect(importers.sort()).toEqual(["model-diagnostics.ts", "model-index.ts"]);
   });
 
   test("the checker and resolver come from the compiler, not from a local copy", () => {
     const diagnostics = sources.find(({ name }) => name === "diagnostics.ts")!;
-    expect(importedModules(diagnostics.text)).toContain("@skill-wiki/compiler");
+    expect(importedModules(diagnostics.text)).toContain("@aoe/compiler");
     expect(diagnostics.text).toContain("checkL1");
     expect(diagnostics.text).toContain("resolve");
   });

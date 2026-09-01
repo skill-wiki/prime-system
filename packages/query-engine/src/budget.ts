@@ -10,7 +10,7 @@
  * more units, breaking the ordering the model just declared.
  */
 
-import type { ProjectionDefinition } from "@skill-wiki/model-schema";
+import type { ProjectionDefinition } from "@aoe/model-schema";
 import { compareStrings } from "./deterministic.ts";
 import { fail, type TokenCostModel } from "./types.ts";
 

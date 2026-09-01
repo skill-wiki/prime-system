@@ -15,7 +15,7 @@
 
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
-import type { ProjectionArtifactIR } from "@skill-wiki/ir";
+import type { ProjectionArtifactIR } from "@aoe/ir";
 import { resolveBundlePath, type PathRejectionCode } from "./paths.ts";
 import { formatProjectionUri, type ProjectionUri } from "./uri.ts";
 

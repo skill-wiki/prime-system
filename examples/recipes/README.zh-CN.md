@@ -1,6 +1,6 @@
 # Recipes — 烹饪知识语料库
 
-> 15 个原子，8 种类型，证明 Skill Wiki 适用于任何领域。
+> 15 个原子，8 种类型，证明 AOE 适用于任何领域。
 
 这个语料库将实用烹饪知识编码为带有真实边图的类型化原子。
 它与前端语料库有意地跨越不同领域——相同的 DSL，相同的边动词，
@@ -112,7 +112,7 @@ graph TD
 
 ```bash
 cd examples/recipes
-prime compile primes/sources --out primes/compiled
+aoe compile primes/sources --out primes/compiled
 # [build] parsing 15 .prime files...
 # [build] resolving edges... 31 edges across 15 atoms
 # [build] L1 checks: PASS
@@ -122,9 +122,9 @@ prime compile primes/sources --out primes/compiled
 按种类列出：
 
 ```bash
-prime ls --kind fact
-prime ls --kind rule
-prime ls --kind method
+aoe ls --kind fact
+aoe ls --kind rule
+aoe ls --kind method
 ```
 
 ---
@@ -134,13 +134,13 @@ prime ls --kind method
 **获取锅底酱方法（完整投影）：**
 
 ```bash
-prime show @recipes/method-pan-sauce --level full
+aoe show @recipes/method-pan-sauce --level full
 ```
 
 **遍历依赖：**
 
 ```bash
-prime deps @recipes/method-pan-sauce
+aoe deps @recipes/method-pan-sauce
 # requires: @recipes/fact-maillard-reaction-temperature
 # requires: @recipes/fact-emulsion-temperature-window
 # requires: @recipes/rule-rest-meat-after-cooking

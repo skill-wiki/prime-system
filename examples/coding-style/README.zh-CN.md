@@ -1,8 +1,8 @@
 # Coding Style — 团队代码规范语料库
 
-> 12 个原子，将 TypeScript 团队的代码风格策略编码为 Skill Wiki 语料库。
+> 12 个原子，将 TypeScript 团队的代码风格策略编码为 AOE 语料库。
 
-这个语料库回答了一个常见问题：*能把团队的工程规范编码为 Skill Wiki 原子，提供给 AI 编程助手使用吗？*
+这个语料库回答了一个常见问题：*能把团队的工程规范编码为 AOE 原子，提供给 AI 编程助手使用吗？*
 
 答案是可以的。这个语料库模拟了一个假设的 TypeScript 团队风格指南——
 4 条强制规则、3 种推荐模式、2 个主动反模式、1 条原则、1 个合集，
@@ -15,7 +15,7 @@
 它展示两件事：
 
 1. **机构知识变原子**。`.eslintrc` 强制执行规则，但不解释*为什么*这样做。
-   Skill Wiki 语料库为每条规则提供 `description`、`notes` 以及与其相关规则的边。
+   AOE 语料库为每条规则提供 `description`、`notes` 以及与其相关规则的边。
    AI 编程助手可以在真正需要时按需加载相关子集——而不是每次都加载完整的风格指南。
 
 2. **`tradeoff` 种类**。真实的工程决策涉及真实的张力，而不只是正确答案。
@@ -102,7 +102,7 @@ graph TD
 
 ```bash
 cd examples/coding-style
-prime compile primes/sources --out primes/compiled
+aoe compile primes/sources --out primes/compiled
 # [build] parsing 12 .prime files...
 # [build] resolving edges... 25 edges across 12 atoms
 # [build] L1 checks: PASS
@@ -116,20 +116,20 @@ prime compile primes/sources --out primes/compiled
 **获取整个合集：**
 
 ```bash
-prime show @team/collection-team-style-guide --level full
+aoe show @team/collection-team-style-guide --level full
 ```
 
 **查询 5 个参数的构造函数应用什么模式：**
 
 ```bash
-prime query "constructor with many parameters" --kind pattern
+aoe query "constructor with many parameters" --kind pattern
 # matched: @team/pattern-builder-over-options-bag (full)
 ```
 
 **获取关于严格类型的权衡分析：**
 
 ```bash
-prime show @team/tradeoff-strict-types-vs-iteration-speed --level full
+aoe show @team/tradeoff-strict-types-vs-iteration-speed --level full
 ```
 
 ---

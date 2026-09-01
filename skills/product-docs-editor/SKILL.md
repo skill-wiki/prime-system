@@ -42,7 +42,7 @@ brand migration, compatibility terminology, or public stability claims.
 Before finishing, run the relevant examples and scan for stale public facts:
 fixed 28/14 domain vocabulary, `domain.yaml` as the current extension mechanism,
 old five-tool Frontend Design surfaces, `prime_compile`, `compiled-v3-final`,
-899-unit claims, Skill Wiki as the current product name, or Frontend Design as a
+899-unit claims, AOE as the current product name, or Frontend Design as a
 built-in/flagship.
 
 Do not force prose through punctuation bans or a universal sentence length.

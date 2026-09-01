@@ -1,8 +1,8 @@
 # Hello World — 泡茶基础
 
-> 5 个原子，1 个方法，验证 Skill Wiki 安装是否正常的冒烟测试。
+> 5 个原子，1 个方法，验证 AOE 安装是否正常的冒烟测试。
 
-这个语料库是 Skill Wiki / Prime DSL 最小的可运行示例：
+这个语料库是 AOE / AOE DSL 最小的可运行示例：
 用热力学知识在世界任何地方泡出一杯正确的茶。
 两分钟读完，一条命令编译，然后扔掉它，写属于你自己的语料库。
 
@@ -10,12 +10,12 @@
 
 ## 为什么要有这个语料库
 
-它只回答一个问题：**我的 Skill Wiki 环境装好了吗？**
+它只回答一个问题：**我的 AOE 环境装好了吗？**
 
 5 个原子，7 条边，1 条编译命令。能跑通，说明 parser、compiler、runtime 全部正常。
 其他一切都是在相同协议上叠加的领域知识。
 
-第二个目标：让所有初学者看到 Skill Wiki **不仅仅用于前端设计**。
+第二个目标：让所有初学者看到 AOE **不仅仅用于前端设计**。
 这些原子是物理和烹饪领域的——但使用的 DSL、边动词和投影级别与 899 个原子的前端语料库完全相同。
 
 ---
@@ -67,7 +67,7 @@ graph LR
 
 ```bash
 cd examples/hello-world
-prime compile primes/sources --out primes/compiled
+aoe compile primes/sources --out primes/compiled
 # [build] parsing 5 .prime files...
 # [build] resolving edges... 7 edges across 5 atoms
 # [build] L1 checks: PASS
@@ -84,7 +84,7 @@ bun scripts/build-atom-dirs.ts --src primes/sources --out primes/compiled
 查看编译结果：
 
 ```bash
-prime ls
+aoe ls
 # @example/collection-tea-basics         collection  "..."
 # @example/fact-water-boils-at-100c      fact        "..."
 # @example/method-make-tea               method      "..."
@@ -99,19 +99,19 @@ prime ls
 **查看某个原子**（完整投影）：
 
 ```bash
-prime show @example/method-make-tea
+aoe show @example/method-make-tea
 ```
 
 **仅查看摘要**（索引级别）：
 
 ```bash
-prime show @example/method-make-tea --level summary
+aoe show @example/method-make-tea --level summary
 ```
 
 **查看依赖闭包**：
 
 ```bash
-prime deps @example/method-make-tea
+aoe deps @example/method-make-tea
 # requires: @example/fact-water-boils-at-100c
 # requires: @example/rule-altitude-affects-boiling
 ```
@@ -123,9 +123,9 @@ prime deps @example/method-make-tea
 启动通用 MCP 服务器：
 
 ```bash
-PRIME_DIR=$(pwd)/primes/compiled bun ../../packages/mcp-server-core/src/index.ts
-# [prime-mcp-core] 5 atoms · 348 tokens · 1 clusters
-# [prime-mcp-core] ready · tool: prime_query · stdio transport active
+AOE_CORPUS_DIR=$(pwd)/primes/compiled bun ../../packages/mcp-server-core/src/index.ts
+# [aoe-mcp-core] 5 atoms · 348 tokens · 1 clusters
+# [aoe-mcp-core] ready · tool: aoe_query · stdio transport active
 ```
 
 接入 Claude Code（`.claude/mcp-servers.json`）：
@@ -134,7 +134,7 @@ PRIME_DIR=$(pwd)/primes/compiled bun ../../packages/mcp-server-core/src/index.ts
 {
   "mcpServers": {
     "tea-basics": {
-      "command": "prime",
+      "command": "aoe",
       "args": ["mcp", "serve", "--corpus", "/绝对路径/hello-world/primes/compiled"]
     }
   }

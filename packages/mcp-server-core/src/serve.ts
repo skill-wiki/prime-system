@@ -1,6 +1,6 @@
 /**
- * The serve path: `aoe_query` implemented on `@skill-wiki/query-engine` and
- * `@skill-wiki/projection-engine`.
+ * The serve path: `aoe_query` implemented on `@aoe/query-engine` and
+ * `@aoe/projection-engine`.
  *
  * The ordering below is a security property and must not be rearranged:
  *
@@ -15,7 +15,7 @@
  * admission first, and the graph handed onward is the admitted one.
  */
 
-import type { DiagnosticIR, GraphIR, SelectionPlanIR, SnapshotRef as IrSnapshotRef, UnitIR } from "@skill-wiki/ir";
+import type { DiagnosticIR, GraphIR, SelectionPlanIR, SnapshotRef as IrSnapshotRef, UnitIR } from "@aoe/ir";
 import {
   CandidateGeneratorRegistry,
   admit,
@@ -27,7 +27,7 @@ import {
   QueryEngineError,
   type Principal,
   type QueryRequest,
-} from "@skill-wiki/query-engine";
+} from "@aoe/query-engine";
 import {
   ProjectionCache,
   ProjectionEngine,
@@ -37,7 +37,7 @@ import {
   type ProjectionRequest,
   type ProjectionScope,
   type TransportKind,
-} from "@skill-wiki/projection-engine";
+} from "@aoe/projection-engine";
 import type { ServeModel } from "./model-context";
 import { cheaperProjections } from "./model-context";
 import type { CorpusGraph } from "./corpus-graph";

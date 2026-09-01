@@ -1,7 +1,7 @@
 /**
  * Step 5 of the plan §16 Phase 4 audit pipeline: **produce the report**.
  *
- * The report goes through `finalizeCorpusBundle` (`@skill-wiki/bundle`) rather
+ * The report goes through `finalizeCorpusBundle` (`@aoe/bundle`) rather
  * than a `writeFileSync` here, for one reason that is not convenience: an audit
  * record has to be immutable, digest-sealed and verified after the write, and
  * `finalizeCorpusBundle` is the only writer in this repo that does staging,
@@ -20,8 +20,8 @@
  * and the provider honours that literally: it touches no filesystem.
  */
 
-import type { BundleManifestMetadata, CorpusIndexEntry, FinalizedCorpusBundle } from '@skill-wiki/bundle';
-import { finalizeCorpusBundle } from '@skill-wiki/bundle';
+import type { BundleManifestMetadata, CorpusIndexEntry, FinalizedCorpusBundle } from '@aoe/bundle';
+import { finalizeCorpusBundle } from '@aoe/bundle';
 import type { AuditedCorpus } from './corpus';
 import type { AuditFindings, CheckResult } from './checks';
 

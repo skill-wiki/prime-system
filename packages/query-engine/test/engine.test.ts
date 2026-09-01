@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import type { GraphIR } from "@skill-wiki/ir";
+import type { GraphIR } from "@aoe/ir";
 import {
   CandidateGeneratorRegistry,
   QueryEngineError,

@@ -10,7 +10,7 @@
  */
 
 import { describe, expect, test } from "bun:test";
-import { planSelection, QueryEngineError, type QueryRequest } from "@skill-wiki/query-engine";
+import { planSelection, QueryEngineError, type QueryRequest } from "@aoe/query-engine";
 import { createEmbeddedTransport } from "../src/index.ts";
 import { loadEngineContext, registry, SNAPSHOT, UNIT_IDS } from "./support/host.ts";
 

@@ -25,10 +25,10 @@ import {
   type ModelLock,
   type ModelLockEntry,
   type ModelLockFileEntry,
-} from "@skill-wiki/model-schema";
+} from "@aoe/model-schema";
 
-export { MODEL_LOCK_FILE, computeModelSchemaDigest } from "@skill-wiki/model-schema";
-export type { ModelLock, ModelLockEntry, ModelLockFileEntry } from "@skill-wiki/model-schema";
+export { MODEL_LOCK_FILE, computeModelSchemaDigest } from "@aoe/model-schema";
+export type { ModelLock, ModelLockEntry, ModelLockFileEntry } from "@aoe/model-schema";
 
 export type ModelLockCode = "MODEL_LOCK_MISSING" | "MODEL_LOCK_INVALID" | "MODEL_LOCK_MISMATCH";
 
