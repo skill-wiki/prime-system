@@ -43,12 +43,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/skill-wiki/prime-system.git",
+    "url": "git+https://github.com/skill-wiki/kernary-engine.git",
     "directory": "packages/cli"
   },
-  "homepage": "https://github.com/skill-wiki/prime-system/tree/main/packages/cli#readme",
+  "homepage": "https://github.com/skill-wiki/kernary-engine/tree/main/packages/cli#readme",
   "bugs": {
-    "url": "https://github.com/skill-wiki/prime-system/issues"
+    "url": "https://github.com/skill-wiki/kernary-engine/issues"
   },
   "publishConfig": {
     "access": "public",

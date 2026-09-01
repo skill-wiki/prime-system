@@ -1,7 +1,7 @@
 # Changelog
 
 All notable changes to the Skill Wiki / Prime **system** repo. Corpus
-repos (e.g. `prime-corpus-frontend`) maintain their own changelogs.
+Domain Packages (e.g. `kernary-frontend-design`) maintain their own changelogs.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project aspires to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -68,7 +68,7 @@ Initial release.
 ### Decisions
 
 - **Two-repo split.** System repo (this) carries protocol only.
-  Frontend-design corpus (`prime-corpus-frontend`) carries 899 atoms +
+  Frontend-design Domain Package (`kernary-frontend-design`) carries the legacy 899-unit corpus +
   domain-specific intent / retrieval / composition / validator-html /
   5-tool MCP wrapper.
 - **License: Apache-2.0.** Patent grant explicit. NOTICE preserved across
@@ -90,5 +90,5 @@ Initial release.
 
 ---
 
-[Unreleased]: https://github.com/skill-wiki/prime-system/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/skill-wiki/prime-system/releases/tag/v0.1.0
+[Unreleased]: https://github.com/skill-wiki/kernary-engine/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/skill-wiki/kernary-engine/releases/tag/v0.1.0

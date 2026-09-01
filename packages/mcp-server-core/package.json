@@ -45,12 +45,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/skill-wiki/prime-system.git",
+    "url": "git+https://github.com/skill-wiki/kernary-engine.git",
     "directory": "packages/mcp-server-core"
   },
-  "homepage": "https://github.com/skill-wiki/prime-system/tree/main/packages/mcp-server-core#readme",
+  "homepage": "https://github.com/skill-wiki/kernary-engine/tree/main/packages/mcp-server-core#readme",
   "bugs": {
-    "url": "https://github.com/skill-wiki/prime-system/issues"
+    "url": "https://github.com/skill-wiki/kernary-engine/issues"
   },
   "publishConfig": {
     "access": "public",

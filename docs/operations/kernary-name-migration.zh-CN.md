@@ -5,9 +5,9 @@
 
 | 当前 | 目标 |
 |---|---|
-| `skill-wiki/prime-system` | `kernary/kernary-engine` |
-| `skill-wiki/prime-corpus-frontend` | `kernary/kernary-frontend-design` |
-| `skill-wiki/skill-wiki.github.io` | `kernary/kernary-docs` 加自定义文档域名 |
+| `skill-wiki/kernary-engine` | `kernary-runtime/kernary-engine` |
+| `skill-wiki/kernary-frontend-design` | `kernary-runtime/kernary-frontend-design` |
+| `skill-wiki/skill-wiki.github.io` | `kernary-runtime/kernary-runtime.github.io` 加自定义文档域名 |
 | 外层 `prime` Workspace | `kernary-workspace` 集成仓 |
 | `@skill-wiki/*` | `@kernary/*`，保留兼容发布窗口 |
 | `prime` CLI | `kernary`，旧 Alias 保留一个 Minor line |

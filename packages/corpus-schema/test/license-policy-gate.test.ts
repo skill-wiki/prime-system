@@ -20,7 +20,7 @@ import { parse as parseYaml } from "yaml";
 import { CorpusPackageDeclarationSchema, resolveCorpusPackage } from "../src/index.ts";
 
 const DECLARATION_PATH = new URL(
-  "../../../../prime-frontend-design/corpus/prime-corpus.yaml",
+  "../../../../kernary-frontend-design/corpus/prime-corpus.yaml",
   import.meta.url,
 ).pathname;
 

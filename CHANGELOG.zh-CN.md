@@ -1,6 +1,6 @@
 # 变更日志
 
-本文记录 Skill Wiki / Prime **系统仓库**的所有重要变更。语料库仓库（如 `prime-corpus-frontend`）维护各自独立的变更日志。
+本文记录 Kernary Engine 的重要变更。Domain Package（如 `kernary-frontend-design`）维护各自独立的变更日志。
 
 格式参照 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，版本规范遵循 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)。
 
@@ -42,7 +42,7 @@
 
 ### 设计决策
 
-- **双仓库拆分。** 系统仓库（本仓库）仅承载协议实现。前端设计语料库（`prime-corpus-frontend`）承载 899 个原子，以及领域专用的 intent / retrieval / composition / validator-html / 5 工具 MCP 包装器。
+- **双仓库拆分。** Engine（本仓库）仅承载协议实现。Frontend Design Domain Package（`kernary-frontend-design`）承载历史 899-unit corpus，以及领域专用的 intent / retrieval / composition / validator-html / MCP 工具。
 - **许可证：Apache-2.0。** 专利授权明确。NOTICE 在所有仓库中保留。
 - **无模型锁定。** L2 / intent / 美学验证可使用任何支持 chat-completions 兼容 API 的 LLM。
 - **仅支持 Node 22+。** 通过 `--experimental-transform-types` 实现原生 TS 剥离，无需打包器即可运行；支持 Bun 作为更快的安装/测试运行器。
@@ -55,5 +55,5 @@
 
 ---
 
-[Unreleased]: https://github.com/skill-wiki/prime-system/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/skill-wiki/prime-system/releases/tag/v0.1.0
+[Unreleased]: https://github.com/skill-wiki/kernary-engine/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/skill-wiki/kernary-engine/releases/tag/v0.1.0

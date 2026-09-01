@@ -77,7 +77,7 @@ Each corpus is independent. It lives in its own directory with its own `primes/s
 and `primes/compiled/`. The system repo provides the tools; corpora provide the knowledge.
 
 ```
-prime-system/          ← this repo (tools, parser, compiler, runtime)
+kernary-engine/        ← this repo (tools, parser, compiler, runtime)
   examples/
     hello-world/       ← tiny corpus, ships here for smoke-testing
     recipes/           ← medium corpus, ships here as cross-domain proof
@@ -87,7 +87,7 @@ prime-system/          ← this repo (tools, parser, compiler, runtime)
     compiler/
     ...
 
-prime-corpus-frontend/ ← separate repo (899-atom frontend design knowledge)
+kernary-frontend-design/ ← separate Domain Package
 your-corpus/           ← your domain, your namespace, your atoms
 ```
 

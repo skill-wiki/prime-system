@@ -4,7 +4,7 @@
 
 感谢你考虑为 Skill Wiki 系统做贡献。这份文档面向**扩展系统本身**的人 ——
 parser、compiler、runtime、registry 或 CLI。如果你想写原子（知识内容），你找
-错仓库了；请去对应的 corpus 仓库（比如 `prime-corpus-frontend`），看那边的
+错仓库了；请去对应的 Domain Package 仓库（比如 `kernary-frontend-design`），看那边的
 CONTRIBUTING。
 
 ---
@@ -27,7 +27,7 @@ CONTRIBUTING。
 
 ## 什么属于这里，什么属于 corpus 仓库
 
-**这个仓库 —— `prime-system`：**
+**这个仓库 —— `kernary-engine`：**
 - `.prime` DSL parser（`packages/parser/`）
 - 编译器 L1、L2、L3 passes（`packages/compiler/`）
 - Runtime：原子加载器、投影解析器、domain plugin host（`packages/runtime/`）
@@ -39,7 +39,7 @@ CONTRIBUTING。
 - 示例语料库（`examples/`）
 - 系统级测试
 
-**corpus 仓库（例如 `prime-corpus-frontend`）：**
+**Domain Package 仓库（例如 `kernary-frontend-design`）：**
 - 原子 `.prime` 源文件
 - 领域专属的意图识别器
 - 领域专属的检索逻辑
@@ -59,8 +59,8 @@ CONTRIBUTING。
 - **Bun**（推荐，install 和 test 更快；npm 和 pnpm 也可以）
 
 ```bash
-git clone https://github.com/skill-wiki/prime-system.git
-cd prime-system
+git clone https://github.com/skill-wiki/kernary-engine.git
+cd kernary-engine
 bun install
 bun run build
 ```

@@ -5,7 +5,7 @@
 Thank you for considering a contribution to the Skill Wiki system. This document
 is for people extending **the system itself** — the parser, compiler, runtime,
 registry, or CLI. If you want to author atoms (knowledge content), you are in the
-wrong repo; go to a corpus repo (e.g., `prime-corpus-frontend`) and follow its
+wrong repo; go to a Domain Package repo (e.g., `kernary-frontend-design`) and follow its
 own CONTRIBUTING.
 
 ---
@@ -28,7 +28,7 @@ own CONTRIBUTING.
 
 ## What belongs here vs. a corpus repo
 
-**This repo — `prime-system`:**
+**This repo — `kernary-engine`:**
 - The `.prime` DSL parser (`packages/parser/`)
 - Compiler passes L1, L2, L3 (`packages/compiler/`)
 - Runtime: atom loader, projection resolver, domain plugin host (`packages/runtime/`)
@@ -40,7 +40,7 @@ own CONTRIBUTING.
 - Example corpora (`examples/`)
 - System-level tests
 
-**A corpus repo (e.g., `prime-corpus-frontend`):**
+**A Domain Package repo (e.g., `kernary-frontend-design`):**
 - Atom `.prime` source files
 - Domain-specific intent classifier
 - Domain-specific retrieval logic
@@ -61,8 +61,8 @@ Requirements:
 - **Bun** (recommended for faster install and test runs; npm and pnpm also work)
 
 ```bash
-git clone https://github.com/skill-wiki/prime-system.git
-cd prime-system
+git clone https://github.com/skill-wiki/kernary-engine.git
+cd kernary-engine
 bun install
 bun run build
 ```

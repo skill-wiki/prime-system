@@ -69,7 +69,7 @@ TypeScript 团队的风格指南。4 条强制规则，3 种推荐模式，
 和 `primes/compiled/`。系统仓库提供工具；语料库提供知识。
 
 ```
-prime-system/          ← 此仓库（工具、parser、compiler、runtime）
+kernary-engine/        ← 此仓库（工具、parser、compiler、runtime）
   examples/
     hello-world/       ← 精简语料库，随此仓库发布，用于冒烟测试
     recipes/           ← 中型语料库，随此仓库发布，跨领域证明
@@ -79,7 +79,7 @@ prime-system/          ← 此仓库（工具、parser、compiler、runtime）
     compiler/
     ...
 
-prime-corpus-frontend/ ← 独立仓库（899 个原子的前端设计知识）
+kernary-frontend-design/ ← 独立 Domain Package
 your-corpus/           ← 你的领域、你的命名空间、你的原子
 ```
 

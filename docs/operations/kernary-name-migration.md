@@ -8,9 +8,9 @@ verified.
 
 | Current | Target |
 |---|---|
-| `skill-wiki/prime-system` | `kernary/kernary-engine` |
-| `skill-wiki/prime-corpus-frontend` | `kernary/kernary-frontend-design` |
-| `skill-wiki/skill-wiki.github.io` | `kernary/kernary-docs` plus a custom docs domain |
+| `skill-wiki/kernary-engine` | `kernary-runtime/kernary-engine` |
+| `skill-wiki/kernary-frontend-design` | `kernary-runtime/kernary-frontend-design` |
+| `skill-wiki/skill-wiki.github.io` | `kernary-runtime/kernary-runtime.github.io` plus a custom docs domain |
 | outer `kevinflynn0503/prime` workspace | a private or public `kernary-workspace` integration repository |
 | `@skill-wiki/*` | `@kernary/*` with a compatibility publication window |
 | `prime` CLI | `kernary`; keep `prime` as a deprecated alias for one minor line |
@@ -22,7 +22,7 @@ and trademark risk before changing a remote.
 
 1. Reserve the organization, npm scope, package names, and docs domain.
 2. Publish the naming ADR and a migration notice from the existing locations.
-3. Rename or transfer `prime-system`, Frontend Design, and the docs repository.
+3. Rename or transfer `kernary-engine`, Frontend Design, and the docs repository.
    Verify GitHub redirects, clone, issue, release, Pages, and Actions behavior.
 4. Update the workspace submodule URLs. Rename local checkout directories only
    after fresh-clone CI passes with the target paths.

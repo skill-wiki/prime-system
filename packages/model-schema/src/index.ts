@@ -13,7 +13,7 @@ const ExtensionMap = z.record(z.string(), z.unknown());
  * `typeRef` is a grammar, not a name: `T`, `T[]`, `T[][]`. Before this existed a
  * field holding a list had to be declared `unknown` (which emits the empty JSON
  * Schema `{}` — every shape accepted) or smuggled through a comma-separated
- * `string`, and both were load-bearing in `projects/prime-frontend-design`. The
+ * `string`, and both were load-bearing in the former Frontend Design checkout. The
  * suffix is chosen over a sibling `items:` key because the ref stays a single
  * string, so `SchemaIR.TypeRef` (an opaque string) carries the arity with no IR
  * change and no second place to look.
