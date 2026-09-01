@@ -1,6 +1,6 @@
 # Kernary 文档
 
-Kernary 是模型驱动的 Agent Knowledge Runtime。这里描述当前 v0.2 Package、
+Kernary 是模型驱动的本体引擎。这里描述当前 v0.2 Package、
 Snapshot、Query 与 Action contract。
 
 ## 开始

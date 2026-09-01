@@ -4,7 +4,7 @@
 also installs `prime`; both binaries execute the same entry point.
 
 ```text
-kernary v0.2.0 — model-driven knowledge runtime for agents
+kernary v0.2.0 — model-driven ontology engine for agents and applications
 
 Usage: kernary <command> [options]
 ```

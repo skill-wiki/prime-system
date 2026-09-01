@@ -1,7 +1,7 @@
 {
   "name": "kernary-engine",
   "version": "0.2.0",
-  "description": "Kernary — a model-driven knowledge runtime for agents.",
+  "description": "Kernary — a model-driven ontology engine for agents and domain-aware software.",
   "license": "Apache-2.0",
   "homepage": "https://github.com/skill-wiki/prime-system",
   "repository": {

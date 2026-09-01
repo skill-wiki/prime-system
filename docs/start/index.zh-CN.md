@@ -1,7 +1,7 @@
-# 构建一个知识 Runtime
+# 定义并运行一个领域本体
 
-Kernary 把外部 Model Package 与 Corpus Package 编译成不可变 Runtime
-Snapshot。已有 Agent 可以通过 Embedded SDK、MCP 或 HTTP 使用它，不需要把
+Kernary 把外部 Model Package 与 Corpus Package 编译成带本体语义的不可变 Runtime
+Snapshot。已有 Agent 或应用可以通过 Embedded SDK、MCP 或 HTTP 使用它，不需要把
 整份语料塞进 Prompt。
 
 先选你正在做的事情：

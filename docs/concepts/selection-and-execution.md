@@ -1,6 +1,6 @@
 # Selection and execution
 
-Reading knowledge and changing state are separate contracts in Kernary.
+Reading ontology-backed knowledge and changing state are separate contracts in Kernary.
 
 ## Selection Plan
 

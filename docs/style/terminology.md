@@ -5,7 +5,7 @@ Use these terms consistently in current documentation.
 | Term | Meaning |
 |---|---|
 | Kernary | The product and engine family |
-| Agent Knowledge Runtime | Product category, not a protocol identifier |
+| Model-driven Ontology Engine | Product category; Kernary's external model compiler and runtime |
 | Model Package | External domain schema and behavior declarations |
 | Corpus Package | External units, assets, provenance, and release policy |
 | Adapter Package | External source or provider integration |

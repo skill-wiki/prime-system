@@ -1,7 +1,7 @@
-# Build a knowledge runtime
+# Define and run a domain ontology
 
 Kernary turns an external Model Package and Corpus Package into an immutable
-runtime snapshot. An existing Agent can use that snapshot through the embedded
+ontology-backed runtime snapshot. An existing Agent or application can use that snapshot through the embedded
 SDK, MCP, or HTTP without importing the whole corpus into its prompt.
 
 Choose the path that matches the work you are doing:

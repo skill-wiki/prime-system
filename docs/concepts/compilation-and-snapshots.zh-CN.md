@@ -1,6 +1,6 @@
 # 编译与 Snapshot
 
-编译是 Release 操作。Runtime 在处理 Query 或 Action 时不会把可变 Source 临时
+编译是本体与语料的 Release 操作。Runtime 在处理 Query 或 Action 时不会把可变 Source 临时
 变成 Artifact。
 
 ## Pipeline

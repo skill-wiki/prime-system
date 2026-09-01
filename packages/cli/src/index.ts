@@ -56,7 +56,7 @@ const VERSION = '0.2.0';
 
 function printUsage() {
   console.log(`
-Kernary v${VERSION} — model-driven knowledge runtime for agents
+Kernary v${VERSION} — model-driven ontology engine for agents and applications
 
 Usage: kernary <command> [options]
 

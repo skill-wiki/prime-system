@@ -1,6 +1,6 @@
 # Compilation and snapshots
 
-Compilation is a release operation. The runtime never turns mutable source into
+Compilation is an ontology-and-corpus release operation. The runtime never turns mutable source into
 artifacts while serving a query or action.
 
 ## Pipeline

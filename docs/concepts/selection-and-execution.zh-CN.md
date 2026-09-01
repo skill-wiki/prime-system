@@ -1,6 +1,6 @@
 # Selection 与 Execution
 
-读取知识和改变状态在 Kernary 中是两个独立 Contract。
+读取本体驱动的知识和改变状态在 Kernary 中是两个独立 Contract。
 
 ## Selection Plan
 

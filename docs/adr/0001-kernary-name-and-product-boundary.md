@@ -6,10 +6,10 @@
 
 ## Decision
 
-The product is named **Kernary**. Its category is **Agent Knowledge Runtime**.
+The product is named **Kernary**. Its category is **Model-driven Ontology Engine**.
 
-Kernary compiles external domain models and corpora into versioned runtimes that
-agents can query, plan against, and act through. The engine owns the declaration
+Kernary compiles external domain ontologies and corpora into versioned runtimes
+that agents and applications can query, plan against, and act through. The engine owns the declaration
 meta-schema, stable IR, compilation contracts, snapshot verification, query and
 action runtimes, SDKs, transports, and conformance tools. It does not own a
 production ontology or corpus.
@@ -21,7 +21,7 @@ The public description is:
 
 The short category line is:
 
-> A model-driven knowledge runtime for agents.
+> A model-driven ontology engine for agents and domain-aware software.
 
 ## Package boundary
 

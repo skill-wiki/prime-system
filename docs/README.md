@@ -1,11 +1,11 @@
 # Kernary documentation
 
-Kernary is a model-driven knowledge runtime for Agents. These pages describe the
+Kernary is a model-driven ontology engine for Agents and domain-aware software. These pages describe the
 current v0.2 package, snapshot, query, and action contracts.
 
 ## Start
 
-- [Build a knowledge runtime](start/index.md)
+- [Define and run a domain ontology](start/index.md)
 - [Connect an Agent](guides/connect-agent.md)
 
 ## Core concepts

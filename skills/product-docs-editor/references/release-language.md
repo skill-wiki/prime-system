@@ -1,6 +1,6 @@
 # Release and brand language
 
-Kernary is the product brand. Its category is Agent Knowledge Runtime.
+Kernary is the product brand. Its category is Model-driven Ontology Engine.
 
 Use `Kernary` for the product, engine, SDK family, documentation, and current
 CLI. Use `Prime` only for an explicit compatibility surface: the `.prime` source
@@ -19,7 +19,7 @@ Preferred description:
 
 Preferred category line:
 
-> A model-driven knowledge runtime for agents.
+> A model-driven ontology engine for agents and domain-aware software.
 
 Avoid using “knowledge kernel” as the only explanation. It is a brand story, not
 the product contract.

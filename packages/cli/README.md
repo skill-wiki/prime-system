@@ -1,7 +1,7 @@
 # Kernary CLI
 
 `@skill-wiki/cli` is the currently published compatibility package for the
-Kernary command line. It installs `kernary` as the preferred binary and `prime`
+Kernary ontology engine command line. It installs `kernary` as the preferred binary and `prime`
 as a v0.2 compatibility alias.
 
 The CLI requires Bun because the Action run surface uses the Bun SQLite runtime.

@@ -4,7 +4,7 @@ v0.2 的首选命令是 `kernary`。当前已发布的兼容 Package 也会安�
 Binary 执行同一入口。
 
 ```text
-Kernary v0.2.0 — model-driven knowledge runtime for agents
+Kernary v0.2.0 — model-driven ontology engine for agents and applications
 
 Usage: kernary <command> [options]
 ```

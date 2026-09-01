@@ -1,11 +1,11 @@
 # Package 模型
 
-Kernary 把领域语义留在引擎外。一个部署由不同 Owner、不同发布规则的 Package
+Kernary 把领域本体与语义留在引擎外。一个部署由不同 Owner、不同发布规则的 Package
 组合而成。
 
 ## Model Package
 
-Model Package 声明领域 vocabulary 与行为：
+Model Package 声明领域本体的 vocabulary 与行为：
 
 - 类型与字段；
 - Relation 的方向、基数、遍历、选择、加载顺序、冲突和环策略；

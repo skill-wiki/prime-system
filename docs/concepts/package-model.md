@@ -1,11 +1,11 @@
 # Package model
 
-Kernary keeps domain meaning outside the engine. A deployment is assembled from
+Kernary keeps domain ontology outside the engine. A deployment is assembled from
 packages with different ownership and release rules.
 
 ## Model Package
 
-A Model Package declares the vocabulary and behavior of a domain:
+A Model Package declares the vocabulary and behavior of a domain ontology:
 
 - types and fields;
 - relation direction, cardinality, traversal, selection, load order, conflict,

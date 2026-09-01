@@ -1,6 +1,7 @@
 # Kernary
 
-Kernary 把领域模型和语料编译成供 Agent 使用的版本化 Runtime。Agent 可以
+Kernary 是模型驱动的本体编译与运行引擎。它把外部领域本体和语料编译成供 Agent
+与应用使用的版本化 Runtime。Agent 可以
 查询不可变 Snapshot、获得带约束与依据的 Selection Plan，也可以通过 SDK、
 MCP 或 HTTP 调用经过 Policy 控制的 Action。
 
