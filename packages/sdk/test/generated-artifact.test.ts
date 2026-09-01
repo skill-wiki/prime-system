@@ -24,7 +24,7 @@ const header: GeneratedArtifactHeader = {
   model: { name: "security-controls", version: "1.0.0", digest: SNAPSHOT.modelDigest },
 };
 
-const prime = new AoeClient({
+const aoe = new AoeClient({
   transport: createEmbeddedTransport({ snapshot: SNAPSHOT, engine: loadEngineContext(), generators: registry() }),
 });
 

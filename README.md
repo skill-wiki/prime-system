@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <strong>Model-driven ontology infrastructure for software that needs to know, decide, and act.</strong>
+  <strong>Agent Ontology Engine for software that needs to know, decide, and act.</strong>
 </p>
 
 <p align="center">

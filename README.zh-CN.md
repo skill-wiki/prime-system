@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <strong>让软件能够理解、决策并行动的模型驱动本体基础设施。</strong>
+  <strong>让软件能够理解、决策并行动的 Agent Ontology Engine。</strong>
 </p>
 
 <p align="center">

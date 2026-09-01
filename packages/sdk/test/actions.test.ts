@@ -46,14 +46,14 @@ function client(options: { readonly allowedCapabilities: readonly string[] }) {
     snapshot: SNAPSHOT.corpusRelease,
     trace: "trace-1",
   };
-  return { prime: new AoeClient({ transport }), context };
+  return { client: new AoeClient({ transport }), context };
 }
 
 const CONTROL = { name: "multi factor", statement: "require a second factor", automated: true };
 
 describe("actions over the embedded transport", () => {
   test("a read-only action with its capability granted really executes end to end", async () => {
-    const { prime, context } = client({ allowedCapabilities: ["corpus.read"] });
+    const { client: aoe, context } = client({ allowedCapabilities: ["corpus.read"] });
     const run = await aoe.execute({
       action: "AuditControl",
       input: { control: CONTROL },
@@ -70,7 +70,7 @@ describe("actions over the embedded transport", () => {
   });
 
   test("preflight reports the model's declared effect surface, not the client's guess", async () => {
-    const { prime, context } = client({ allowedCapabilities: ["corpus.read"] });
+    const { client: aoe, context } = client({ allowedCapabilities: ["corpus.read"] });
     const effect = await aoe.preflight({
       action: "AuditControl",
       input: { control: CONTROL },
@@ -83,7 +83,7 @@ describe("actions over the embedded transport", () => {
   });
 
   test("the capability check still decides when the call arrives through the client", async () => {
-    const { prime, context } = client({ allowedCapabilities: [] });
+    const { client: aoe, context } = client({ allowedCapabilities: [] });
     const run = await aoe.execute({
       action: "AuditControl",
       input: { control: CONTROL },
@@ -98,7 +98,7 @@ describe("actions over the embedded transport", () => {
   });
 
   test("idempotency still collapses a replay through the client", async () => {
-    const { prime, context } = client({ allowedCapabilities: ["corpus.read"] });
+    const { client: aoe, context } = client({ allowedCapabilities: ["corpus.read"] });
     const first = await aoe.execute({
       action: "AuditControl",
       input: { control: CONTROL },
