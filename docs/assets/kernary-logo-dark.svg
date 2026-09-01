@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 300" role="img" aria-labelledby="title">
+  <title id="title">Kernary</title>
+  <g transform="translate(20 12) scale(.54)">
+    <path fill="#818CF8" d="M72 48h112v176h36v64h-36v176H72z"/>
+    <path fill="#22D3EE" d="m168 256 168-192h128L256 288h-48z"/>
+    <path fill="#6366F1" d="m208 272 64-48 192 224H336L208 304z"/>
+    <rect x="168" y="224" width="64" height="64" rx="10" fill="#67E8F9"/>
+  </g>
+  <text x="320" y="205" fill="#F8FAFC" font-family="Inter, Arial, sans-serif" font-size="164" font-weight="700" letter-spacing="-7">Kernary</text>
+</svg>
