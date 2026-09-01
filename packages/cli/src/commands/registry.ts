@@ -14,16 +14,16 @@ import { join, resolve } from 'path';
  * Default sources directory.
  *
  * Resolution order:
- *   1. `PRIME_SOURCES` environment variable (absolute or relative to cwd)
+ *   1. `AOE_SOURCES` environment variable (absolute or relative to cwd)
  *   2. `./primes/sources` relative to the current working directory
  *
- * The latter is the convention used by `prime init` and the bundled
+ * The latter is the convention used by `aoe init` and the bundled
  * examples (`examples/<corpus>/primes/sources/...`). Override it with
- * `--dir` on any CLI command, or set `PRIME_SOURCES` once for a session.
+ * `--dir` on any CLI command, or set `AOE_SOURCES` once for a session.
  */
 export const DEFAULT_SOURCES_DIR =
-  process.env.PRIME_SOURCES
-    ? resolve(process.env.PRIME_SOURCES)
+  process.env.AOE_SOURCES
+    ? resolve(process.env.AOE_SOURCES)
     : resolve(process.cwd(), 'primes/sources');
 
 // ────────────────────────────────────────────────────────

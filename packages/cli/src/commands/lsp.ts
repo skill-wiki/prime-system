@@ -1,5 +1,5 @@
 /**
- * prime lsp — drive the Prime Language Server from the command line.
+ * aoe lsp — drive the AOE Language Server from the command line.
  *
  * ## Why this exists
  *
@@ -17,24 +17,24 @@
  * compile a production bundle**. This command inherits that boundary and must
  * keep it: it imports only `@skill-wiki/language-server`, writes no artifact,
  * and has no `--emit`/`--out` of any kind. Anything that would produce a runtime
- * bundle belongs to `prime compile`, not here. `packages/language-server/test/
+ * bundle belongs to `aoe compile`, not here. `packages/language-server/test/
  * boundary.test.ts` asserts the server half; the import list below is the CLI
  * half — adding `@skill-wiki/compiler` here would breach it.
  *
  * ## Subcommands
  *
- *   prime lsp diagnostics <file...> [--model <dir>]
+ *   aoe lsp diagnostics <file...> [--model <dir>]
  *       Open each file in the server and print exactly what an editor would
  *       show: the `compile` set (equal to the CLI's, §16 Phase 5) and the
  *       LSP-only `model` set, kept apart because the parity claim is about the
  *       former only. Exit 1 if any error-severity diagnostic is reported.
  *
- *   prime lsp completion <file> --at <line>:<character> [--model <dir>]
+ *   aoe lsp completion <file> --at <line>:<character> [--model <dir>]
  *       Print the completion items the server offers at a position, plus the
  *       completion context it resolved. Positions are 1-based on the command
  *       line (what an editor's status bar shows) and converted once, here.
  *
- * `diagnostics` is the default subcommand, so `prime lsp a.prime` works.
+ * `diagnostics` is the default subcommand, so `aoe lsp a.prime` works.
  */
 
 import { resolve } from 'path';
@@ -78,7 +78,7 @@ function report(diagnostics: readonly LspDiagnostic[]) {
 async function diagnosticsSubcommand(args: string[]): Promise<number> {
   const files = positionals(args);
   if (files.length === 0) {
-    console.error('Usage: prime lsp diagnostics <file...> [--model <dir>]');
+    console.error('Usage: aoe lsp diagnostics <file...> [--model <dir>]');
     return 1;
   }
 
@@ -87,7 +87,7 @@ async function diagnosticsSubcommand(args: string[]): Promise<number> {
   // and the model package is loaded once rather than once per file.
   const server = createLanguageServer(modelRoot === undefined ? {} : { modelRoot: resolve(modelRoot) });
 
-  header('Prime Language Server — diagnostics');
+  header('AOE Language Server — diagnostics');
   if (server.model.kind === 'none') {
     info('No model package configured (--model <dir>): syntax diagnostics only, no model checks.');
   } else if (server.model.kind === 'invalid') {
@@ -147,7 +147,7 @@ async function completionSubcommand(args: string[]): Promise<number> {
   const [file] = positionals(args);
   const at = option(args, 'at');
   if (file === undefined || at === undefined) {
-    console.error('Usage: prime lsp completion <file> --at <line>:<character> [--model <dir>]');
+    console.error('Usage: aoe lsp completion <file> --at <line>:<character> [--model <dir>]');
     return 1;
   }
   const [lineText, characterText] = at.split(':');
@@ -170,7 +170,7 @@ async function completionSubcommand(args: string[]): Promise<number> {
   server.openDocument(uri, await readFile(path));
   const { items, context } = server.completion(uri, { line: line - 1, character: character - 1 });
 
-  header(`Prime Language Server — completion at ${line}:${character}`);
+  header(`AOE Language Server — completion at ${line}:${character}`);
   console.log(`  ${gray('context')} ${context.kind}`);
   if (server.model.kind !== 'loaded') {
     // Empty is the honest answer here, not a fallback list: completion items come
@@ -201,7 +201,7 @@ export async function lspCommand(args: string[]): Promise<number> {
     case '-h':
     case undefined:
       console.log(`
-Usage: prime lsp <subcommand> [options]
+Usage: aoe lsp <subcommand> [options]
 
   diagnostics <file...>   Print the diagnostics an editor would show (default)
   completion <file>       Print completion items at a position
@@ -211,11 +211,11 @@ Options:
   --at <line>:<char>      Cursor position for \`completion\`, 1-based
 
 LSP is Toolchain (plan §2.4/§14): this command emits no artifact and never
-compiles a production bundle. Use \`prime compile\` for that.
+compiles a production bundle. Use \`aoe compile\` for that.
 `);
       return first === undefined ? 1 : 0;
     default:
-      // `prime lsp a.prime` — diagnostics is the default subcommand.
+      // `aoe lsp a.prime` — diagnostics is the default subcommand.
       return diagnosticsSubcommand(args);
   }
 }

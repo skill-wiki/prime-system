@@ -11,7 +11,7 @@
  * request-shaped — `profile` and `maxTokens` are unused by `admit` and are filled
  * with placeholders that could not be mistaken for real values.
  *
- * ## Why these descriptors carry no `prime://` URI
+ * ## Why these descriptors carry no `aoe://` URI
  *
  * `projection-engine`'s `formatProjectionUri` addresses
  * `…/projections/<profile>/<level>` — a two-level model. `UnitIR.projections` is

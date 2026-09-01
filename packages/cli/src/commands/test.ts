@@ -1,5 +1,5 @@
 /**
- * prime test <file.prime> — Run evaluation criteria tests.
+ * aoe test <file.prime> — Run evaluation criteria tests.
  * Validates that success_criteria, failure_criteria, and checks are structurally sound.
  */
 
@@ -10,7 +10,7 @@ import { readFile, fileExists } from '../utils/fs';
 export async function testCommand(args: string[]) {
   const file = args[0];
   if (!file) {
-    console.error('Usage: prime test <file.prime>');
+    console.error('Usage: aoe test <file.prime>');
     process.exit(1);
   }
 

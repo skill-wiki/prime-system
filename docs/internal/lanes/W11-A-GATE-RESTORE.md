@@ -10,7 +10,7 @@ write scope: packages/testkit/**, packages/cli/**
    `plugin-digest-registry` to packages/testkit/fixtures/domain-vocabulary/frontend-axes.yaml but it
    reports DOMAIN_TERM_EXEMPTION_STALE. Fix properly (fix anchor OR fix matcher word-boundary).
    Forbidden: remove `register` from vocabulary, demote to ambiguous.
-2. wiring gate: language-server 949 lines / 7 modules no importer. Add `prime lsp` command in
+2. wiring gate: language-server 949 lines / 7 modules no importer. Add `aoe lsp` command in
    packages/cli wired to createLanguageServer (packages/language-server/src/index.ts:121).
 
 ## Log
@@ -70,7 +70,7 @@ Actions:
 `info/DOMAIN_TERM_EXEMPTED [exemption:plugin-rpc-dispatch-method]: 10 code occurrence(s) cleared`,
 no `DOMAIN_TERM_EXEMPTION_STALE` finding.
 
-### Gate 2 — `prime lsp`
+### Gate 2 — `aoe lsp`
 - NEW `packages/cli/src/commands/lsp.ts` (221 lines): `lsp diagnostics <file...>` (default
   subcommand) and `lsp completion <file> --at <line>:<char>`, both `--model <dir>`.
   Imports **only** `@skill-wiki/language-server` — no `@skill-wiki/compiler`, no emit path,
@@ -123,14 +123,14 @@ way. I did NOT touch `model-conformance.ts` itself.
 | `bun test packages/testkit/test packages/language-server/test` | `195 pass / 1 fail` across 15 files (same single failure) |
 
 Manual smoke of the new command (ANSI stripped):
-- `prime lsp --help` -> usage printed, exit 0
-- `prime lsp <fixture>.prime` -> `compile skipped (unit-form)` / `model skipped (no-model)`, exit **0**
-- `prime lsp diagnostics <fixture>.prime --model packages/testkit/fixtures/security-model`
+- `aoe lsp --help` -> usage printed, exit 0
+- `aoe lsp <fixture>.prime` -> `compile skipped (unit-form)` / `model skipped (no-model)`, exit **0**
+- `aoe lsp diagnostics <fixture>.prime --model packages/testkit/fixtures/security-model`
   -> `model checked against Threat`, 4 `model/UNKNOWN_FIELD` errors, exit **1**
-- `prime lsp completion <fixture>.prime --at 1:25 --model …` -> `context type-position`, 5 items
+- `aoe lsp completion <fixture>.prime --at 1:25 --model …` -> `context type-position`, 5 items
   (Assessment, Asset, Control, Evidence, Threat) from the model package
-- `prime lsp completion … --at 6:3 --model …` -> `context field-position`, 0 items
-- `prime lsp completion … --at nope` -> argument error, exit 1
+- `aoe lsp completion … --at 6:3 --model …` -> `context field-position`, 0 items
+- `aoe lsp completion … --at nope` -> argument error, exit 1
 
 ### The one failing test is not mine
 `packages/testkit/test/model-conformance.test.ts:24`
@@ -145,9 +145,9 @@ and `./helpers.ts` — it never reaches `domain-scan.ts`, the vocabulary YAML, o
 `packages/cli`, so none of my five changed files can affect it.
 
 ### FINDING F3 — for whoever owns packages/language-server
-`prime lsp diagnostics` against the repo's own `security-model` fixture reports
+`aoe lsp diagnostics` against the repo's own `security-model` fixture reports
 `UNKNOWN_FIELD` for `id`, `version`, `endangers` and `mitigated-by`. `id`/`version` are
 structural unit fields and `endangers`/`mitigated-by` are declared *relations*, so the
 model check appears to compare declaration keys against `types.yaml` fields only, without
 admitting structural keys or relation names. Not in my scope; reporting only. This is now
-user-visible through `prime lsp`, which it was not before.
+user-visible through `aoe lsp`, which it was not before.

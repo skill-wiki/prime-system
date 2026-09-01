@@ -1,21 +1,21 @@
 # MCP Transport
 
-Kernary 的 MCP Transport 把编译后的 Model + Corpus Snapshot 提供给任意 MCP
+AOE 的 MCP Transport 把编译后的 Model + Corpus Snapshot 提供给任意 MCP
 Client。它只负责传输：领域词汇由 Model Package 定义，Query/Action 语义由 Runtime
 负责。
 
 ```bash
-PRIME_DIR=/absolute/path/to/corpus/dist \
-PRIME_MODEL_DIR=/absolute/path/to/model \
+AOE_CORPUS_DIR=/absolute/path/to/corpus/dist \
+AOE_MODEL_DIR=/absolute/path/to/model \
 bun packages/mcp-server-core/src/index.ts
 ```
 
 ## 核心工具
 
-- `prime_query` 执行 Model 声明的 Retrieval Profile，返回 Projection 和产生结果
+- `aoe_query` 执行 Model 声明的 Retrieval Profile，返回 Projection 和产生结果
   的决策；
-- `prime_plan` 返回同一套 Selection arithmetic，但不渲染 Projection；
-- `prime_resource` 通过 Runtime 解析一个精确 Projection URI。
+- `aoe_plan` 返回同一套 Selection arithmetic，但不渲染 Projection；
+- `aoe_resource` 通过 Runtime 解析一个精确 Projection URI。
 
 所有工具都有显式 Input schema。缺少 Retrieval signal、Profile Provider 不可用、
 Projection 未知、Visibility 被拒绝，或 Model 与 Bundle identity 不一致时都会明确

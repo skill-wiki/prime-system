@@ -11,7 +11,7 @@
  * structural (`UnitIR` field paths) or supplied by the Model Package.
  */
 
-export { PrimeClient } from "./client.ts";
+export { AoeClient } from "./client.ts";
 export { SPAN_PROJECTION, createEmbeddedTransport, type EmbeddedHost } from "./embedded.ts";
 export {
   GENERATED_ARTIFACT_PROTOCOL,

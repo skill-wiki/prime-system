@@ -1,5 +1,5 @@
 /**
- * prime deps <@scope/name> — Recursively walk dependency graph and print tree.
+ * aoe deps <@scope/name> — Recursively walk dependency graph and print tree.
  *
  * Dependency edges walked (in order of weight):
  *   composition.must-include     (hard deps)
@@ -37,7 +37,7 @@ export async function depsCommand(args: string[]): Promise<void> {
   }
 
   if (!id) {
-    console.error('Usage: prime deps <@scope/name> [--depth 3] [--related] [--json]');
+    console.error('Usage: aoe deps <@scope/name> [--depth 3] [--related] [--json]');
     process.exit(1);
   }
 

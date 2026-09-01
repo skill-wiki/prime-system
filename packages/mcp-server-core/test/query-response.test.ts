@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { parseProjectionUri } from "@skill-wiki/projection-engine";
-import { createPrimeQueryResponse, createPrimeResourceUri, type QueryResult } from "../src/query-response";
+import { createAoeQueryResponse, createAoeResourceUri, type QueryResult } from "../src/query-response";
 
 const SNAPSHOT = {
   kind: "manifest" as const, protocolVersion: "2.0.0", irVersion: "2", compilerVersion: "2.1.0",
@@ -17,19 +17,19 @@ const RESULT: QueryResult = {
   transport: "path", bytes: 8, digest: "sha256:" + "d".repeat(64), path: "/local/projection.md",
 };
 
-describe("createPrimeQueryResponse", () => {
+describe("createAoeQueryResponse", () => {
   it("keeps the snapshot metadata portable and never leaks the server's prime dir", () => {
-    const response = createPrimeQueryResponse(SNAPSHOT, IDENTITY, [RESULT], 2);
+    const response = createAoeQueryResponse(SNAPSHOT, IDENTITY, [RESULT], 2);
     expect(response.total_index_tokens).toBe(2);
-    expect(response.snapshot).not.toHaveProperty("primeDir");
+    expect(response.snapshot).not.toHaveProperty("corpusDir");
     expect(response.snapshot.release).toBe("2026.08.28.1");
     expect(response.diagnostics).toEqual([]);
   });
 
   it("carries the local path only for the pointer transport", () => {
-    const response = createPrimeQueryResponse(SNAPSHOT, IDENTITY, [RESULT], 2);
+    const response = createAoeQueryResponse(SNAPSHOT, IDENTITY, [RESULT], 2);
     expect(response.results[0]?.path).toBe("/local/projection.md");
-    const inline = createPrimeQueryResponse(
+    const inline = createAoeQueryResponse(
       SNAPSHOT, IDENTITY,
       [{ ...RESULT, transport: "inline", path: undefined, content: "body" }], 2,
     );
@@ -38,30 +38,30 @@ describe("createPrimeQueryResponse", () => {
   });
 
   it("surfaces diagnostics rather than dropping them", () => {
-    const response = createPrimeQueryResponse(SNAPSHOT, IDENTITY, [RESULT], 2, [
+    const response = createAoeQueryResponse(SNAPSHOT, IDENTITY, [RESULT], 2, [
       { code: "X", message: "y", severity: "warning" },
     ]);
     expect(response.diagnostics).toHaveLength(1);
   });
 });
 
-describe("createPrimeResourceUri", () => {
+describe("createAoeResourceUri", () => {
   /**
    * The pre-cutover grammar was
-   * `prime://corpus/<corpus>/releases/<release>/units/<id>/projections/<level>` —
+   * `aoe://corpus/<corpus>/releases/<release>/units/<id>/projections/<level>` —
    * six segments, a literal `corpus` where §11.3 puts the tenant, and no profile.
    * Nothing in the repo could parse it back. These assertions are the replacement
    * contract: §11.3 shape, and a real round-trip through the engine's parser.
    */
   it("emits the §11.3 seven-segment shape", () => {
-    const uri = createPrimeResourceUri(IDENTITY, "@example/unit", "core", "core");
+    const uri = createAoeResourceUri(IDENTITY, "@example/unit", "core", "core");
     expect(uri).toBe(
-      "prime://local/org.example%2Ftest@2026.08.28.1/units/%40example%2Funit/projections/core/core",
+      "aoe://local/org.example%2Ftest@2026.08.28.1/units/%40example%2Funit/projections/core/core",
     );
   });
 
   it("round-trips every field through the engine's parser", () => {
-    const uri = createPrimeResourceUri(
+    const uri = createAoeResourceUri(
       { tenant: "t 1", corpus: "a/b!'()*", release: "index:abc def" },
       "@a/雪",
       "pf/one",
@@ -77,7 +77,7 @@ describe("createPrimeResourceUri", () => {
   });
 
   it("keeps a legacy release identity addressable", () => {
-    const uri = createPrimeResourceUri(
+    const uri = createAoeResourceUri(
       { tenant: "local", corpus: "legacy", release: "index:abc" }, "@a/b", "core", "core",
     );
     const parsed = parseProjectionUri(uri);
@@ -91,7 +91,7 @@ describe("createPrimeResourceUri", () => {
    *
    * `identity.corpus` used to be `compiled-v3-final` — the *bundle directory's*
    * basename — so every published URI read
-   * `prime://local/compiled-v3-final@2026-08-29/units/…`. It is now the namespace
+   * `aoe://local/compiled-v3-final@2026-08-29/units/…`. It is now the namespace
    * declared in `prime-corpus.yaml` and stamped into `corpus.manifest.json`, and
    * that value contains a `/`. This case exists because that slash is the whole
    * risk in the change: it must arrive percent-encoded *before* the corpus value
@@ -104,15 +104,15 @@ describe("createPrimeResourceUri", () => {
       corpus: "com.github.skill-wiki/frontend-design",
       release: "2026-08-29",
     };
-    const uri = createPrimeResourceUri(identity, "@impeccable/persona-stripe-fintech", "core", "summary");
+    const uri = createAoeResourceUri(identity, "@impeccable/persona-stripe-fintech", "core", "summary");
     expect(uri).toBe(
-      "prime://local/com.github.skill-wiki%2Ffrontend-design@2026-08-29" +
+      "aoe://local/com.github.skill-wiki%2Ffrontend-design@2026-08-29" +
         "/units/%40impeccable%2Fpersona-stripe-fintech/projections/core/summary",
     );
     // No raw slash may survive inside the corpus segment: that is the failure the
     // encoding prevents, and asserting the literal above alone would not catch a
     // future emitter that split the segment differently.
-    expect(uri.slice("prime://local/".length).split("/")).toHaveLength(6);
+    expect(uri.slice("aoe://local/".length).split("/")).toHaveLength(6);
     const parsed = parseProjectionUri(uri);
     expect(parsed.ok).toBe(true);
     if (parsed.ok) expect(parsed.value.corpus).toBe("com.github.skill-wiki/frontend-design");

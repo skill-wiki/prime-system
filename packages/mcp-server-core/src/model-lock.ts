@@ -4,7 +4,7 @@
  * Plan §8.4 lists "Model lock 完整性" among the checks a Runtime must perform at
  * boot, and §8.5 defines a snapshot as `corpus release + model lock + policy set`.
  * Neither was enforced: a bundle's `corpus.manifest.json` could declare
- * `models: {foo: "1.0.0"}` while `PRIME_MODEL_DIR` handed the server an entirely
+ * `models: {foo: "1.0.0"}` while `AOE_MODEL_DIR` handed the server an entirely
  * different Model Package, and nothing compared the two. The result would be a
  * response stamped with a snapshot identity that does not describe how it was
  * produced — the exact failure the immutable-snapshot rule exists to prevent.

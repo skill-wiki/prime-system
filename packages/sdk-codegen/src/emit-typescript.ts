@@ -10,7 +10,7 @@
  *    what the client verifies is a *compile* error in the generated file, not a
  *    runtime surprise on the day someone regenerates.
  *  - `client.ts`: the §10.3 typed model SDK — one accessor per declared action, each
- *    carrying the model's own input and output types, over `PrimeClient`.
+ *    carrying the model's own input and output types, over `AoeClient`.
  *
  * There is no domain name in this module. Every identifier it writes is derived
  * from a name that arrived in the schema.
@@ -204,19 +204,19 @@ export function emitClient(input: CodegenSchema, names: TypeScriptNames): string
   const out: string[] = [HEADER_COMMENT];
   const typeImports = [...names.actions.values()].flatMap(identifier => [`${identifier}Input`, `${identifier}Output`]);
   out.push(
-    `import type { ActionRun, PrimeClient, RequestContext } from "@skill-wiki/sdk";`,
+    `import type { ActionRun, AoeClient, RequestContext } from "@skill-wiki/sdk";`,
     `import { GENERATED_MODEL${typeImports.length > 0 ? ", " : ""}${typeImports.join(", ")} } from "./types.ts";`,
     "",
   );
   out.push(
     "/**",
-    ` * Typed façade over \`PrimeClient\` for model \`${schema.model.name}\` v${schema.model.version}.`,
+    ` * Typed façade over \`AoeClient\` for model \`${schema.model.name}\` v${schema.model.version}.`,
     " *",
     " * `verify()` is separate from the constructor because the digest gate needs the",
     " * activated snapshot, which is an async question the constructor cannot ask.",
     " */",
     `export class ${names.modelClass} {`,
-    "  constructor(private readonly prime: PrimeClient) {}",
+    "  constructor(private readonly prime: AoeClient) {}",
     "",
     "  /** Fail closed if this generated SDK does not match the engine's active model. */",
     "  async verify(): Promise<void> {",

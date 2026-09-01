@@ -12,7 +12,7 @@ import {
   GENERATED_ARTIFACT_PROTOCOL,
   ModelDigestMismatchError,
   parseGeneratedArtifactHeader,
-  PrimeClient,
+  AoeClient,
   SdkError,
   type GeneratedArtifactHeader,
 } from "../src/index.ts";
@@ -24,13 +24,13 @@ const header: GeneratedArtifactHeader = {
   model: { name: "security-controls", version: "1.0.0", digest: SNAPSHOT.modelDigest },
 };
 
-const prime = new PrimeClient({
+const prime = new AoeClient({
   transport: createEmbeddedTransport({ snapshot: SNAPSHOT, engine: loadEngineContext(), generators: registry() }),
 });
 
 describe("generated-artifact digest gate", () => {
   test("accepts an artifact whose digest matches the activated snapshot", async () => {
-    expect(await prime.verifyGeneratedArtifact(header)).toEqual(header);
+    expect(await aoe.verifyGeneratedArtifact(header)).toEqual(header);
   });
 
   test("rejects an artifact generated against a different model digest", () => {
@@ -48,7 +48,7 @@ describe("generated-artifact digest gate", () => {
 
   test("rejects through the client too, so a stale SDK cannot issue a call", async () => {
     await expect(
-      prime.verifyGeneratedArtifact({ ...header, model: { ...header.model, digest: "sha256:stale" } }),
+      aoe.verifyGeneratedArtifact({ ...header, model: { ...header.model, digest: "sha256:stale" } }),
     ).rejects.toThrow(ModelDigestMismatchError);
   });
 

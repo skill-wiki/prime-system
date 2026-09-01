@@ -1,5 +1,5 @@
 /**
- * `prime run inspect|replay` — plan §11.4's run surface.
+ * `aoe run inspect|replay` — plan §11.4's run surface.
  *
  * `inspect` reads the append-only log a past run wrote. `replay` folds the run
  * back out of that log *without* touching the store's identity cache, and reports
@@ -29,8 +29,8 @@ interface RunFlags {
 }
 
 const USAGE = `Usage:
-  prime run inspect <runId> --model <dir> --corpus <dir> [options]
-  prime run replay  <runId> --model <dir> --corpus <dir> [options]
+  aoe run inspect <runId> --model <dir> --corpus <dir> [options]
+  aoe run replay  <runId> --model <dir> --corpus <dir> [options]
 
 Options
   --state-dir <dir>                Run log location (default: <corpus>.prime-runs, a sibling)

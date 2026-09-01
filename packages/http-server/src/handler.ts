@@ -46,7 +46,7 @@ import type { CorpusRegistry } from "@skill-wiki/runtime";
 import { RESOURCE_PATH_PREFIX, listResources, readResource } from "./resources.ts";
 import { WireError, decodeQueryRequest, readJsonBody } from "./wire.ts";
 
-export const SPAN_HTTP_REQUEST = "prime.http.request";
+export const SPAN_HTTP_REQUEST = "aoe.http.request";
 export const HEALTH_PATH = "/healthz";
 
 export interface HandlerOptions {
@@ -188,12 +188,12 @@ export function createRequestHandler(options: HandlerOptions): (request: Request
         // hint of which check failed. `WWW-Authenticate` is sent on 401 because
         // that is what makes a client retry with a credential rather than treat
         // the failure as permanent.
-        span.setAttributes({ "prime.auth_denied": true, "prime.auth_reason": auth.reason, "http.response.status_code": auth.status });
+        span.setAttributes({ "aoe.auth_denied": true, "aoe.auth_reason": auth.reason, "http.response.status_code": auth.status });
         span.setStatus({ code: "error", message: auth.reason });
         span.end();
         return failure({ status: auth.status, code: "UNAUTHENTICATED", message: "Valid credentials are required." });
       }
-      span.setAttribute("prime.principal_id", auth.principal.id);
+      span.setAttribute("aoe.principal_id", auth.principal.id);
 
       const response = await route(request, url, verb, auth.principal, span, options, newRequestId);
       span.setAttribute("http.response.status_code", response.status);
@@ -233,7 +233,7 @@ async function route(
       return failure({ status: 405, code: "METHOD_NOT_ALLOWED", message: `${url.pathname} accepts POST` });
     }
     const requestId = newRequestId();
-    span.setAttribute("prime.request_id", requestId);
+    span.setAttribute("aoe.request_id", requestId);
     const decoded = decodeQueryRequest(await readJsonBody(request), { principal, requestId });
     const transport = options.transportFor(scope);
     return url.pathname === "/v1/plan"
@@ -244,7 +244,7 @@ async function route(
   if (url.pathname === RESOURCE_PATH_PREFIX) {
     if (verb !== "GET") return failure({ status: 405, code: "METHOD_NOT_ALLOWED", message: `${RESOURCE_PATH_PREFIX} accepts GET` });
     const resources = listResources(options.engine, principal);
-    span.setAttribute("prime.listed_resources", resources.length);
+    span.setAttribute("aoe.listed_resources", resources.length);
     return json({ resources }, 200);
   }
 

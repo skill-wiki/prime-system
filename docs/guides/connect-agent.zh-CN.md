@@ -10,7 +10,7 @@
 - 声明类型、关系、Projection 和 Action 的 Model Package；
 - 带 Manifest、Lock，以及（如要求）Signature 的 Corpus Snapshot。
 
-如果 Model 和 Bundle 不匹配，Kernary 会拒绝启动。在 Agent 连接前修复这件事，
+如果 Model 和 Bundle 不匹配，AOE 会拒绝启动。在 Agent 连接前修复这件事，
 比它缓存错误结果后再排查容易得多。
 
 ## MCP：一条命令连接
@@ -19,8 +19,8 @@
 想使用哪个 Domain Package。
 
 ```bash
-PRIME_DIR=/absolute/path/to/corpus/dist \
-PRIME_MODEL_DIR=/absolute/path/to/model \
+AOE_CORPUS_DIR=/absolute/path/to/corpus/dist \
+AOE_MODEL_DIR=/absolute/path/to/model \
 bun packages/mcp-server-core/src/index.ts
 ```
 
@@ -28,9 +28,9 @@ Server 提供三个核心工具：
 
 | Tool | 用途 |
 |---|---|
-| `prime_query` | 根据自然语言请求检索 Projection |
-| `prime_plan` | 不加载内容，查看排序、约束、关系与预算 |
-| `prime_resource` | 解析一个精确的 Projection URI |
+| `aoe_query` | 根据自然语言请求检索 Projection |
+| `aoe_plan` | 不加载内容，查看排序、约束、关系与预算 |
+| `aoe_resource` | 解析一个精确的 Projection URI |
 
 每个请求都会根据加载的 Model 与 Snapshot 检查。缺少检索信号、未知 Projection、
 Visibility 违规、Provider 不可用或 Digest 不匹配时，返回诊断/拒绝，而不是空成功。

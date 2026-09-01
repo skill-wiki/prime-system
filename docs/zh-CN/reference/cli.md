@@ -1,15 +1,15 @@
-# Kernary CLI
+# AOE CLI
 
-`kernary` 是查看 Model Package、构建 Corpus Package、诊断 Snapshot 和本地运行
+`aoe` 是查看 Model Package、构建 Corpus Package、诊断 Snapshot 和本地运行
 Action 的最快入口。
 
 ```text
-Kernary v0.2.0 — model-driven ontology engine
+AOE v0.2.0 — Agent Ontology Engine
 
-Usage: kernary <command> [options]
+Usage: aoe <command> [options]
 ```
 
-运行 `kernary --help` 查看当前命令；每个 Subcommand 都有自己的帮助信息和退出码。
+运行 `aoe --help` 查看当前命令；每个 Subcommand 都有自己的帮助信息和退出码。
 
 ## 命令速览
 
@@ -26,13 +26,13 @@ Usage: kernary <command> [options]
 ## 一次本地流程
 
 ```bash
-kernary check ./my-domain/model
-kernary deps ./my-domain/model
+aoe check ./my-domain/model
+aoe deps ./my-domain/model
 
-kernary compile ./my-domain/corpus/sources/incident.prime \
+aoe compile ./my-domain/corpus/sources/incident.prime \
   --output ./build/incident --dir --bundle
 
-kernary doctor --dir ./build/incident --strict-manifest
+aoe doctor --dir ./build/incident --strict-manifest
 ```
 
 正式 Domain Package 可以把这些步骤封装在自己的 Build script 中，以加入 Adapter、
@@ -44,7 +44,7 @@ kernary doctor --dir ./build/incident --strict-manifest
 Diagnostic。`--json` 适合 CI：
 
 ```bash
-kernary doctor --dir ./build/incident --strict-manifest --json
+aoe doctor --dir ./build/incident --strict-manifest --json
 ```
 
 Bundle 缺失、Manifest 与 Index/Content 不一致，或 Model Package 无法加载时，命令

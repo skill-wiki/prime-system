@@ -23,13 +23,13 @@ import {
   type MountedCorpus,
 } from "@skill-wiki/runtime";
 
-export const SPAN_CORPUS_MOUNT = "prime.corpus.mount";
-export const SPAN_CORPUS_ACTIVATE = "prime.corpus.activate";
+export const SPAN_CORPUS_MOUNT = "aoe.corpus.mount";
+export const SPAN_CORPUS_ACTIVATE = "aoe.corpus.activate";
 
 /** Events on the mount span, one per outcome, so a count query can separate them. */
-export const EVENT_CORPUS_MOUNTED = "prime.corpus.mounted";
-export const EVENT_CORPUS_MOUNT_FAILED = "prime.corpus.mount_failed";
-export const EVENT_CORPUS_SWITCHED = "prime.corpus.switched";
+export const EVENT_CORPUS_MOUNTED = "aoe.corpus.mounted";
+export const EVENT_CORPUS_MOUNT_FAILED = "aoe.corpus.mount_failed";
+export const EVENT_CORPUS_SWITCHED = "aoe.corpus.switched";
 
 export interface TraceScope {
   readonly tracer: Tracer;
@@ -50,7 +50,7 @@ export interface MountOutcome {
  *
  * A failed mount is an event on a span that still ends `ok`, because the *mount
  * operation* completed and reported its failures — `CorpusRegistry.from` is
- * partial by design. The span's `prime.failed_mounts` attribute is what an alert
+ * partial by design. The span's `aoe.failed_mounts` attribute is what an alert
  * fires on; a span status of `error` here would instead mean "the mounting code
  * itself broke", and conflating the two makes both unmonitorable.
  */
@@ -63,10 +63,10 @@ export function mountCorpora(
     const outcome = CorpusRegistry.from(requests, options);
     for (const mount of outcome.registry.all()) {
       span.addEvent(EVENT_CORPUS_MOUNTED, {
-        "prime.corpus_namespace": mount.namespace,
-        "prime.corpus_release": mount.release,
-        "prime.corpus_digest": mount.loaded.snapshot.contentDigest,
-        "prime.mount_diagnostics": mount.diagnostics.length,
+        "aoe.corpus_namespace": mount.namespace,
+        "aoe.corpus_release": mount.release,
+        "aoe.corpus_digest": mount.loaded.snapshot.contentDigest,
+        "aoe.mount_diagnostics": mount.diagnostics.length,
       });
     }
     for (const failure of outcome.failed) {
@@ -74,15 +74,15 @@ export function mountCorpora(
       // mount diagnostic can quote manifest contents, and a trace is a wider
       // audience than the operator's console.
       span.addEvent(EVENT_CORPUS_MOUNT_FAILED, {
-        "prime.mount_path": failure.path,
-        "prime.mount_diagnostics": failure.diagnostics.length,
-        "prime.mount_codes": failure.diagnostics.map(diagnostic => diagnostic.code),
+        "aoe.mount_path": failure.path,
+        "aoe.mount_diagnostics": failure.diagnostics.length,
+        "aoe.mount_codes": failure.diagnostics.map(diagnostic => diagnostic.code),
       });
     }
     span.setAttributes({
-      "prime.requested_mounts": requests.length,
-      "prime.mounted": outcome.registry.size,
-      "prime.failed_mounts": outcome.failed.length,
+      "aoe.requested_mounts": requests.length,
+      "aoe.mounted": outcome.registry.size,
+      "aoe.failed_mounts": outcome.failed.length,
     });
     return outcome;
   });
@@ -111,18 +111,18 @@ export function switchRelease(
   scope: TraceScope,
 ): SwitchOutcome {
   return withSpan(scope.tracer ?? NOOP_TRACER, SPAN_CORPUS_ACTIVATE, spanOptions(scope), span => {
-    span.setAttributes({ "prime.corpus_namespace": namespace, "prime.corpus_release": release });
+    span.setAttributes({ "aoe.corpus_namespace": namespace, "aoe.corpus_release": release });
     const previous = registry.activeRelease(namespace);
     const result = registry.activate(namespace, release);
     if (!result.ok) {
       span.setStatus({ code: "error", message: result.diagnostic.code });
-      span.setAttribute("prime.activate_code", result.diagnostic.code);
+      span.setAttribute("aoe.activate_code", result.diagnostic.code);
       return { ok: false, reason: result.diagnostic.message, code: result.diagnostic.code };
     }
     span.addEvent(EVENT_CORPUS_SWITCHED, {
-      "prime.corpus_namespace": namespace,
-      "prime.corpus_release": release,
-      "prime.previous_release": previous ?? "",
+      "aoe.corpus_namespace": namespace,
+      "aoe.corpus_release": release,
+      "aoe.previous_release": previous ?? "",
     });
     span.setStatus({ code: "ok" });
     return previous === undefined

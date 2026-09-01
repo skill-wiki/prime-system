@@ -1,5 +1,5 @@
 /**
- * `prime action preflight|run` — plan §11.4's action surface, and the bin entry
+ * `aoe action preflight|run` — plan §11.4's action surface, and the bin entry
  * that makes `@skill-wiki/action-runtime` and `@skill-wiki/event-store` reachable
  * from something that actually runs.
  *
@@ -36,8 +36,8 @@ interface ActionFlags {
 }
 
 const USAGE = `Usage:
-  prime action preflight --model <dir> --corpus <dir> --action <Name> [options]
-  prime action run       --model <dir> --corpus <dir> --action <Name> --key <idempotency-key> [options]
+  aoe action preflight --model <dir> --corpus <dir> --action <Name> [options]
+  aoe action run       --model <dir> --corpus <dir> --action <Name> --key <idempotency-key> [options]
 
 Required context (no defaults: an audit records who asked, not who the CLI guessed)
   --principal <id>            Principal the run is attributed to
@@ -135,7 +135,7 @@ export async function actionCommand(args: string[]): Promise<number> {
     });
 
     if (!flags.json) {
-      header(`Prime Action — ${flags.sub}`);
+      header(`AOE Action — ${flags.sub}`);
       console.log(gray(`  model    ${assembled.model.manifest.name}@${assembled.model.manifest.version}`));
       console.log(gray(`  corpus   ${assembled.corpus.units.length} unit(s), ${assembled.corpus.edges.length} edge(s)`));
       console.log(gray(`  snapshot ${snapshotIdOf(assembled.snapshot)}`));

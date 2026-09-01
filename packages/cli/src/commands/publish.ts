@@ -1,11 +1,11 @@
 /**
- * prime publish — Publish a .prime file to a registry.
+ * aoe publish — Publish a .prime file to a registry.
  *
- * Default registry: `PRIME_REGISTRY` env var, falling back to no default
+ * Default registry: `AOE_REGISTRY` env var, falling back to no default
  * (the user must pass `--remote <url>`). Bare-fetch PUTs the source file
  * to `<base>/atoms/<id>.prime` (mirroring the GET path used by install).
  *
- * Auth: `PRIME_REGISTRY_TOKEN` env var, sent as `Authorization: Bearer <token>`.
+ * Auth: `AOE_REGISTRY_TOKEN` env var, sent as `Authorization: Bearer <token>`.
  */
 
 import { resolve, basename } from 'path';
@@ -15,7 +15,7 @@ import { readFile, fileExists } from '../utils/fs';
 export async function publishCommand(args: string[]) {
   // ── arg parsing ──
   let file: string | null = null;
-  let remoteUrl: string | undefined = (globalThis as any)?.process?.env?.PRIME_REGISTRY;
+  let remoteUrl: string | undefined = (globalThis as any)?.process?.env?.AOE_REGISTRY;
   let dryRun = false;
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--remote' && args[i + 1]) remoteUrl = args[++i];
@@ -25,7 +25,7 @@ export async function publishCommand(args: string[]) {
 
   file = file ?? findPrimeFile();
   if (!file) {
-    error('No .prime file found. Specify one: prime publish <file.prime>');
+    error('No .prime file found. Specify one: aoe publish <file.prime>');
     process.exit(1);
   }
 
@@ -62,21 +62,21 @@ export async function publishCommand(args: string[]) {
 
   if (dryRun) {
     console.log();
-    info(`Dry-run. To actually publish: drop --dry-run and pass --remote <url> (or set PRIME_REGISTRY).`);
+    info(`Dry-run. To actually publish: drop --dry-run and pass --remote <url> (or set AOE_REGISTRY).`);
     return;
   }
 
   if (!remoteUrl) {
     console.log();
     error('No registry URL configured.');
-    info('Pass  --remote https://registry.example.com  or set PRIME_REGISTRY env var.');
+    info('Pass  --remote https://registry.example.com  or set AOE_REGISTRY env var.');
     info('To smoke-test locally:  bun scripts/registry-server.ts  (defaults to http://localhost:7700)');
     process.exit(1);
   }
 
   const base = remoteUrl.replace(/\/$/, '');
   const url = base.endsWith('/atoms') ? `${base}/${id}.prime` : `${base}/atoms/${id}.prime`;
-  const token = (globalThis as any)?.process?.env?.PRIME_REGISTRY_TOKEN;
+  const token = (globalThis as any)?.process?.env?.AOE_REGISTRY_TOKEN;
 
   console.log();
   const publishSpinner = createSpinner(`PUT ${url}`);
@@ -96,11 +96,11 @@ export async function publishCommand(args: string[]) {
     publishSpinner.stop(`${green('✅')} Published!`);
     console.log();
     success(`${bold(id)}@${version} now resolvable at ${url}`);
-    console.log(`  ${gray(`Try:  prime install ${id} --remote ${base}`)}`);
+    console.log(`  ${gray(`Try:  aoe install ${id} --remote ${base}`)}`);
   } catch (e) {
     publishSpinner.stop();
     error(`Failed to publish: ${(e as Error).message}`);
-    if (!token) info('Set PRIME_REGISTRY_TOKEN to authenticate.');
+    if (!token) info('Set AOE_REGISTRY_TOKEN to authenticate.');
     process.exit(1);
   }
 }
@@ -110,7 +110,7 @@ function findPrimeFile(): string | null {
   const files = readdirSync('.').filter((f: string) => f.endsWith('.prime'));
   if (files.length === 1) return files[0];
   if (files.length > 1) {
-    console.error(`Multiple .prime files found. Specify one: prime publish <file>`);
+    console.error(`Multiple .prime files found. Specify one: aoe publish <file>`);
     process.exit(1);
   }
   return null;

@@ -1,5 +1,5 @@
 /**
- * prime compose --name <name> — Compose units into a new Skill document.
+ * aoe compose --name <name> — Compose units into a new Skill document.
  *
  * Two domain assertions were removed here, both named by architecture §3.1:
  *
@@ -27,7 +27,7 @@ export async function composeCommand(args: string[]) {
   }
 
   if (!name) {
-    console.error('Usage: prime compose --name <skill-name>');
+    console.error('Usage: aoe compose --name <skill-name>');
     process.exit(1);
   }
 
@@ -36,7 +36,7 @@ export async function composeCommand(args: string[]) {
   const available = findAvailablePrimes();
 
   if (available.length === 0) {
-    info('No units available. Install some first: prime install <name>');
+    info('No units available. Install some first: aoe install <name>');
     process.exit(0);
   }
 
@@ -77,7 +77,7 @@ export async function composeCommand(args: string[]) {
 
   console.log();
   info(`Edit ${outputPath} to customize the workflow`);
-  info(`Run ${bold('prime install')} in ${name}/ to install the units`);
+  info(`Run ${bold('aoe install')} in ${name}/ to install the units`);
 }
 
 export interface AvailablePrime {

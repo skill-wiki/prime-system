@@ -1,7 +1,7 @@
 {
   "name": "@skill-wiki/mcp-server-core",
   "version": "0.2.0",
-  "description": "Kernary's generic MCP transport for a verified Model Package and compiled Corpus snapshot.",
+  "description": "AOE MCP transport for a verified Model Package and compiled Corpus snapshot.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "src/index.ts",
@@ -9,8 +9,7 @@
     ".": "./src/index.ts"
   },
   "bin": {
-    "kernary-mcp": "dist/index.js",
-    "prime-mcp-core": "dist/index.js"
+    "aoe-mcp": "dist/index.js"
   },
   "files": [
     "src",
@@ -34,7 +33,7 @@
     "lint": "tsc --noEmit"
   },
   "keywords": [
-    "kernary",
+    "aoe",
     "knowledge-runtime",
     "mcp",
     "model-context-protocol",

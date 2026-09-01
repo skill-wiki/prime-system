@@ -1,10 +1,10 @@
-# Kernary
+# AOE — Agent Ontology Engine
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/kernary-logo-dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="docs/assets/kernary-logo.svg">
-    <img src="docs/assets/kernary-logo.svg" alt="Kernary" width="540">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/aoe-logo-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/aoe-logo.svg">
+    <img src="docs/assets/aoe-logo.svg" alt="AOE" width="540">
   </picture>
 </p>
 
@@ -19,13 +19,13 @@
   <a href="LICENSE">Apache-2.0</a>
 </p>
 
-Kernary is a **model-driven ontology engine**. It turns an external domain
+AOE (Agent Ontology Engine) turns an external domain
 model and corpus into a deterministic, versioned, verifiable runtime. An
 application or Agent can then discover what exists, ask for a constrained
 selection plan, resolve the right projection, and invoke governed actions
 through one contract exposed by an embedded SDK, MCP, or HTTP.
 
-The short version: **Kernary is the engine; a domain's vocabulary and data are
+The short version: **AOE is the engine; a domain's vocabulary and data are
 packages around it.** There is no production Ticket schema, design ontology, or
 fixed list of atom kinds hidden inside Core.
 
@@ -40,7 +40,7 @@ to answer four harder questions:
 3. Can the runtime prove that the loaded snapshot is the one that was built?
 4. What may an Agent read, and what may it actually change?
 
-Kernary makes those questions explicit without making the core domain-specific.
+AOE makes those questions explicit without making the core domain-specific.
 The model declares the vocabulary. The corpus supplies the units and evidence.
 The compiler produces a verified snapshot. Query returns an explainable plan.
 Action execution has its own authorization and evidence path.
@@ -55,7 +55,7 @@ Action execution has its own authorization and evidence path.
          └─────────────────────┼─────────────────────┘
                                ▼
                     ┌────────────────────┐
-                    │   Kernary Engine   │
+                    │       AOE         │
                     │ parse → IR → build │
                     │ verify → snapshot  │
                     └─────────┬──────────┘
@@ -73,7 +73,7 @@ Action execution has its own authorization and evidence path.
 
 | Boundary | Owns | Does not own |
 |---|---|---|
-| Kernary Core | meta-schema, IR, parser, compiler, snapshot verification, query/action contracts | domain type names, business rules, corpus content |
+| AOE Core | meta-schema, IR, parser, compiler, snapshot verification, query/action contracts | domain type names, business rules, corpus content |
 | Model Package | types, fields, relations, projections, retrieval profiles, functions, actions, policies, migrations | compiled corpus bytes |
 | Corpus Package | units, assets, provenance, licences, releases, signatures | engine implementation |
 | Adapter Package | source importers, provider bindings, validators, evaluators | Core schema decisions |
@@ -174,13 +174,13 @@ The output is a verified snapshot containing an index, projections, manifest,
 and lock. To expose it through the generic MCP transport:
 
 ```bash
-PRIME_DIR=examples/hello-world/primes/compiled \
-PRIME_MODEL_DIR=compat/prime-v1-model \
+AOE_CORPUS_DIR=examples/hello-world/primes/compiled \
+AOE_MODEL_DIR=compat/prime-v1-model \
 bun packages/mcp-server-core/src/index.ts
 ```
 
 The MCP entry point reads the mounted Corpus and Model paths from its environment
-configuration. New integrations should use the `kernary` CLI and the package
+configuration. New integrations should use the `aoe` CLI and the package
 contracts documented below.
 
 ## Author a domain without changing the engine
@@ -228,13 +228,13 @@ The workspace is organized by contract, not by a single framework package:
 | Integration | `sdk`, `sdk-codegen`, `mcp-server-core`, `http-server`, `cli` | Expose the same contracts to hosts |
 | Extension / quality | `plugin-host`, `registry`, `observability`, `evaluation-engine`, `testkit`, `language-server` | Host adapters, distribution, telemetry, evaluation, tooling |
 
-The workspace packages are implementation modules for Kernary. Their names are
+The workspace packages are implementation modules for AOE. Their names are
 listed here so a host can choose the layer it needs; domain users normally
 depend on the SDK or a transport rather than importing every module.
 
 ## Security and reproducibility invariants
 
-Kernary is designed to fail closed at the boundaries that matter:
+AOE is designed to fail closed at the boundaries that matter:
 
 - canonical digests are independent of checkout location and object order;
 - manifest and projection tampering fails before content is returned;
@@ -278,5 +278,5 @@ Read [CONTRIBUTING](.github/CONTRIBUTING.md), or the
 
 ## License
 
-Kernary Engine is licensed under [Apache-2.0](LICENSE). External Domain and
+AOE Engine is licensed under [Apache-2.0](LICENSE). External Domain and
 Corpus Packages carry their own source attribution and licence terms.

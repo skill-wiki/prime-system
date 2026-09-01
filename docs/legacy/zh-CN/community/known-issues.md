@@ -41,7 +41,7 @@ bun test           # 448 通过 / 0 失败 / 1366 个 expect() 调用
 - 镜像或联邦
 - 审计日志、限流或签名
 
-公共托管注册中心列入 v0.5 路线图。在此之前，建议组织自建。使用 `PRIME_REGISTRY` 环境变量或 `--remote <url>` 将 `prime install` / `prime publish` 指向你自己的服务器。
+公共托管注册中心列入 v0.5 路线图。在此之前，建议组织自建。使用 `AOE_REGISTRY` 环境变量或 `--remote <url>` 将 `prime install` / `prime publish` 指向你自己的服务器。
 
 ### `prime decompose` CLI 是指针命令
 

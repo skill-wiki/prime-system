@@ -170,7 +170,7 @@ $ vim sources/@me/method-render-bacon.prime
 $ prime compile sources/@me/method-render-bacon.prime --dir --output ./compiled
 
 # 查询（通过通用 MCP server）
-$ PRIME_DIR=$(pwd)/compiled bunx @prime-lang/mcp-server-core &
+$ AOE_CORPUS_DIR=$(pwd)/compiled bunx @prime-lang/mcp-server-core &
 $ # ... 在 Claude Code 里问「怎么 render bacon」
 $ # ... 或者 CLI 直接看：
 $ prime show @me/method-render-bacon
@@ -242,20 +242,20 @@ L5 validator。
 - **输出校验**。「生成的 HTML 满足 composition contract 吗？」
   把 corpus 知识 + 输出解析合起来的 runtime validator。
 
-目前，通用的 `prime_query` 工具覆盖了 atom 搜索、related 边遍历和
-projection 级别解析。领域 wrapper 可以通过串联多个 `prime_query` 调用
+目前，通用的 `aoe_query` 工具覆盖了 atom 搜索、related 边遍历和
+projection 级别解析。领域 wrapper 可以通过串联多个 `aoe_query` 调用
 来组合成更高层次的工作流。
 
-在 `prime_query` 之外添加领域专属 MCP 工具的一等公民 API（例如一个
+在 `aoe_query` 之外添加领域专属 MCP 工具的一等公民 API（例如一个
 `legal_check` 工具，能对文本输入跑领域 validator）在 v0.2 roadmap 上。
 在此之前，需要自定义工具的领域作者可以起一个独立的 MCP server，通过
-`@modelcontextprotocol/sdk` 客户端把 `prime_query` 请求转发给核心
+`@modelcontextprotocol/sdk` 客户端把 `aoe_query` 请求转发给核心
 server —— 前端 corpus 仓库的五工具 wrapper 就用的这个模式。
 
 要启动核心 server，使用真实命令：
 
 ```bash
-PRIME_DIR=/abs/path/to/compiled bunx @prime-lang/mcp-server-core
+AOE_CORPUS_DIR=/abs/path/to/compiled bunx @prime-lang/mcp-server-core
 ```
 
 或者写进 `.mcp.json`：
@@ -266,7 +266,7 @@ PRIME_DIR=/abs/path/to/compiled bunx @prime-lang/mcp-server-core
     "skill-wiki": {
       "command": "bunx",
       "args": ["@prime-lang/mcp-server-core"],
-      "env": { "PRIME_DIR": "/abs/path/to/compiled" }
+      "env": { "AOE_CORPUS_DIR": "/abs/path/to/compiled" }
     }
   }
 }
@@ -289,12 +289,12 @@ PRIME_DIR=/abs/path/to/compiled bunx @prime-lang/mcp-server-core
 
 ```bash
 # 在 registry 主机上
-PRIME_REGISTRY_TOKEN=secret bun run scripts/registry-server.ts \
+AOE_REGISTRY_TOKEN=secret bun run scripts/registry-server.ts \
   --port 7700 --root /var/lib/prime-store
 
 # 在每个写 / 跑的机器上
-export PRIME_REGISTRY=https://prime.team.example
-export PRIME_REGISTRY_TOKEN=...
+export AOE_REGISTRY=https://prime.team.example
+export AOE_REGISTRY_TOKEN=...
 
 # 发布
 prime publish sources/@me/method-render-bacon.prime

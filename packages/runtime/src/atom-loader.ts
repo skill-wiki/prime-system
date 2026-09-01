@@ -204,7 +204,7 @@ function attrVal(attrStr: string, name: string): string | undefined {
 
 /**
  * Resolve an atom id like "@community/method-modal-focus" to its directory path.
- * Atom ids are used directly as subdirectory paths under ${PRIME_DIR}.
+ * Atom ids are used directly as subdirectory paths under ${AOE_CORPUS_DIR}.
  */
 function atomDir(primeDir: string, atomId: string): string {
   // @community/method-modal-focus → ${primeDir}/@community/method-modal-focus
@@ -291,7 +291,7 @@ export function loadAtomMeta(primeDir: string, atomId: string): AtomMeta {
  * The agent should use this path with the Read tool.
  * This function DOES NOT read the file.
  *
- * @param primeDir  - Root Prime directory (${PRIME_DIR})
+ * @param primeDir  - Root Prime directory (${AOE_CORPUS_DIR})
  * @param atomId    - Atom identifier, e.g. "@community/method-modal-focus"
  * @param level     - Projection level: "summary" | "core" | "full"
  * @returns Absolute path to the chunk file
@@ -311,9 +311,9 @@ export function resolveProjection(
  * Resolve a collection: returns the list of atom IDs and the orchestration entry point.
  *
  * Collections can be stored as:
- *   ${PRIME_DIR}/collections/<collection-slug>.yaml
+ *   ${AOE_CORPUS_DIR}/collections/<collection-slug>.yaml
  * or as an atom directory:
- *   ${PRIME_DIR}/<collection-id>/atom.yaml  (where kind === "collection")
+ *   ${AOE_CORPUS_DIR}/<collection-id>/atom.yaml  (where kind === "collection")
  *
  * @returns { atomIds, orchestration }
  */

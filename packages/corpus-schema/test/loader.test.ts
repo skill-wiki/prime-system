@@ -47,7 +47,7 @@ describe("loadCorpusPackage", () => {
 
   it("rejects a directory basename as a namespace", () => withPackage((_root, write) => {
     // This is the value `corpus.manifest.json` carried before the namespace
-    // cutover, and it reached the public prime:// URI. The grammar makes it
+    // cutover, and it reached the public aoe:// URI. The grammar makes it
     // unrepresentable, and `mountCorpus` now enforces the grammar at mount time.
     const result = loadCorpusPackage(write(declaration({ namespace: "compiled-v3-final" })));
     expect(result.ok).toBe(false);

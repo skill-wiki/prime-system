@@ -46,7 +46,7 @@ const SEMVER = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z.-]
  * more slash-separated names. The grammar exists to make a directory basename
  * *unrepresentable*: `compiled-v3-final` — the value that used to sit in
  * `manifest.corpus`, and therefore in every outward-facing
- * `prime://local/compiled-v3-final@…/units/…` URI — has no `/` and no dot in its
+ * `aoe://local/compiled-v3-final@…/units/…` URI — has no `/` and no dot in its
  * first segment, so it fails this pattern. That is deliberate. §11.3 puts the
  * corpus into the public URI, and a machine-local, renameable directory name is
  * not an identity that can survive being published. Since the namespace cutover

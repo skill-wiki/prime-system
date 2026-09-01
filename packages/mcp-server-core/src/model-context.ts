@@ -28,7 +28,7 @@ import { ProjectionCatalog, type PurposeRouting } from "@skill-wiki/projection-e
 const MODEL_MANIFEST = "prime-model.yaml";
 /** Directory a bundle may carry its own model in, relative to the corpus root. */
 const IN_BUNDLE_MODEL_DIR = "_model";
-const MODEL_DIR_ENV = "PRIME_MODEL_DIR";
+const MODEL_DIR_ENV = "AOE_MODEL_DIR";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -39,7 +39,7 @@ export interface ModelResolution {
 }
 
 export function resolveModelRoot(
-  primeDir: string,
+  corpusDir: string,
   environment: Record<string, string | undefined>,
   explicit?: string,
 ): ModelResolution {
@@ -50,7 +50,7 @@ export function resolveModelRoot(
   if (fromEnv !== undefined && fromEnv !== "") {
     return { root: isAbsolute(fromEnv) ? fromEnv : resolve(fromEnv), origin: "environment" };
   }
-  const inBundle = join(primeDir, IN_BUNDLE_MODEL_DIR);
+  const inBundle = join(corpusDir, IN_BUNDLE_MODEL_DIR);
   if (existsSync(join(inBundle, MODEL_MANIFEST))) {
     return { root: resolve(inBundle), origin: "bundle" };
   }

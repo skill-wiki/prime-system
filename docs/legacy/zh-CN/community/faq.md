@@ -94,8 +94,8 @@ YAML 扩展。规范自己管语法。
 `compiled/<atom-id>/summary.json`、`compiled/<atom-id>/core.json`、
 `compiled/<atom-id>/full.json`。
 
-MCP server（`PRIME_DIR=... bunx @prime-lang/mcp-server-core`）是一个便利层，它把这种文件系统访问包装成结构
-化查询接口（`prime_query`），并处理边遍历。在以下情况下它有用：
+MCP server（`AOE_CORPUS_DIR=... bunx @prime-lang/mcp-server-core`）是一个便利层，它把这种文件系统访问包装成结构
+化查询接口（`aoe_query`），并处理边遍历。在以下情况下它有用：
 
 - 你想把语料库暴露给没有直接文件系统访问权限的 agent（比如远程或沙盒 agent）。
 - 你想让查询接口处理边遍历和投影层级选择。
@@ -201,7 +201,7 @@ Schema 演进在两个层面工作：per-atom 版本化和规范版本化。
 
 **共享语料库内的命名空间隔离。** 如果更倾向于跑一个共享语料库（比如 SaaS 产
 品里各租户都向共享池贡献原子），原子 ID 中的 `@scope/` 前缀提供命名空间隔
-离。`prime_query` 可以按 scope 前缀过滤。`scope` 类型的原子就是专门用来在共
+离。`aoe_query` 可以按 scope 前缀过滤。`scope` 类型的原子就是专门用来在共
 享语料库内声明知识领域边界的。
 
 目前还没实现的：运行时访问控制（比如读取特定 scope 的原子需要 token）。这需
@@ -215,7 +215,7 @@ Schema 演进在两个层面工作：per-atom 版本化和规范版本化。
 对于内存中已加载的编译语料库，检索速度在**微秒到低毫秒**级别。
 
 MCP server 在启动时加载所有编译好的 JSON 文件。`scope: "search"` 的
-`prime_query` 调用会扫描内存中的原子列表并对每个原子评分。对于 1,000 个原子
+`aoe_query` 调用会扫描内存中的原子列表并对每个原子评分。对于 1,000 个原子
 的语料库，这是对约 1,000 条记录做简单算术的线性扫描 —— 通常不超过 1 毫秒。
 
 边遍历（`scope: "related"`、`scope: "graph"`）是在预先解析好的邻接表上做图
@@ -322,7 +322,7 @@ schema。
    料库作者设置，反映对原子正确性和完整性的置信度。作为决胜维度。
 
 最终分数是这五个维度的加权乘积。权重在语料库 manifest 里暴露，可以通过
-`prime_query` 接口在 per-query 基础上覆盖。
+`aoe_query` 接口在 per-query 基础上覆盖。
 
 Topic 同义词（比如把"字体"、"typography"、"font" 映射到同一个检索 topic）在
 语料库的 domain plugin 里配置。没有这些同义词，跨语言或跨术语的查询就会退化

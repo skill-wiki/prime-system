@@ -1,11 +1,11 @@
-# Kernary documentation
+# AOE documentation
 
-Kernary is a model-driven ontology engine for Agents and domain-aware software. These pages describe the
-current v0.2 package, snapshot, query, and action contracts.
+AOE is an Agent Ontology Engine for domain-aware software. These pages describe
+the current package, snapshot, query, and action contracts.
 
 ## Start
 
-- [Define and run a domain ontology](start/index.md)
+- [Build your first domain runtime](start/index.md)
 - [Connect an Agent](guides/connect-agent.md)
 
 ## Core concepts

@@ -1,5 +1,5 @@
 /**
- * prime check --registry — Validate the entire local atom registry.
+ * aoe check --registry — Validate the entire local atom registry.
  *
  * Checks:
  *   1. Every atom has a valid semver version field
@@ -7,7 +7,7 @@
  *   3. must-avoid self-references (atom A avoids itself)
  *
  * Usage:
- *   prime check --registry [--dir <path>] [--json] [--scope @community]
+ *   aoe check --registry [--dir <path>] [--json] [--scope @community]
  */
 
 import { header, bold, green, yellow, red, gray, success, error, warn } from '../utils/display';
@@ -121,7 +121,7 @@ export async function runRegistryCheck(
 }
 
 function printResult(result: RegistryCheckResult, sourcesDir: string) {
-  header('Prime Registry — Integrity Check');
+  header('AOE Registry — Integrity Check');
 
   const { total, passed, failed, diagnostics } = result;
 

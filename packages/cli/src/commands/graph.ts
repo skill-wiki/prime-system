@@ -1,5 +1,5 @@
 /**
- * prime graph <file.prime> — Visualize the relation graph a unit declares.
+ * aoe graph <file.prime> — Visualize the relation graph a unit declares.
  *
  * Every relation verb is rendered the same way. The previous version carried six
  * hardcoded verb regexes plus, per verb, a `required: true|false` flag and a
@@ -20,7 +20,7 @@ import { paintFor } from '../utils/kind-color';
 export async function graphCommand(args: string[]) {
   const file = args[0];
   if (!file) {
-    console.error('Usage: prime graph <file.prime>');
+    console.error('Usage: aoe graph <file.prime>');
     process.exit(1);
   }
 

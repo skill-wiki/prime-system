@@ -1,7 +1,7 @@
 # HTTP and Registry
 
 Use the HTTP transport when an Agent, web application, or service needs to use
-Kernary from another process. Use a Registry when teams need to discover and
+AOE from another process. Use a Registry when teams need to discover and
 distribute the packages that make up a domain.
 
 ## HTTP service

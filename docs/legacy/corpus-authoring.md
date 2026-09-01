@@ -178,7 +178,7 @@ $ vim sources/@me/method-render-bacon.prime
 $ prime compile sources/@me/method-render-bacon.prime --dir --output ./compiled
 
 # Query (via the generic MCP server)
-$ PRIME_DIR=$(pwd)/compiled bunx @prime-lang/mcp-server-core &
+$ AOE_CORPUS_DIR=$(pwd)/compiled bunx @prime-lang/mcp-server-core &
 $ # ... ask Claude Code about "rendering bacon"
 $ # ... or use the CLI:
 $ prime show @me/method-render-bacon
@@ -256,22 +256,22 @@ express in edges and kinds alone. Examples:
   composition contract?" Runtime validator that combines corpus
   knowledge with output parsing.
 
-Today, the generic `prime_query` tool covers atom search, related-edge
+Today, the generic `aoe_query` tool covers atom search, related-edge
 traversal, and projection-level resolution. Domain wrappers can compose
-these into higher-level workflows by chaining `prime_query` calls.
+these into higher-level workflows by chaining `aoe_query` calls.
 
 A first-class API for adding domain-specific MCP tools alongside
-`prime_query` (e.g. a `legal_check` tool that runs domain validators on
+`aoe_query` (e.g. a `legal_check` tool that runs domain validators on
 a text input) is on the v0.2 roadmap. Until then, domain authors who
 need custom tools can spawn a separate MCP server and forward
-`prime_query` requests to the core server via the
+`aoe_query` requests to the core server via the
 `@modelcontextprotocol/sdk` client — the same pattern the frontend
 corpus repo uses for its five-tool wrapper.
 
 To start the core server today, use the real command:
 
 ```bash
-PRIME_DIR=/abs/path/to/compiled bunx @prime-lang/mcp-server-core
+AOE_CORPUS_DIR=/abs/path/to/compiled bunx @prime-lang/mcp-server-core
 ```
 
 Or in `.mcp.json`:
@@ -282,7 +282,7 @@ Or in `.mcp.json`:
     "skill-wiki": {
       "command": "bunx",
       "args": ["@prime-lang/mcp-server-core"],
-      "env": { "PRIME_DIR": "/abs/path/to/compiled" }
+      "env": { "AOE_CORPUS_DIR": "/abs/path/to/compiled" }
     }
   }
 }
@@ -307,12 +307,12 @@ full. The minimum:
 
 ```bash
 # On your registry host
-PRIME_REGISTRY_TOKEN=secret bun run scripts/registry-server.ts \
+AOE_REGISTRY_TOKEN=secret bun run scripts/registry-server.ts \
   --port 7700 --root /var/lib/prime-store
 
 # On every author/runner machine
-export PRIME_REGISTRY=https://prime.team.example
-export PRIME_REGISTRY_TOKEN=...
+export AOE_REGISTRY=https://prime.team.example
+export AOE_REGISTRY_TOKEN=...
 
 # Push
 prime publish sources/@me/method-render-bacon.prime

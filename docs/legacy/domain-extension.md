@@ -71,7 +71,7 @@ Atoms from your corpus should appear in the results, ranked by relevance to your
 
 ## How Discovery Works
 
-At startup, `discoverDomains()` recursively walks the working directory (or `PRIME_DOMAINS_DIR`) looking for any `domain.yaml` file, up to **4 directory levels deep** (`MAX_DISCOVERY_DEPTH = 4`). The `node_modules/` directory and hidden directories are skipped automatically.
+At startup, `discoverDomains()` recursively walks the working directory (or `AOE_DOMAINS_DIR`) looking for any `domain.yaml` file, up to **4 directory levels deep** (`MAX_DISCOVERY_DEPTH = 4`). The `node_modules/` directory and hidden directories are skipped automatically.
 
 ```
 Startup
@@ -107,12 +107,12 @@ Ranked results returned to user
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PRIME_DOMAINS_DIR` | Current working directory | Override the corpus scan root. When set, only `*/domain.yaml` directly within this directory is scanned (one level, no recursion). |
+| `AOE_DOMAINS_DIR` | Current working directory | Override the corpus scan root. When set, only `*/domain.yaml` directly within this directory is scanned (one level, no recursion). |
 
 Example:
 
 ```bash
-PRIME_DOMAINS_DIR=/teams/legal/corpora prime query "cite-style for judicial opinions"
+AOE_DOMAINS_DIR=/teams/legal/corpora prime query "cite-style for judicial opinions"
 ```
 
 ---
@@ -128,7 +128,7 @@ corpora/<corpus-name>/domain.yaml        ← depth 2 (most common)
 packages/<pkg>/src/domain.yaml           ← depth 3
 ```
 
-The default scan root is the current working directory. Use `PRIME_DOMAINS_DIR` to override.
+The default scan root is the current working directory. Use `AOE_DOMAINS_DIR` to override.
 
 ---
 
@@ -400,7 +400,7 @@ Drop this at `corpora/my-existing-corpus/domain.yaml` and restart. Your atoms wi
 
 **Symptom:** The startup log does not show your domain name in the `config-driven domains loaded:` message.
 
-**Check 1: File depth.** The file must be within 4 directory levels of the working directory (or `PRIME_DOMAINS_DIR`).
+**Check 1: File depth.** The file must be within 4 directory levels of the working directory (or `AOE_DOMAINS_DIR`).
 
 ```bash
 ls corpora/my-domain/domain.yaml   # must exist

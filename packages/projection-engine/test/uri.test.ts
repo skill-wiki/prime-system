@@ -23,13 +23,13 @@ const scopedId: ProjectionUri = { ...plain, unitId: "@scope-x/unit-y" };
 describe("formatProjectionUri", () => {
   test("emits the §11.3 shape", () => {
     expect(formatProjectionUri(plain)).toBe(
-      "prime://tenant-a/cx@r-1/units/u-1/projections/pf-one/lv-wide",
+      "aoe://tenant-a/cx@r-1/units/u-1/projections/pf-one/lv-wide",
     );
   });
 
   test("percent-encodes an id containing '/' and '@' so the grammar stays unambiguous", () => {
     const raw = formatProjectionUri(scopedId);
-    expect(raw).toBe("prime://tenant-a/cx@r-1/units/%40scope-x%2Funit-y/projections/pf-one/lv-wide");
+    expect(raw).toBe("aoe://tenant-a/cx@r-1/units/%40scope-x%2Funit-y/projections/pf-one/lv-wide");
     expect(raw.split("/").length).toBe(9); // "prime:", "", tenant, corpus@rel, units, id, projections, profile, level
   });
 
@@ -77,41 +77,41 @@ describe("parseProjectionUri", () => {
   });
 
   test("rejects a missing 'units' marker", () => {
-    const parsed = parseProjectionUri("prime://tenant-a/cx@r-1/nodes/u-1/projections/pf-one/lv-wide");
+    const parsed = parseProjectionUri("aoe://tenant-a/cx@r-1/nodes/u-1/projections/pf-one/lv-wide");
     expect(parsed.ok).toBe(false);
     if (!parsed.ok) expect(parsed.reason).toContain("units");
   });
 
   test("rejects a missing 'projections' marker", () => {
-    const parsed = parseProjectionUri("prime://tenant-a/cx@r-1/units/u-1/views/pf-one/lv-wide");
+    const parsed = parseProjectionUri("aoe://tenant-a/cx@r-1/units/u-1/views/pf-one/lv-wide");
     expect(parsed.ok).toBe(false);
     if (!parsed.ok) expect(parsed.reason).toContain("projections");
   });
 
   test("rejects the wrong segment count", () => {
-    const parsed = parseProjectionUri("prime://tenant-a/cx@r-1/units/u-1/projections/pf-one");
+    const parsed = parseProjectionUri("aoe://tenant-a/cx@r-1/units/u-1/projections/pf-one");
     expect(parsed.ok).toBe(false);
     if (!parsed.ok) expect(parsed.reason).toContain("7 segments");
   });
 
   test("rejects a corpus without a release", () => {
-    const parsed = parseProjectionUri("prime://tenant-a/cx/units/u-1/projections/pf-one/lv-wide");
+    const parsed = parseProjectionUri("aoe://tenant-a/cx/units/u-1/projections/pf-one/lv-wide");
     expect(parsed.ok).toBe(false);
   });
 
   test("rejects an empty release after '@'", () => {
-    const parsed = parseProjectionUri("prime://tenant-a/cx@/units/u-1/projections/pf-one/lv-wide");
+    const parsed = parseProjectionUri("aoe://tenant-a/cx@/units/u-1/projections/pf-one/lv-wide");
     expect(parsed.ok).toBe(false);
   });
 
   test("rejects a NUL byte anywhere in the URI", () => {
-    const parsed = parseProjectionUri("prime://tenant-a/cx@r-1/units/u\0-1/projections/pf-one/lv-wide");
+    const parsed = parseProjectionUri("aoe://tenant-a/cx@r-1/units/u\0-1/projections/pf-one/lv-wide");
     expect(parsed.ok).toBe(false);
     if (!parsed.ok) expect(parsed.reason).toContain("NUL");
   });
 
   test("rejects invalid percent-encoding rather than throwing", () => {
-    const parsed = parseProjectionUri("prime://tenant-a/cx@r-1/units/%E0%A4%A/projections/pf-one/lv-wide");
+    const parsed = parseProjectionUri("aoe://tenant-a/cx@r-1/units/%E0%A4%A/projections/pf-one/lv-wide");
     expect(parsed.ok).toBe(false);
   });
 });

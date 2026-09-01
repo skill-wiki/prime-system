@@ -1,5 +1,5 @@
 /**
- * prime check <file> — Check a source file without emitting output.
+ * aoe check <file> — Check a source file without emitting output.
  *
  * This command used to run its *own* checker: regexes for `extends` and `name:`,
  * a branch per prime-v1 base type asserting which fields each one requires, and a
@@ -9,7 +9,7 @@
  *    statement, not something the CLI is allowed to believe.
  *  - §8.1: "CLI, MCP and scripts may no longer each copy the parse/check/emit
  *    stages" — that private checker was a second, diverging implementation of
- *    Phase 2, so `prime check` and `prime compile` could disagree about the same
+ *    Phase 2, so `aoe check` and `aoe compile` could disagree about the same
  *    file.
  *
  * Both are fixed by the same move: call the one compiler pipeline.
@@ -25,7 +25,7 @@ import type { Diagnostic } from '@skill-wiki/compiler';
 export async function checkCommand(args: string[]) {
   const file = args[0];
   if (!file) {
-    console.error('Usage: prime check <file.prime|SKILL.md>');
+    console.error('Usage: aoe check <file.prime|SKILL.md>');
     process.exit(1);
   }
 
@@ -38,7 +38,7 @@ export async function checkCommand(args: string[]) {
   const isPrime = file.endsWith('.prime');
   const isSkill = file.toLowerCase().includes('skill');
 
-  header(`Prime Check — ${basename(filePath)}`);
+  header(`AOE Check — ${basename(filePath)}`);
 
   const source = await readFile(filePath);
 
@@ -94,7 +94,7 @@ async function checkMarkdownFile(source: string, isSkill: boolean) {
     if (!source.includes('primes:') && !source.includes('prime:')) {
       diagnostics.push({
         level: 'suggestion',
-        message: 'This document references no units. Consider `prime decompose` to extract reusable knowledge.',
+        message: 'This document references no units. Consider `aoe decompose` to extract reusable knowledge.',
       });
     }
 

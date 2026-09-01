@@ -1,5 +1,5 @@
 /**
- * prime search <query> [--type <type>] [--tag <tag>]
+ * aoe search <query> [--type <type>] [--tag <tag>]
  */
 
 import { header, bold, gray, yellow } from '../utils/display';
@@ -11,7 +11,7 @@ export async function searchCommand(args: string[]) {
   const { query, type, tag } = parseSearchFlags(args);
 
   if (!query) {
-    console.error('Usage: prime search <query> [--type knowledge|method|rule] [--tag <tag>]');
+    console.error('Usage: aoe search <query> [--type knowledge|method|rule] [--tag <tag>]');
     process.exit(1);
   }
 

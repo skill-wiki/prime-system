@@ -138,12 +138,12 @@ describe("ProjectionEngine — the three transports end to end", () => {
     if (payload?.transport === "inline") expect(payload.content).toBe(BODIES["lv-wide"]);
   });
 
-  test("uri: a cross-environment consumer gets a prime:// identity", () => {
+  test("uri: a cross-environment consumer gets a aoe:// identity", () => {
     const result = engine().project([u1], request({ consumer: { transports: ["uri"] } }), scope);
     const payload = result.units[0]?.payload;
     expect(payload?.transport).toBe("uri");
     if (payload?.transport === "uri") {
-      expect(payload.uri).toBe("prime://tenant-a/cx@r-1/units/u-1/projections/pf-one/lv-wide");
+      expect(payload.uri).toBe("aoe://tenant-a/cx@r-1/units/u-1/projections/pf-one/lv-wide");
       expect(payload.uri).not.toContain(bundleRoot);
     }
   });

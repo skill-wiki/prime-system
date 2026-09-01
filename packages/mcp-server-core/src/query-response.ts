@@ -32,7 +32,7 @@ export interface QueryResponseResult extends QueryResult {
   resource_uri: string;
 }
 
-export interface PrimeQueryResponse {
+export interface AoeQueryResponse {
   results: QueryResponseResult[];
   total_index_tokens: number;
   snapshot: SnapshotRef;
@@ -47,7 +47,7 @@ export interface ResourceIdentity {
 }
 
 /**
- * A `prime_plan` response.
+ * A `aoe_plan` response.
  *
  * The `snapshot` field is deliberately the *same* `SnapshotRef` object the query
  * and show responses carry, not a re-derived copy. Phase 0's first acceptance
@@ -55,17 +55,17 @@ export interface ResourceIdentity {
  * them read one value makes that structural instead of a coincidence that a test
  * has to keep re-checking.
  */
-export interface PrimePlanResponse {
+export interface AoePlanResponse {
   plan: SelectionPlanIR;
   snapshot: SnapshotRef;
   diagnostics: readonly { code: string; message: string; severity: string }[];
 }
 
-/** Pure response formatter for `prime_plan`; transport-independent. */
-export function createPrimePlanResponse(
+/** Pure response formatter for `aoe_plan`; transport-independent. */
+export function createAoePlanResponse(
   snapshot: SnapshotRef,
   plan: SelectionPlanIR,
-): PrimePlanResponse {
+): AoePlanResponse {
   return {
     plan,
     snapshot,
@@ -80,17 +80,17 @@ export function createPrimePlanResponse(
 }
 
 /** Pure response formatter: suitable for transport-independent tests. */
-export function createPrimeQueryResponse(
+export function createAoeQueryResponse(
   snapshot: SnapshotRef,
   identity: ResourceIdentity,
   results: readonly QueryResult[],
   totalIndexTokens: number,
   diagnostics: readonly { code: string; message: string; severity: string }[] = [],
-): PrimeQueryResponse {
+): AoeQueryResponse {
   return {
     results: results.map((result) => ({
       ...result,
-      resource_uri: createPrimeResourceUri(identity, result.id, result.profile, result.level),
+      resource_uri: createAoeResourceUri(identity, result.id, result.profile, result.level),
     })),
     total_index_tokens: totalIndexTokens,
     snapshot,
@@ -105,7 +105,7 @@ export function createPrimeQueryResponse(
  * This replaces a locally-built grammar that had six segments and neither a
  * tenant nor a profile; nothing in the repo could parse it. See the lane report.
  */
-export function createPrimeResourceUri(
+export function createAoeResourceUri(
   identity: ResourceIdentity,
   unitId: string,
   profile: string,

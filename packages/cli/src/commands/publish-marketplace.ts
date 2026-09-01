@@ -1,5 +1,5 @@
 /**
- * prime publish-marketplace — Submit your compiled Prime corpus to the
+ * aoe publish-marketplace — Submit your compiled Prime corpus to the
  * Skill Wiki marketplace via an automated GitHub PR.
  *
  * What it does:
@@ -69,7 +69,7 @@ export async function publishMarketplaceCommand(args: string[]) {
   const compiledPath = join(cwd, compiledSubdir);
   if (!existsSync(compiledPath)) {
     error(`Compiled directory not found: ${compiledSubdir}/`);
-    info(`Run \`prime compile\` (or \`bun scripts/build-atom-dirs.ts\`) first.`);
+    info(`Run \`aoe compile\` (or \`bun scripts/build-atom-dirs.ts\`) first.`);
     process.exit(1);
   }
   const indexXml = join(compiledPath, '_index.xml');
@@ -250,10 +250,10 @@ function parseArgs(args: string[]): PublishOpts {
 
 function printHelp() {
   console.log(`
-${bold('prime publish-marketplace')} — automate a PR to skill-wiki/skill-wiki.github.io
+${bold('aoe publish-marketplace')} — automate a PR to skill-wiki/skill-wiki.github.io
 
 Usage:
-  prime publish-marketplace [options]
+  aoe publish-marketplace [options]
 
 Options:
   --description <text>   One-line marketplace card copy (defaults to pack.yaml description)
@@ -359,7 +359,7 @@ function renderPrBody(pack: PackManifest, repo: string, slug: string): string {
 - [x] Repo is public and readable by the marketplace builder
 - [ ] Tags reviewed by the maintainer
 
-Submitted via \`prime publish-marketplace\`.
+Submitted via \`aoe publish-marketplace\`.
 `;
 }
 

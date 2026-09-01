@@ -1,5 +1,5 @@
 /**
- * prime install [name[@version]] — Install a Prime from registry or install all from SKILL.md.
+ * aoe install [name[@version]] — Install a Prime from registry or install all from SKILL.md.
  */
 
 import { resolve, join } from 'path';
@@ -42,7 +42,7 @@ async function installSingle(nameVersion: string) {
         return;
       }
       error(`Prime '${name}' not found on prime.dev or locally`);
-      info(`Create it with: prime init ${name}`);
+      info(`Create it with: aoe init ${name}`);
       process.exit(1);
     }
 
@@ -85,7 +85,7 @@ async function installFromSkill() {
   const skillPath = resolve('SKILL.md');
   if (!fileExists(skillPath)) {
     error('No SKILL.md found in current directory.');
-    info('Specify a Prime name: prime install <name>');
+    info('Specify a Prime name: aoe install <name>');
     process.exit(1);
   }
 

@@ -1,5 +1,5 @@
 /**
- * prime info <name> — View Prime details.
+ * aoe info <name> — View Prime details.
  */
 
 import { resolve, join } from 'path';
@@ -11,7 +11,7 @@ import { paintFor } from '../utils/kind-color';
 export async function infoCommand(args: string[]) {
   const name = args[0];
   if (!name) {
-    console.error('Usage: prime info <name>');
+    console.error('Usage: aoe info <name>');
     process.exit(1);
   }
 
@@ -80,7 +80,7 @@ export async function infoCommand(args: string[]) {
       const compiledTokens = estimateTokens(compiled);
       console.log(`  Compiled: ${green('✅')} (${sourceTokens} → ${compiledTokens} tokens, ${Math.round((1 - compiledTokens/sourceTokens)*100)}% reduction)`);
     } else {
-      console.log(`  Compiled: ${gray('—')} (run prime compile)`);
+      console.log(`  Compiled: ${gray('—')} (run aoe compile)`);
     }
   }
 

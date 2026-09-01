@@ -1,5 +1,5 @@
 /**
- * prime init — Create a new unit source file.
+ * aoe init — Create a new unit source file.
  *
  * The scaffold is deliberately type-agnostic. It used to carry three full field
  * skeletons (one per prime-v1 base type) listing that a Method has
@@ -14,7 +14,7 @@ import { writeFile, fileExists } from '../utils/fs';
 import { header, success, info, bold, cyan, gray } from '../utils/display';
 
 export async function initCommand(args: string[]) {
-  header('Create a new Prime unit');
+  header('Create a new AOE unit');
 
   const positional = args.filter((a) => !a.startsWith('-'));
   const name = positional[0] || (await prompt('Unit name (kebab-case): '));
@@ -25,7 +25,7 @@ export async function initCommand(args: string[]) {
       : positional[1] || (await prompt('Type name (as declared by your model package): '));
 
   if (!name || !typeName) {
-    console.error('Usage: prime init <unit-name> --type <TypeName>');
+    console.error('Usage: aoe init <unit-name> --type <TypeName>');
     process.exit(1);
   }
 
@@ -45,8 +45,8 @@ export async function initCommand(args: string[]) {
   console.log();
   info(`Fields for type ${bold(typeName)} come from your model package, not from this CLI.`);
   console.log(cyan('  Next steps:'));
-  console.log(`  1. Add the fields ${typeName} declares (see your model package, or run prime sdk generate)`);
-  console.log(`  2. Run ${bold('prime compile ' + fileName)} to check and compile`);
+  console.log(`  1. Add the fields ${typeName} declares (see your model package, or run aoe sdk generate)`);
+  console.log(`  2. Run ${bold('aoe compile ' + fileName)} to check and compile`);
   console.log(`  ${gray('Relations are written as  <verb> "@scope/target"  — any verb your model declares.')}`);
 }
 

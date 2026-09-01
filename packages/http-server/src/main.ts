@@ -22,7 +22,7 @@
  * `--bundle` path instead.
  *
  * Configuration is environment-only for the credentials
- * (`PRIME_HTTP_CREDENTIALS`), so a token is never an argv string visible in
+ * (`AOE_HTTP_CREDENTIALS`), so a token is never an argv string visible in
  * `ps` output.
  */
 
@@ -38,12 +38,12 @@ import { createEmbeddedTransport, type EmbeddedHost } from "@skill-wiki/sdk";
 import { createBearerAuthenticator, parseCredentialSpec, type Credential } from "./auth.ts";
 import { describeExposure, startServer, type RunningServer } from "./server.ts";
 
-const CREDENTIALS_ENV = "PRIME_HTTP_CREDENTIALS";
-const HOST_MODULE_ENV = "PRIME_HTTP_HOST_MODULE";
-const HOSTNAME_ENV = "PRIME_HTTP_HOSTNAME";
-const PORT_ENV = "PRIME_HTTP_PORT";
-const OTLP_ENV = "PRIME_OTLP_TRACES_ENDPOINT";
-const SERVICE_NAME = "kernary-http-server";
+const CREDENTIALS_ENV = "AOE_HTTP_CREDENTIALS";
+const HOST_MODULE_ENV = "AOE_HTTP_HOST_MODULE";
+const HOSTNAME_ENV = "AOE_HTTP_HOSTNAME";
+const PORT_ENV = "AOE_HTTP_PORT";
+const OTLP_ENV = "AOE_OTLP_TRACES_ENDPOINT";
+const SERVICE_NAME = "aoe-http-server";
 
 /** What a host module must default-export as `createHost`. */
 export interface HttpHostModule {
@@ -53,7 +53,7 @@ export interface HttpHostModule {
 export interface HttpHost {
   readonly engine: QueryEngineContext;
   readonly embedded: Omit<EmbeddedHost, "tracer" | "traceParent">;
-  /** Overrides `PRIME_HTTP_CREDENTIALS` when the deployment holds its own secret store. */
+  /** Overrides `AOE_HTTP_CREDENTIALS` when the deployment holds its own secret store. */
   readonly credentials?: readonly Credential[];
 }
 

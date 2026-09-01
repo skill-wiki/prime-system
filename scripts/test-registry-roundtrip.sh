@@ -50,7 +50,7 @@ if ! curl -sS "http://localhost:$PORT/healthz" >/dev/null 2>&1; then
 fi
 
 echo "==> publish @example/method-make-tea"
-PRIME_REGISTRY="http://localhost:$PORT" \
+AOE_REGISTRY="http://localhost:$PORT" \
   bun "$ROOT/packages/cli/src/index.ts" publish \
   "$ROOT/examples/hello-world/primes/sources/@example/method-make-tea.prime" 2>&1 | tail -3
 
@@ -67,7 +67,7 @@ echo "==> install into clean dir with --remote"
 # deps are expected to 404). That's the correct round-trip behaviour — we
 # care that the requested atom landed on disk, not that ALL deps resolved.
 set +e
-PRIME_REGISTRY="http://localhost:$PORT" \
+AOE_REGISTRY="http://localhost:$PORT" \
   bun "$ROOT/packages/cli/src/index.ts" install \
   @example/method-make-tea --dir "$DEST" --no-related 2>&1 | tail -8
 INSTALL_RC=$?

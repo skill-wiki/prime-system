@@ -114,7 +114,7 @@ function manifestCheck(root: string): { outcome: CheckOutcome; loaded?: LoadedCo
 /**
  * The check that could not be put at the production entry.
  *
- * `manifest.corpus` is the corpus segment of every §11.3 `prime://` URI, and
+ * `manifest.corpus` is the corpus segment of every §11.3 `aoe://` URI, and
  * `loadCorpusSnapshot` accepts any non-empty string there — so a bundle whose
  * identity was derived from its output directory basename publishes a
  * machine-local name as corpus identity. Enforcing `NAMESPACE` inside the loader
@@ -127,7 +127,7 @@ function namespaceCheck(loaded: LoadedCorpusSnapshot | undefined): CheckOutcome 
   const corpus = loaded.snapshot.corpus;
   return check("BC-NAMESPACE", "Manifest corpus is a formal namespace", NAMESPACE.test(corpus) ? [] : [
     finding("BUNDLE_CORPUS_NOT_NAMESPACE",
-      `Manifest corpus "${corpus}" is not a formal namespace ("domain.tld/path"), so serving this bundle publishes a machine-local name in its prime:// URIs.`,
+      `Manifest corpus "${corpus}" is not a formal namespace ("domain.tld/path"), so serving this bundle publishes a machine-local name in its aoe:// URIs.`,
       "error", { subject: corpus }),
   ]);
 }

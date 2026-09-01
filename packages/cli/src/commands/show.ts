@@ -1,5 +1,5 @@
 /**
- * prime show <@scope/name> — Print atom details and all relationship refs.
+ * aoe show <@scope/name> — Print atom details and all relationship refs.
  *
  * Options:
  *   --dir <path>   Override default sources directory
@@ -22,14 +22,14 @@ export async function showCommand(args: string[]): Promise<void> {
   }
 
   if (!id) {
-    console.error('Usage: prime show <@scope/name> [--json]');
+    console.error('Usage: aoe show <@scope/name> [--json]');
     process.exit(1);
   }
 
   const atom = loadAtom(id, sourcesDir);
   if (!atom) {
     console.error(`Atom '${id}' not found in ${sourcesDir}`);
-    console.error('Tip: run  prime list  to see all available atoms.');
+    console.error('Tip: run  aoe list  to see all available atoms.');
     process.exit(1);
   }
 

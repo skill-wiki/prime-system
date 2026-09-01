@@ -1,6 +1,6 @@
 # Releases and migrations
 
-A Kernary release changes an immutable package or snapshot identity. Publishing,
+An AOE release changes an immutable package or snapshot identity. Publishing,
 activation, migration, and rollback are separate operations.
 
 ## Build and verify

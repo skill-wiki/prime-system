@@ -56,10 +56,10 @@ v2 CLI.
 ## Auth
 
 Both servers use a single Bearer token, set at startup via
-`PRIME_REGISTRY_TOKEN`:
+`AOE_REGISTRY_TOKEN`:
 
 ```bash
-PRIME_REGISTRY_TOKEN=secret bun scripts/registry-server.ts
+AOE_REGISTRY_TOKEN=secret bun scripts/registry-server.ts
 ```
 
 When set:
@@ -69,7 +69,7 @@ When set:
 - `PUT /atoms/<id>.prime` requires `Authorization: Bearer secret`,
   else `401`
 
-If `PRIME_REGISTRY_TOKEN` is unset, **the registry is fully open** —
+If `AOE_REGISTRY_TOKEN` is unset, **the registry is fully open** —
 anyone can `PUT`. That's intentional for local dev and the round-trip
 script; do not run an unprotected registry on a public host.
 
@@ -147,7 +147,7 @@ bun run scripts/registry-server.ts
 bun run scripts/registry-server.ts --port 8080 --root /var/lib/prime-registry
 
 # Require auth
-PRIME_REGISTRY_TOKEN=secret bun run scripts/registry-server.ts
+AOE_REGISTRY_TOKEN=secret bun run scripts/registry-server.ts
 ```
 
 The script is the right thing to run when you want to test
@@ -179,13 +179,13 @@ service has no opinions about TLS.
 ## Push / pull from the CLI
 
 The CLI talks to whichever server you point it at via
-`--remote <url>` or the `PRIME_REGISTRY` env var.
+`--remote <url>` or the `AOE_REGISTRY` env var.
 
 **Push**:
 
 ```bash
-$ PRIME_REGISTRY=http://localhost:7700 \
-  PRIME_REGISTRY_TOKEN=secret \
+$ AOE_REGISTRY=http://localhost:7700 \
+  AOE_REGISTRY_TOKEN=secret \
   prime publish primes/@community/persona-stripe.prime
 
 ═══ Publishing persona-stripe.prime
@@ -262,7 +262,7 @@ Prime has no central registry. The CLI talks to whichever URL it's
 given. Resolution order:
 
 1. `--remote <url>` flag (highest precedence)
-2. `PRIME_REGISTRY` env var
+2. `AOE_REGISTRY` env var
 3. (no default — local-only mode)
 
 A team can run their own registry, alongside or in place of any
@@ -277,7 +277,7 @@ another):
 curl -sS http://upstream.example/atoms | jq -r '.atoms[]' | while read id; do
   curl -sS "http://upstream.example/atoms/${id}.prime" \
     | curl -sS -X PUT --data-binary @- \
-        -H "Authorization: Bearer $PRIME_REGISTRY_TOKEN" \
+        -H "Authorization: Bearer $AOE_REGISTRY_TOKEN" \
         "http://your-registry.example/atoms/${id}.prime"
 done
 ```
@@ -321,20 +321,20 @@ To stay honest:
 ```bash
 bun run scripts/registry-server.ts --port 7700 --root ~/prime-store
 # In another terminal:
-PRIME_REGISTRY=http://localhost:7700 prime publish primes/foo.prime
-PRIME_REGISTRY=http://localhost:7700 prime install @scope/foo
+AOE_REGISTRY=http://localhost:7700 prime publish primes/foo.prime
+AOE_REGISTRY=http://localhost:7700 prime install @scope/foo
 ```
 
 ### Team registry with auth
 
 ```bash
 # On your team server
-PRIME_REGISTRY_TOKEN=$(openssl rand -hex 32) \
+AOE_REGISTRY_TOKEN=$(openssl rand -hex 32) \
   bun run scripts/registry-server.ts --port 7700 --root /var/lib/prime-store
 
 # Distribute the token to teammates via your secret manager. Each member:
-export PRIME_REGISTRY=https://prime.team.example
-export PRIME_REGISTRY_TOKEN=...
+export AOE_REGISTRY=https://prime.team.example
+export AOE_REGISTRY_TOKEN=...
 prime publish primes/whatever.prime
 ```
 

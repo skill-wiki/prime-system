@@ -1,8 +1,8 @@
 # Build your first domain runtime
 
-Kernary gives an application a domain it can actually use. You provide a
+AOE gives an application a domain it can actually use. You provide a
 Model Package (the vocabulary and rules) and a Corpus Package (the knowledge
-and evidence). Kernary compiles them into a verified snapshot that an Agent or
+and evidence). AOE compiles them into a verified snapshot that an Agent or
 application can query, inspect, and act through.
 
 You do not need to put an entire handbook in a prompt, teach the engine what a
@@ -64,15 +64,15 @@ bun scripts/build-atom-dirs.ts \
 ```
 
 The explicit model path is important: the example vocabulary belongs to the
-example package, not to Kernary Core.
+example package, not to AOE Core.
 
 ### 3. Connect a client
 
 For MCP clients, mount the exact snapshot and model used to build it:
 
 ```bash
-PRIME_DIR=examples/hello-world/primes/compiled \
-PRIME_MODEL_DIR=compat/prime-v1-model \
+AOE_CORPUS_DIR=examples/hello-world/primes/compiled \
+AOE_MODEL_DIR=compat/prime-v1-model \
 bun packages/mcp-server-core/src/index.ts
 ```
 
@@ -92,7 +92,7 @@ my-domain/
 └── README.md
 ```
 
-The Model Package tells Kernary what a valid object and relationship look like.
+The Model Package tells AOE what a valid object and relationship look like.
 The Corpus Package supplies the objects and their sources. An Adapter can
 import an external catalogue or bind a provider. A Domain Package is the
 deployable composition of those pieces.

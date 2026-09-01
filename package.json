@@ -1,7 +1,7 @@
 {
   "name": "kernary-engine",
   "version": "0.2.0",
-  "description": "Kernary — a model-driven ontology engine for agents and domain-aware software.",
+  "description": "AOE — Agent Ontology Engine for domain-aware software.",
   "license": "Apache-2.0",
   "homepage": "https://github.com/skill-wiki/kernary-engine",
   "repository": {
@@ -12,9 +12,10 @@
     "url": "https://github.com/skill-wiki/kernary-engine/issues"
   },
   "keywords": [
-    "kernary",
-    "prime",
-    "knowledge-protocol",
+    "aoe",
+    "agent-ontology-engine",
+    "ontology",
+    "agent-platform",
     "ai-agents",
     "mcp",
     "claude",

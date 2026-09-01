@@ -27,7 +27,7 @@ The protocol baseline: implementation separated from any domain corpus.
 🔵 Generic validator-core (L1/L2/L3 framework, HTML-agnostic) — not shipped in v0.1.0
 ✅ HTTP registry with publish / install
 ✅ `prime` CLI with 10 verbs
-✅ Generic MCP server (`prime_query` over any compiled corpus)
+✅ Generic MCP server (`aoe_query` over any compiled corpus)
 ✅ 3 example corpora demonstrating cross-domain applicability
 ✅ Protocol spec at `spec/PRIME-PROTOCOL-v1.md`
 ✅ Apache-2.0 license + NOTICE attributions
@@ -45,7 +45,7 @@ The atom DSL allows `version: "1.2.0"` and a status field:
 the compiler does nothing with them — `deprecated` atoms appear in retrieval
 without warnings.
 
-Plan: when a `deprecated` atom is selected by `prime_query`, the response
+Plan: when a `deprecated` atom is selected by `aoe_query`, the response
 includes a `warnings: [{ kind: "deprecated", atom_id, message, replacement }]`
 field. The runtime API surfaces this; the CLI prints a yellow warning line.
 
@@ -95,8 +95,8 @@ scoring plugin and applies that plugin's retrieval axes and validators.
 
 ### 🔵 Multi-corpus MCP
 
-The MCP server supports multiple corpora via multiple `PRIME_DIR`-equivalent
-env vars or a config file. The generic `prime_query` tool gains an optional
+The MCP server supports multiple corpora via multiple `AOE_CORPUS_DIR`-equivalent
+env vars or a config file. The generic `aoe_query` tool gains an optional
 `corpus:` parameter. If omitted, the runtime infers from intent.
 
 ### ⚪ Auto-domain disambiguation
@@ -135,7 +135,7 @@ and feeds it back into the corpus.
 
 ### 🔵 Telemetry ingest API
 
-A small, opt-in HTTP endpoint the runtime can POST to on every `prime_query`:
+A small, opt-in HTTP endpoint the runtime can POST to on every `aoe_query`:
 intent, kinds asked, ids returned, projection level, hit / miss, latency. No
 content, no PII. Off by default; enabled per-corpus via `domain.yaml`.
 
@@ -209,7 +209,7 @@ protocol pays its keep.
 
 ### ⚪ Citation-precision metric
 
-Of the atoms `prime_query` returned, how many appeared in the agent's final
+Of the atoms `aoe_query` returned, how many appeared in the agent's final
 output? A high-precision corpus is one whose retrieval is well-calibrated;
 a low-precision corpus is over-fetching or under-using.
 

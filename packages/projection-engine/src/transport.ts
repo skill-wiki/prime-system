@@ -7,7 +7,7 @@
  *
  *   path    → controlled absolute path/handle, content never read (local agent)
  *   inline  → content, path withheld (remote MCP)
- *   uri     → prime:// resource URI, resolvable by a local adapter (§11.3)
+ *   uri     → aoe:// resource URI, resolvable by a local adapter (§11.3)
  *
  * The `path` variant deliberately reuses the same containment check as `inline`:
  * returning an unvalidated path is as much an escape as reading one.

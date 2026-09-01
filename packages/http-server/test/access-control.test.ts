@@ -36,7 +36,7 @@ describe("an unauthenticated request reaches nothing", () => {
     expect(body.message).toBe("Valid credentials are required.");
     // The engine was never reached: no plan span exists, so nothing was planned
     // and nothing was read out of the corpus.
-    expect(h.sink.names().filter(name => name.startsWith("prime.query"))).toEqual([]);
+    expect(h.sink.names().filter(name => name.startsWith("aoe.query"))).toEqual([]);
   });
 
   test("every non-health route rejects an anonymous caller", async () => {

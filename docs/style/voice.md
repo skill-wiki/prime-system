@@ -1,4 +1,4 @@
-# Kernary documentation voice
+# AOE documentation voice
 
 Write like a builder explaining a system they are responsible for.
 

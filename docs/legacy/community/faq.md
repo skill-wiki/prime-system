@@ -104,8 +104,8 @@ can read atoms directly using its `Read` tool. The index is at
 `compiled/_index.xml`. Individual atoms are at `compiled/<atom-id>/summary.json`,
 `compiled/<atom-id>/core.json`, `compiled/<atom-id>/full.json`.
 
-The MCP server (`bunx @prime-lang/mcp-server-core` with `PRIME_DIR` set) is a convenience layer that wraps this
-filesystem access with a structured query interface (`prime_query`) and handles
+The MCP server (`bunx @prime-lang/mcp-server-core` with `AOE_CORPUS_DIR` set) is a convenience layer that wraps this
+filesystem access with a structured query interface (`aoe_query`) and handles
 edge traversal. It is useful when:
 
 - You want to expose the corpus to an agent that doesn't have direct filesystem
@@ -228,7 +228,7 @@ serves only that corpus. No atom from Tenant A is visible to Tenant B's server.
 **Namespace isolation within a shared corpus.** If running a shared corpus is
 preferable (e.g., for a SaaS product where tenants each contribute atoms to a
 shared pool), the `@scope/` prefix in atom IDs provides namespace isolation.
-`prime_query` can be filtered by scope prefix. The `scope` atom kind exists
+`aoe_query` can be filtered by scope prefix. The `scope` atom kind exists
 specifically to declare the boundary of a knowledge domain within a shared
 corpus.
 
@@ -243,7 +243,7 @@ delegates access control to the OS.
 
 **Microseconds to low milliseconds** for a compiled corpus loaded in memory.
 
-The MCP server loads all compiled JSON files at startup. A `prime_query` call
+The MCP server loads all compiled JSON files at startup. A `aoe_query` call
 with `scope: "search"` scans the in-memory atom list and scores each atom. For a
 1,000-atom corpus, this is a linear scan over ~1,000 records with simple
 arithmetic — typically under 1 ms.
@@ -349,7 +349,7 @@ configurable weights):
    `summary`, `description`, or tag fields. This is the baseline signal.
 
 2. **Kind boost.** Different atom kinds can be weighted differently depending on
-   the corpus configuration. Boosts are set via `PRIME_KIND_BOOSTS` (a JSON map
+   the corpus configuration. Boosts are set via `AOE_KIND_BOOSTS` (a JSON map
    of kind → float) or via `domain.yaml`. By default, all 28 kinds have equal
    weight. A frontend corpus might boost `persona` and `template`; a security
    corpus might boost `rule` and `check`; a recipe corpus might boost `step` and
@@ -369,7 +369,7 @@ configurable weights):
    and completeness. It acts as a tiebreaker.
 
 The final score is a weighted product of these five axes. The weights are exposed
-in the corpus manifest and can be overridden per-query via the `prime_query`
+in the corpus manifest and can be overridden per-query via the `aoe_query`
 interface.
 
 Topic synonyms (e.g., mapping "字体" and "typography" and "font" to the same

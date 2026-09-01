@@ -51,11 +51,11 @@ v1 的 CLI 只用 `/atoms/<id>.prime` 这条路。`/api/primes/...` 那组是
 
 ## 鉴权
 
-两个 server 都用一个 Bearer token，启动时通过环境变量 `PRIME_REGISTRY_TOKEN`
+两个 server 都用一个 Bearer token，启动时通过环境变量 `AOE_REGISTRY_TOKEN`
 设：
 
 ```bash
-PRIME_REGISTRY_TOKEN=secret bun scripts/registry-server.ts
+AOE_REGISTRY_TOKEN=secret bun scripts/registry-server.ts
 ```
 
 设了之后：
@@ -63,7 +63,7 @@ PRIME_REGISTRY_TOKEN=secret bun scripts/registry-server.ts
 - `GET` 不需要鉴权（registry 默认读公开）
 - `PUT /atoms/<id>.prime` 必须带 `Authorization: Bearer secret`，否则 `401`
 
-如果 `PRIME_REGISTRY_TOKEN` 没设，**registry 完全开放** —— 任何人都
+如果 `AOE_REGISTRY_TOKEN` 没设，**registry 完全开放** —— 任何人都
 能 `PUT`。本地开发和回环脚本里这是故意的；不要把没保护的 registry
 开到公网。
 
@@ -138,7 +138,7 @@ bun run scripts/registry-server.ts
 bun run scripts/registry-server.ts --port 8080 --root /var/lib/prime-registry
 
 # 加鉴权
-PRIME_REGISTRY_TOKEN=secret bun run scripts/registry-server.ts
+AOE_REGISTRY_TOKEN=secret bun run scripts/registry-server.ts
 ```
 
 要端到端测 `prime publish` / `prime install --remote` 而不想架一个
@@ -167,14 +167,14 @@ TLS 没意见。
 
 ## 用 CLI 推 / 拉
 
-CLI 通过 `--remote <url>` 或 `PRIME_REGISTRY` 环境变量指向哪个
+CLI 通过 `--remote <url>` 或 `AOE_REGISTRY` 环境变量指向哪个
 server 就跟哪个说话。
 
 **Push**：
 
 ```bash
-$ PRIME_REGISTRY=http://localhost:7700 \
-  PRIME_REGISTRY_TOKEN=secret \
+$ AOE_REGISTRY=http://localhost:7700 \
+  AOE_REGISTRY_TOKEN=secret \
   prime publish primes/@community/persona-stripe.prime
 
 ═══ Publishing persona-stripe.prime
@@ -246,7 +246,7 @@ bash scripts/test-registry-roundtrip.sh
 Prime 没有中央 registry。CLI 听给的 URL。优先级：
 
 1. `--remote <url>` flag（最高）
-2. `PRIME_REGISTRY` 环境变量
+2. `AOE_REGISTRY` 环境变量
 3. （没默认值 —— 退到本地模式）
 
 团队可以自架 registry，和公共 registry 并存或替代。Atom id 带
@@ -259,7 +259,7 @@ scope（`@scope/name`），团队拿一个自己的 scope 就和别人零冲突�
 curl -sS http://upstream.example/atoms | jq -r '.atoms[]' | while read id; do
   curl -sS "http://upstream.example/atoms/${id}.prime" \
     | curl -sS -X PUT --data-binary @- \
-        -H "Authorization: Bearer $PRIME_REGISTRY_TOKEN" \
+        -H "Authorization: Bearer $AOE_REGISTRY_TOKEN" \
         "http://your-registry.example/atoms/${id}.prime"
 done
 ```
@@ -298,20 +298,20 @@ done
 ```bash
 bun run scripts/registry-server.ts --port 7700 --root ~/prime-store
 # 另一个终端：
-PRIME_REGISTRY=http://localhost:7700 prime publish primes/foo.prime
-PRIME_REGISTRY=http://localhost:7700 prime install @scope/foo
+AOE_REGISTRY=http://localhost:7700 prime publish primes/foo.prime
+AOE_REGISTRY=http://localhost:7700 prime install @scope/foo
 ```
 
 ### 团队 registry，带鉴权
 
 ```bash
 # 团队服务器上
-PRIME_REGISTRY_TOKEN=$(openssl rand -hex 32) \
+AOE_REGISTRY_TOKEN=$(openssl rand -hex 32) \
   bun run scripts/registry-server.ts --port 7700 --root /var/lib/prime-store
 
 # 通过你的 secret manager 把 token 发给队友。每人：
-export PRIME_REGISTRY=https://prime.team.example
-export PRIME_REGISTRY_TOKEN=...
+export AOE_REGISTRY=https://prime.team.example
+export AOE_REGISTRY_TOKEN=...
 prime publish primes/whatever.prime
 ```
 

@@ -102,15 +102,15 @@ inspect.
 Boot the generic MCP server against the corpus:
 
 ```bash
-PRIME_DIR=primes/compiled bun ../../packages/mcp-server-core/src/index.ts
+AOE_CORPUS_DIR=primes/compiled bun ../../packages/mcp-server-core/src/index.ts
 # [prime-mcp-core] Loading corpus index...
 # [prime-mcp-core] 5 atoms · 712 tokens · 1 clusters
 # [prime-mcp-core] domains: 0 (no domain.yaml found — plain ranking active)
-# [prime-mcp-core] ready · tool: prime_query · stdio transport active
+# [prime-mcp-core] ready · tool: aoe_query · stdio transport active
 ```
 
 The server speaks Model Context Protocol on stdio. Any MCP-compatible
-client — including Claude Code — can call the `prime_query` tool.
+client — including Claude Code — can call the `aoe_query` tool.
 There is no separate CLI query command; queries go through the MCP tool.
 
 ---
@@ -126,18 +126,18 @@ servers):
     "skill-wiki": {
       "command": "bunx",
       "args": ["@prime-lang/mcp-server-core"],
-      "env": { "PRIME_DIR": "/abs/path/to/your/compiled" }
+      "env": { "AOE_CORPUS_DIR": "/abs/path/to/your/compiled" }
     }
   }
 }
 ```
 
-Restart your agent. The tool `prime_query` will appear in the agent's
+Restart your agent. The tool `aoe_query` will appear in the agent's
 tool list. From inside a session:
 
-> *Use prime_query to find atoms about making tea, then write a recipe.*
+> *Use aoe_query to find atoms about making tea, then write a recipe.*
 
-The agent calls `prime_query("make tea")`, gets back atom IDs at chosen
+The agent calls `aoe_query("make tea")`, gets back atom IDs at chosen
 levels, calls `Read` on the chunk paths, and synthesizes a recipe from
 the typed inputs.
 
@@ -190,7 +190,7 @@ git clone https://github.com/skill-wiki/prime-corpus-frontend.git
 cd prime-corpus-frontend
 bun install
 bun run build           # compiles the 899 atoms
-PRIME_DIR=compiled bun ../prime-system/packages/mcp-server-core/src/index.ts
+AOE_CORPUS_DIR=compiled bun ../prime-system/packages/mcp-server-core/src/index.ts
 ```
 
 This corpus has its own MCP wrapper (5 tools instead of 1, with intent
@@ -211,9 +211,9 @@ for the wired-up integration.
 | `[L3] cycle detected: A → B → A` | Two atoms `requires` each other | Pick one direction; replace the other with `enhances` |
 | `[L3] contradicts edge between active atoms` | Two atoms claim opposing things and both are active | Mark one `deprecated` or remove the contradicts edge if intentional |
 | Empty `chunks/full.md` for a persona | Chunker doesn't know about a custom field | Filed as known limitation — see [roadmap](./community/roadmap.md). Add field name to chunker include-list. |
-| `prime_query` returns nothing | Index not loaded / wrong --corpus path | Confirm `_index.xml` exists in the path |
+| `aoe_query` returns nothing | Index not loaded / wrong --corpus path | Confirm `_index.xml` exists in the path |
 | MCP server starts but agent can't see the tool | MCP transport mismatch / server not registered in agent config | Check agent's MCP server logs for connection errors |
-| L2 semantic check is slow | Each atom triggers an LLM call | Set `PRIME_L2_BATCH=true` to batch (faster) or unset `DEEPSEEK_API_KEY` to skip entirely |
+| L2 semantic check is slow | Each atom triggers an LLM call | Set `AOE_L2_BATCH=true` to batch (faster) or unset `DEEPSEEK_API_KEY` to skip entirely |
 
 ---
 

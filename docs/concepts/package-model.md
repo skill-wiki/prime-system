@@ -1,8 +1,8 @@
 # Package model
 
-Kernary is useful when your domain is more than a pile of documents: you need
+AOE is useful when your domain is more than a pile of documents: you need
 named things, relationships, predictable retrieval, and safe operations. A
-Package is the unit you own and publish. It tells Kernary what your domain is,
+Package is the unit you own and publish. It tells AOE what your domain is,
 what knowledge belongs to it, and which operations an Agent may request.
 
 ## The four packages you can use
@@ -33,7 +33,7 @@ It declares:
   conditions.
 - **Validators and migrations** — how outputs are checked and releases evolve.
 
-The declarations are data. Kernary validates them against its meta-schema and
+The declarations are data. AOE validates them against its meta-schema and
 builds a lock with the exact model version and schema digest. It does not
 contain a list of business types that every domain must reuse.
 

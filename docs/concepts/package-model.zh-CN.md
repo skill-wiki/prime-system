@@ -1,8 +1,8 @@
 # Package 模型
 
 当你的领域不只是几份文档，而是需要有名字的对象、明确的关系、可预测的检索
-和安全的操作时，Kernary 才真正有用。Package 是你负责、发布和升级的单位：
-它告诉 Kernary 领域是什么、哪些知识属于它，以及 Agent 可以请求哪些操作。
+和安全的操作时，AOE 才真正有用。Package 是你负责、发布和升级的单位：
+它告诉 AOE 领域是什么、哪些知识属于它，以及 Agent 可以请求哪些操作。
 
 ## 你可以使用的四类 Package
 
@@ -28,7 +28,7 @@ Model Package 回答：“这里可以有什么？可以做什么？”它声明
 - **Policy 与 Capability**：谁可以请求 Action，以及需要满足什么条件；
 - **Validator 与 Migration**：如何检查输出，如何演进 Release。
 
-这些声明本身是数据。Kernary 用 meta-schema 验证它们，并在 Model Lock 中记录
+这些声明本身是数据。AOE 用 meta-schema 验证它们，并在 Model Lock 中记录
 确切版本与 schema digest；引擎不会内置一套所有领域都必须复用的业务类型。
 
 ### 一个简单的心智模型

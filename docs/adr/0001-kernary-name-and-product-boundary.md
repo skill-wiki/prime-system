@@ -1,4 +1,4 @@
-# ADR 0001: Kernary is the product; domain semantics stay external
+# ADR 0001: AOE is the product; domain semantics stay external
 
 - Status: accepted
 - Date: 2026-08-31
@@ -6,9 +6,9 @@
 
 ## Decision
 
-The product is named **Kernary**. Its category is **Model-driven Ontology Engine**.
+The product is named **AOE**. Its category is **Agent Ontology Engine**.
 
-Kernary compiles external domain ontologies and corpora into versioned runtimes
+AOE compiles external domain ontologies and corpora into versioned runtimes
 that agents and applications can query, plan against, and act through. The engine owns the declaration
 meta-schema, stable IR, compilation contracts, snapshot verification, query and
 action runtimes, SDKs, transports, and conformance tools. It does not own a
@@ -16,12 +16,12 @@ production ontology or corpus.
 
 The public description is:
 
-> Kernary compiles domain models and corpora into versioned runtimes agents can
+> AOE compiles domain models and corpora into versioned runtimes agents can
 > query, plan against, and act through.
 
 The short category line is:
 
-> A model-driven ontology engine for agents and domain-aware software.
+> An Agent Ontology Engine for domain-aware software.
 
 ## Package boundary
 
@@ -45,9 +45,9 @@ The name change does not silently rewrite stable identities.
 - `.prime` remains the source extension during the v0.2 compatibility window.
 - Existing `prime/*` protocol identifiers remain valid until a versioned
   migration defines replacements.
-- `prime` remains a CLI alias while `kernary` becomes the preferred command.
+- `prime` remains a CLI alias while `aoe` becomes the preferred command.
 - Published `@skill-wiki/*` packages remain compatibility packages until the
-  `@kernary/*` scope is created and dual publishing is verified.
+  `@aoe/*` scope is created and dual publishing is verified.
 - Existing GitHub repositories and Pages URLs keep their current remote names
   until external rename and redirect operations are completed.
 
@@ -61,9 +61,9 @@ The intended remote layout is:
 ```text
 kernary-engine
 kernary-frontend-design
-kernary-registry
-kernary-docs
-kernary-workspace
+aoe-registry
+aoe-docs
+aoe-workspace
 ```
 
 Local submodule paths are not renamed before their remotes exist. This avoids a
@@ -88,5 +88,5 @@ workspace-only rename that breaks clone and update instructions.
   the role of Skills.
 - **Prime** is retained for compatibility but is too overloaded to distinguish
   the current product.
-- **RunTome** and **Noetrail** were considered during naming. Kernary was selected
+- **RunTome** and **Noetrail** were considered during naming. AOE was selected
   for a more infrastructure-oriented identity.

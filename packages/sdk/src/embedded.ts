@@ -69,7 +69,7 @@ export interface EmbeddedHost {
  * it, for the same reason `query-engine` defines its own phase names: the string
  * a dashboard filters on and the string a test asserts on must have one source.
  */
-export const SPAN_PROJECTION = "prime.query.projection";
+export const SPAN_PROJECTION = "aoe.query.projection";
 
 /**
  * Render the plan's own projection assignments. The mapping comes from
@@ -137,10 +137,10 @@ export function createEmbeddedTransport(host: EmbeddedHost): EngineTransport {
       const projections = withSpan(tracer, SPAN_PROJECTION, spanOptions, span => {
         const materialized = materialize(selection, host.engine);
         span.setAttributes({
-          "prime.request_id": selection.requestId,
-          "prime.projection_loads": selection.projectionLoads.length,
-          "prime.materialized_units": materialized.length,
-          "prime.projection_refs": selection.projectionLoads.map(load => load.projectionRef),
+          "aoe.request_id": selection.requestId,
+          "aoe.projection_loads": selection.projectionLoads.length,
+          "aoe.materialized_units": materialized.length,
+          "aoe.projection_refs": selection.projectionLoads.map(load => load.projectionRef),
         });
         return materialized;
       });

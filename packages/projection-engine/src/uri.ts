@@ -1,7 +1,7 @@
 /**
  * Resource URI (plan §11.3):
  *
- *   prime://<tenant>/<corpus>@<release>/units/<id>/projections/<profile>/<level>
+ *   aoe://<tenant>/<corpus>@<release>/units/<id>/projections/<profile>/<level>
  *
  * A server-local absolute path is not a cross-environment protocol, so this is
  * the identity a remote consumer receives. Parse and format are exact inverses
@@ -10,7 +10,7 @@
  * the id is percent-encoded rather than split on delimiters.
  */
 
-export const PRIME_URI_SCHEME = "prime:";
+export const AOE_URI_SCHEME = "prime:";
 
 export interface ProjectionUri {
   readonly tenant: string;
@@ -48,7 +48,7 @@ export function formatProjectionUri(uri: ProjectionUri): string {
   assertNonEmpty("level", uri.level);
   const corpusAtRelease = `${encodeSegment(uri.corpus)}@${encodeSegment(uri.release)}`;
   return [
-    `prime://${encodeSegment(uri.tenant)}`,
+    `aoe://${encodeSegment(uri.tenant)}`,
     corpusAtRelease,
     "units",
     encodeSegment(uri.unitId),
@@ -60,9 +60,9 @@ export function formatProjectionUri(uri: ProjectionUri): string {
 
 export function parseProjectionUri(raw: string): UriParseResult {
   if (raw.includes("\0")) return { ok: false, reason: "Projection URI contains a NUL byte" };
-  if (!raw.startsWith("prime://")) return { ok: false, reason: "Projection URI must use the prime:// scheme" };
+  if (!raw.startsWith("aoe://")) return { ok: false, reason: "Projection URI must use the aoe:// scheme" };
 
-  const segments = raw.slice("prime://".length).split("/");
+  const segments = raw.slice("aoe://".length).split("/");
   if (segments.length !== 7) {
     return { ok: false, reason: `Projection URI must have 7 segments, found ${segments.length}` };
   }

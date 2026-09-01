@@ -68,7 +68,7 @@ describe("runBundleConformance", () => {
   test("rejects a corpus identity that is a directory basename, which the loader accepts", () => {
     // This is the whole reason the check lives here: `loadCorpusSnapshot` takes
     // `hello-world` without complaint, so BC-MANIFEST passes and BC-NAMESPACE is
-    // the only thing standing between a machine-local name and a prime:// URI.
+    // the only thing standing between a machine-local name and a aoe:// URI.
     const root = bundle({ corpus: "hello-world", units: GOOD });
     expect(outcome(root, "BC-MANIFEST").status).toBe("pass");
     const ns = outcome(root, "BC-NAMESPACE");

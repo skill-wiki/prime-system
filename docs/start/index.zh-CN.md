@@ -1,7 +1,7 @@
 # 构建你的第一个领域 Runtime
 
-Kernary 让应用真正拥有一个可以使用的领域。你提供 Model Package（词汇与
-规则）和 Corpus Package（知识与证据），Kernary 把它们编译成可验证的 Snapshot，
+AOE 让应用真正拥有一个可以使用的领域。你提供 Model Package（词汇与
+规则）和 Corpus Package（知识与证据），AOE 把它们编译成可验证的 Snapshot，
 供 Agent 或应用查询、查看并在授权后执行 Action。
 
 你不需要把整本手册塞进 Prompt，也不需要把 Ticket 写进引擎，更不需要为每个
@@ -60,7 +60,7 @@ bun scripts/build-atom-dirs.ts \
   --release 2026-08-31
 ```
 
-这里显式传入 Model 路径，是为了说明示例词汇属于示例 Package，而不是 Kernary
+这里显式传入 Model 路径，是为了说明示例词汇属于示例 Package，而不是 AOE
 Core。
 
 ### 3. 连接客户端
@@ -68,8 +68,8 @@ Core。
 如果使用 MCP，请挂载构建时使用的同一个 Snapshot 和 Model：
 
 ```bash
-PRIME_DIR=examples/hello-world/primes/compiled \
-PRIME_MODEL_DIR=compat/prime-v1-model \
+AOE_CORPUS_DIR=examples/hello-world/primes/compiled \
+AOE_MODEL_DIR=compat/prime-v1-model \
 bun packages/mcp-server-core/src/index.ts
 ```
 
@@ -89,7 +89,7 @@ my-domain/
 └── README.md
 ```
 
-Model Package 告诉 Kernary 有效对象和关系是什么；Corpus Package 提供对象及其
+Model Package 告诉 AOE 有效对象和关系是什么；Corpus Package 提供对象及其
 来源；Adapter 可以导入外部目录或绑定 Provider；Domain Package 则是这些部分
 的可部署组合。
 

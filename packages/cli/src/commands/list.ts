@@ -1,5 +1,5 @@
 /**
- * prime list [--scope @community] — Show all atoms in the local registry by scope.
+ * aoe list [--scope @community] — Show all atoms in the local registry by scope.
  *
  * Options:
  *   --scope <@scope>   Only show atoms from this scope
@@ -51,7 +51,7 @@ export async function listCommand(args: string[]): Promise<void> {
   }
 
   const total = filtered.reduce((n, s) => n + s.atoms.length, 0);
-  header(`Prime Registry — ${total} atoms across ${filtered.length} scope(s)`);
+  header(`AOE Registry — ${total} units across ${filtered.length} scope(s)`);
 
   for (const { scope, atoms } of filtered) {
     console.log(`\n  ${bold(scope)}  ${gray(`(${atoms.length} atoms)`)}`);

@@ -1,12 +1,11 @@
 {
   "name": "@skill-wiki/cli",
   "version": "0.2.0",
-  "description": "Kernary CLI \u2014 author, compile, inspect, query, and operate model-driven knowledge packages.",
+  "description": "AOE CLI — author, compile, inspect, query, and operate Agent Ontology Packages.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "kernary": "dist/index.js",
-    "prime": "dist/index.js"
+    "aoe": "dist/index.js"
   },
   "files": [
     "dist",
@@ -32,7 +31,7 @@
     "@skill-wiki/types": "workspace:*"
   },
   "keywords": [
-    "kernary",
+    "aoe",
     "knowledge-runtime",
     "mcp",
     "ai-agents",

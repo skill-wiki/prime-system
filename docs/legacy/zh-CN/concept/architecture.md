@@ -83,7 +83,7 @@ interface SecurityIntentObject {
 |---|---|
 | 1 | `id` + `description` 上的 token overlap |
 | 2 | Topic synonym（跨语言："排版" / "typography" / "字体" 同归同一主题） |
-| 3 | Kind boost —— 每个 corpus 通过 `PRIME_KIND_BOOSTS` 或 `domain.yaml` 配置 |
+| 3 | Kind boost —— 每个 corpus 通过 `AOE_KIND_BOOSTS` 或 `domain.yaml` 配置 |
 | 4 | Topic-kind affinity —— domain plugin 把主题映射到偏好的 kind |
 | 5 | Intent 直接命中 —— L1 IntentObject 字段 boost 命中的原子 |
 

@@ -1,15 +1,15 @@
-# Kernary CLI
+# AOE CLI
 
-The `kernary` command is the fastest way to inspect a Model Package, build a
+The `aoe` command is the fastest way to inspect a Model Package, build a
 Corpus Package, run diagnostics, and exercise an Action locally.
 
 ```text
-kernary v0.2.0 — model-driven ontology engine
+aoe v0.2.0 — Agent Ontology Engine
 
-Usage: kernary <command> [options]
+Usage: aoe <command> [options]
 ```
 
-Run `kernary --help` for the installed command surface. Subcommands also expose
+Run `aoe --help` for the installed command surface. Subcommands also expose
 their own help and exit codes.
 
 ## Commands at a glance
@@ -28,15 +28,15 @@ their own help and exit codes.
 
 ```bash
 # inspect a model and source package
-kernary check ./my-domain/model
-kernary deps ./my-domain/model
+aoe check ./my-domain/model
+aoe deps ./my-domain/model
 
 # compile the corpus with its model and release identity
-kernary compile ./my-domain/corpus/sources/incident.prime \
+aoe compile ./my-domain/corpus/sources/incident.prime \
   --output ./build/incident --dir --bundle
 
 # verify the generated snapshot before mounting it
-kernary doctor --dir ./build/my-domain --strict-manifest
+aoe doctor --dir ./build/my-domain --strict-manifest
 ```
 
 Maintained Domain Packages may wrap these steps in a package-specific build
@@ -48,7 +48,7 @@ script when they need custom adapters, signing, or evaluation gates.
 totals, and every diagnostic. `--json` is intended for CI:
 
 ```bash
-kernary doctor --dir ./build/my-domain --strict-manifest --json
+aoe doctor --dir ./build/my-domain --strict-manifest --json
 ```
 
 The command exits non-zero when the bundle is missing, its manifest does not

@@ -98,7 +98,7 @@ describe("mountCorpus", () => {
   it("adopts the declared namespace by default, and says which value it served", () => withRoot((root) => {
     // The live case at the moment of the cutover: the bundle's manifest still
     // says `compiled-v3-final` while the declaration says a formal namespace.
-    // The declared value is what reaches a public prime:// URI now, and the
+    // The declared value is what reaches a public aoe:// URI now, and the
     // divergence is still reported so a stale artifact cannot hide.
     const dir = bundle(root, "bundle-a", "compiled-v3-final", "2026-08-29");
     const declaration = declarationAt(root, "pkg-a", "com.github.skill-wiki/frontend-design");
@@ -170,7 +170,7 @@ describe("mountCorpus", () => {
 });
 
 describe("CorpusRegistry", () => {
-  it("mounts more than one corpus, which the single-PRIME_DIR shape forbade", () => withRoot((root) => {
+  it("mounts more than one corpus, which the single-AOE_CORPUS_DIR shape forbade", () => withRoot((root) => {
     const { registry, failed } = CorpusRegistry.from([
       { path: bundle(root, "alpha", "org.example/alpha", "r1") },
       { path: bundle(root, "beta", "org.example/beta", "r1") },

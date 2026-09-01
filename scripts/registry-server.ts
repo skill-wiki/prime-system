@@ -8,7 +8,7 @@
  *   GET  /atoms/<id>.prime          → 200 with raw .prime body
  *                                  → 404 if id not present
  *   PUT  /atoms/<id>.prime          → 201 with `{ id }` (overwrites)
- *                                  → 401 if PRIME_REGISTRY_TOKEN set & header missing/wrong
+ *                                  → 401 if AOE_REGISTRY_TOKEN set & header missing/wrong
  *                                  → 422 if body fails basic .prime sanity check
  *   GET  /atoms                     → 200 JSON list of every id stored
  *   GET  /healthz                   → 200 `ok`
@@ -23,7 +23,7 @@
  *   bun scripts/registry-server.ts                           # serve on :7700
  *   bun scripts/registry-server.ts --port 8080
  *   bun scripts/registry-server.ts --root /tmp/my-registry
- *   PRIME_REGISTRY_TOKEN=secret bun scripts/registry-server.ts   # require auth
+ *   AOE_REGISTRY_TOKEN=secret bun scripts/registry-server.ts   # require auth
  */
 
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync, existsSync } from "fs";
@@ -36,7 +36,7 @@ const arg = (flag: string, fallback: string): string => {
 };
 const PORT = parseInt(arg("--port", "7700"), 10);
 const ROOT = arg("--root", "./registry-store");
-const TOKEN = process.env.PRIME_REGISTRY_TOKEN;
+const TOKEN = process.env.AOE_REGISTRY_TOKEN;
 
 mkdirSync(ROOT, { recursive: true });
 
@@ -154,6 +154,6 @@ const server = Bun.serve({
 
 console.error(`[prime-registry] listening on http://localhost:${server.port}`);
 console.error(`[prime-registry] storage: ${ROOT}`);
-console.error(`[prime-registry] auth: ${TOKEN ? "Bearer token required" : "open (set PRIME_REGISTRY_TOKEN to require)"}`);
+console.error(`[prime-registry] auth: ${TOKEN ? "Bearer token required" : "open (set AOE_REGISTRY_TOKEN to require)"}`);
 console.error(`[prime-registry] try:  curl http://localhost:${server.port}/healthz`);
 console.error(`[prime-registry]        curl http://localhost:${server.port}/atoms`);

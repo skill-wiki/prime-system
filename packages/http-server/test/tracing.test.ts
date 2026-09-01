@@ -55,18 +55,18 @@ describe("the query path emits the spans Phase 5 asks for", () => {
     const retrieval = byName.get(SPAN_RETRIEVAL)!;
     // The public principal is denied two of the five fixture units, and that
     // number is on the span rather than only inside the plan.
-    expect(retrieval.attributes["prime.acl_denied_units"]).toBe(2);
-    expect(retrieval.attributes["prime.admitted_units"]).toBe(3);
-    expect(Array.isArray(retrieval.attributes["prime.generators"])).toBe(true);
+    expect(retrieval.attributes["aoe.acl_denied_units"]).toBe(2);
+    expect(retrieval.attributes["aoe.admitted_units"]).toBe(3);
+    expect(Array.isArray(retrieval.attributes["aoe.generators"])).toBe(true);
 
     const budget = byName.get(SPAN_BUDGET)!;
-    expect(budget.attributes["prime.max_tokens"]).toBe(4000);
-    expect(typeof budget.attributes["prime.consumed_tokens"]).toBe("number");
-    expect(Array.isArray(budget.attributes["prime.projection_chain"])).toBe(true);
+    expect(budget.attributes["aoe.max_tokens"]).toBe(4000);
+    expect(typeof budget.attributes["aoe.consumed_tokens"]).toBe("number");
+    expect(Array.isArray(budget.attributes["aoe.projection_chain"])).toBe(true);
 
     const projection = byName.get(SPAN_PROJECTION)!;
-    expect(projection.attributes["prime.materialized_units"]).toBe(
-      (budget.attributes["prime.assigned_units"] as number),
+    expect(projection.attributes["aoe.materialized_units"]).toBe(
+      (budget.attributes["aoe.assigned_units"] as number),
     );
 
     const http = byName.get(SPAN_HTTP_REQUEST)!;
@@ -74,7 +74,7 @@ describe("the query path emits the spans Phase 5 asks for", () => {
     expect(http.attributes["http.request.method"]).toBe("POST");
     expect(http.attributes["url.path"]).toBe("/v1/query");
     expect(http.attributes["http.response.status_code"]).toBe(200);
-    expect(http.attributes["prime.principal_id"]).toBe("reader");
+    expect(http.attributes["aoe.principal_id"]).toBe("reader");
   });
 
   test("an inbound traceparent is joined rather than replaced, and echoed back", async () => {
@@ -96,8 +96,8 @@ describe("the query path emits the spans Phase 5 asks for", () => {
     const h = harness();
     await h.handler(post("/v1/query", query(h.profile)));
     const [span] = h.sink.named(SPAN_HTTP_REQUEST);
-    expect(span!.attributes["prime.auth_denied"]).toBe(true);
-    expect(span!.attributes["prime.auth_reason"]).toBe("missing Authorization header");
+    expect(span!.attributes["aoe.auth_denied"]).toBe(true);
+    expect(span!.attributes["aoe.auth_reason"]).toBe("missing Authorization header");
     expect(span!.status.code).toBe("error");
   });
 
@@ -105,7 +105,7 @@ describe("the query path emits the spans Phase 5 asks for", () => {
     const h = harness();
     const response = await h.handler(post("/v1/query", { profile: "no-such-profile", maxTokens: 100 }, PUBLIC_TOKEN));
     expect(response.status).toBe(400);
-    const [retrieval] = h.sink.named("prime.query.retrieval");
+    const [retrieval] = h.sink.named("aoe.query.retrieval");
     expect(retrieval!.status.code).toBe("error");
     expect(retrieval!.events.map(event => event.name)).toContain("exception");
   });
@@ -114,8 +114,8 @@ describe("the query path emits the spans Phase 5 asks for", () => {
     const h = harness();
     await h.handler(post("/v1/query", query(h.profile), PUBLIC_TOKEN));
     const payload = toOtlpTracePayload(h.sink.all(), {
-      resource: { attributes: { "service.name": "kernary-http-server" } },
-      scope: { name: "kernary-http-server", version: "0.2.0" },
+      resource: { attributes: { "service.name": "aoe-http-server" } },
+      scope: { name: "aoe-http-server", version: "0.2.0" },
     });
     const scopeSpans = payload.resourceSpans[0]!.scopeSpans[0]!;
     expect(scopeSpans.spans).toHaveLength(h.sink.all().length);
@@ -138,16 +138,16 @@ describe("corpus mount and switch are observable events", () => {
     expect(outcome.registry.size).toBe(0);
     expect(outcome.failed).toHaveLength(1);
     const [span] = sink.named(SPAN_CORPUS_MOUNT);
-    expect(span!.attributes["prime.failed_mounts"]).toBe(1);
-    expect(span!.attributes["prime.mounted"]).toBe(0);
+    expect(span!.attributes["aoe.failed_mounts"]).toBe(1);
+    expect(span!.attributes["aoe.mounted"]).toBe(0);
     expect(span!.events.map(event => event.name)).toEqual([EVENT_CORPUS_MOUNT_FAILED]);
     // The operation reported its failures, so the span is not an error.
     expect(span!.status.code).toBe("unset");
     // Diagnostics are counted and coded, never inlined.
     const event = span!.events[0]!;
-    expect(event.attributes["prime.mount_path"]).toBe("/nonexistent/corpus-bundle");
-    expect(Array.isArray(event.attributes["prime.mount_codes"])).toBe(true);
-    expect(EVENT_CORPUS_MOUNTED).toBe("prime.corpus.mounted");
+    expect(event.attributes["aoe.mount_path"]).toBe("/nonexistent/corpus-bundle");
+    expect(Array.isArray(event.attributes["aoe.mount_codes"])).toBe(true);
+    expect(EVENT_CORPUS_MOUNTED).toBe("aoe.corpus.mounted");
   });
 
   test("activating an unmounted release fails closed and says so on the span", () => {
@@ -159,7 +159,7 @@ describe("corpus mount and switch are observable events", () => {
     expect(outcome.ok).toBe(false);
     const [span] = sink.named(SPAN_CORPUS_ACTIVATE);
     expect(span!.status.code).toBe("error");
-    expect(span!.attributes["prime.activate_code"]).toBe("MOUNT_NOT_FOUND");
+    expect(span!.attributes["aoe.activate_code"]).toBe("MOUNT_NOT_FOUND");
     expect(span!.events.map(event => event.name)).not.toContain(EVENT_CORPUS_SWITCHED);
   });
 });

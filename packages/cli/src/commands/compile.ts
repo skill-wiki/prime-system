@@ -1,5 +1,5 @@
 /**
- * prime compile <file.prime> [--deep] [--output <dir>] [--bundle] [--dir]
+ * aoe compile <file.prime> [--deep] [--output <dir>] [--bundle] [--dir]
  *
  * This command owns argument parsing and presentation ONLY. The compile stage
  * sequence lives behind a single compiler entry point (`compileSource`, plan
@@ -31,7 +31,7 @@ export async function compileCommand(args: string[]) {
   const flags = parseFlags(args);
 
   if (!flags.file) {
-    console.error('Usage: prime compile <file.prime> [--deep] [--output <dir>] [--bundle]');
+    console.error('Usage: aoe compile <file.prime> [--deep] [--output <dir>] [--bundle]');
     process.exit(1);
   }
 
@@ -41,7 +41,7 @@ export async function compileCommand(args: string[]) {
     process.exit(1);
   }
 
-  header(`Prime Compiler v0.1`);
+  header(`AOE Compiler v0.2`);
   console.log(gray(`  Compiling: ${basename(filePath)}`));
   console.log();
 

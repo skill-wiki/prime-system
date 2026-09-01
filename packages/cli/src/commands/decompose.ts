@@ -1,5 +1,5 @@
 /**
- * `prime decompose <SKILL.md>` — pointer command.
+ * `aoe decompose <SKILL.md>` — pointer command.
  *
  * The earlier heuristic implementation (regex over `##` headings) shipped
  * placeholders that needed manual rewrites and gave a misleading "I just
@@ -18,10 +18,10 @@ import { fileExists } from '../utils/fs';
 export async function decomposeCommand(args: string[]): Promise<void> {
   const file = args[0];
 
-  header('prime decompose');
+  header('aoe decompose');
 
   if (!file) {
-    info('Usage: prime decompose <path-to-SKILL.md>');
+    info('Usage: aoe decompose <path-to-SKILL.md>');
     console.log();
   } else {
     const filePath = resolve(file);
@@ -49,7 +49,7 @@ export async function decomposeCommand(args: string[]): Promise<void> {
   );
   console.log();
   console.log(`  ${bold('Step 3.')} Validate the output:`);
-  console.log(`    ${gray('prime check <generated-atom-dir>')}`);
+  console.log(`    ${gray('aoe check <generated-atom-dir>')}`);
   console.log();
   info('Why no built-in regex decomposer?');
   console.log(

@@ -45,7 +45,7 @@ export type PrimeBundleErrorCode =
   | "SCHEMA_DIGEST_MISMATCH"
   /**
    * Reserved, not yet raised by `loadCorpusSnapshot`: `manifest.corpus` flows
-   * into the public `prime://` URI, so a directory basename there publishes a
+   * into the public `aoe://` URI, so a directory basename there publishes a
    * machine-local name as corpus identity. Enforcing `NAMESPACE` at this entry
    * was measured to reject 3 in-repo example bundles (`hello-world`,
    * `coding-style`, `recipes`) and 13 audit/determinism fixtures, taking 53
@@ -216,7 +216,7 @@ export function validateCorpusManifest(value: unknown): CorpusManifest {
     }
   }
   // `corpus` is the one required string that is not merely recorded: it is the
-  // corpus segment of every §11.3 `prime://` URI this bundle is served under,
+  // corpus segment of every §11.3 `aoe://` URI this bundle is served under,
   // and the registry key a mount is addressed by. It is NOT checked against
   // `NAMESPACE` here, and that is a measured gap rather than an oversight —
   // see `CORPUS_NAMESPACE_INVALID` on `PrimeBundleErrorCode`. `testkit bundle`
@@ -401,10 +401,10 @@ export function loadCorpusSnapshot(
  * Why a registry, and why here.
  *
  * `loadCorpusSnapshot` above takes one directory and returns one snapshot. The
- * server built on it reads one `PRIME_DIR` and freezes one `{tenant, workspace,
+ * server built on it reads one `AOE_CORPUS_DIR` and freezes one `{tenant, workspace,
  * corpus, release}` tuple at boot, so switching corpus means editing
  * `.mcp.json` and restarting the process. §12.4 names that shape explicitly and
- * forbids it — "多租户不能靠多个全局 PRIME_DIR 模拟" — and §8.5 requires that a
+ * forbids it — "多租户不能靠多个全局 AOE_CORPUS_DIR 模拟" — and §8.5 requires that a
  * new release be activated by an atomic swap with old runs still replayable.
  * Neither is possible while the loader's arity is the limit.
  *
@@ -441,7 +441,7 @@ export interface CorpusMountDiagnostic {
  *
  * - `declaration` (default): the namespace declared in `prime-corpus.yaml` is
  *   the corpus's identity, and it is checked against `NAMESPACE` before it can
- *   become a registry key or reach a `prime://` URI. When no declaration is
+ *   become a registry key or reach a `aoe://` URI. When no declaration is
  *   supplied there is nothing to draw from, so the manifest value is used and
  *   must itself be a formal namespace — a directory basename fails closed.
  * - `manifest`: the snapshot keeps `manifest.corpus` verbatim, unchecked. This
@@ -624,7 +624,7 @@ export class CorpusRegistry {
  *
  * The declaration is what makes a namespace legitimate, and since the cutover it
  * is also what is *served*: the declared namespace becomes the registry key and
- * the corpus segment of every §11.3 `prime://` URI. Passing
+ * the corpus segment of every §11.3 `aoe://` URI. Passing
  * `namespaceSource: "manifest"` opts back out and takes `manifest.corpus`
  * verbatim — see `NamespaceSource`.
  */

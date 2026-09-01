@@ -41,7 +41,7 @@ It does **not** have:
 - Mirroring or federation
 - Audit logs, rate limiting, or signing
 
-A public hosted registry is on the v0.5 roadmap. Until then, organizations should self-host. Use `PRIME_REGISTRY` env var or `--remote <url>` to point `prime install` / `prime publish` at your own host.
+A public hosted registry is on the v0.5 roadmap. Until then, organizations should self-host. Use `AOE_REGISTRY` env var or `--remote <url>` to point `prime install` / `prime publish` at your own host.
 
 ### `prime decompose` CLI is a pointer command
 

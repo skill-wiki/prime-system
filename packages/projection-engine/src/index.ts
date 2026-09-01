@@ -15,7 +15,7 @@ export {
 } from "./paths.ts";
 
 export {
-  PRIME_URI_SCHEME,
+  AOE_URI_SCHEME,
   formatProjectionUri,
   parseProjectionUri,
   type ProjectionUri,

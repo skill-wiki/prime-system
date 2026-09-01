@@ -15,8 +15,8 @@ import type { SnapshotRef as IrSnapshotRef } from "@skill-wiki/ir";
 import type { Principal } from "@skill-wiki/query-engine";
 import { buildCorpusGraph } from "../src/corpus-graph";
 import { cheaperProjections, loadServeModel, resolveModelRoot } from "../src/model-context";
-import { executePrimeQuery, resolvePrimeUri, type ServeOptions } from "../src/serve";
-import { createPrimeQueryResponse } from "../src/query-response";
+import { executeAoeQuery, resolveAoeUri, type ServeOptions } from "../src/serve";
+import { createAoeQueryResponse } from "../src/query-response";
 
 const CORPUS = resolve(join(import.meta.dir, "../../../examples/hello-world/primes/compiled"));
 
@@ -78,7 +78,7 @@ describe("model resolution", () => {
 
   it("prefers an explicit root over the default", () => {
     expect(resolveModelRoot(CORPUS, {}, CORPUS).origin).toBe("explicit");
-    expect(resolveModelRoot(CORPUS, { PRIME_MODEL_DIR: CORPUS }).origin).toBe("environment");
+    expect(resolveModelRoot(CORPUS, { AOE_MODEL_DIR: CORPUS }).origin).toBe("environment");
   });
 
   it("derives the degradation chain from declared targetTokens, not from level names", () => {
@@ -149,19 +149,19 @@ describe("corpus adapter", () => {
 describe("preserved external semantics", () => {
   it("keeps the missing-id and unknown-id error text verbatim", () => {
     const options = serve();
-    expect(executePrimeQuery({ scope: "show" }, options)).toEqual({ error: "scope=show requires `id`." });
-    expect(executePrimeQuery({ scope: "related" }, options)).toEqual({ error: "scope=related requires `id`." });
-    expect(executePrimeQuery({ scope: "show", id: "@nope/nope" }, options)).toEqual({
+    expect(executeAoeQuery({ scope: "show" }, options)).toEqual({ error: "scope=show requires `id`." });
+    expect(executeAoeQuery({ scope: "related" }, options)).toEqual({ error: "scope=related requires `id`." });
+    expect(executeAoeQuery({ scope: "show", id: "@nope/nope" }, options)).toEqual({
       error: "Atom not found: @nope/nope",
     });
-    expect(executePrimeQuery({ scope: "related", id: "@nope/nope" }, options)).toEqual({
+    expect(executeAoeQuery({ scope: "related", id: "@nope/nope" }, options)).toEqual({
       error: "Atom not found: @nope/nope",
     });
   });
 
   it("keeps related traversal order, duplicate suppression, the relation prefix and limit", () => {
     const options = serve();
-    const outcome = executePrimeQuery({ scope: "related", id: TEA, limit: 10 }, options);
+    const outcome = executeAoeQuery({ scope: "related", id: TEA, limit: 10 }, options);
     if ("error" in outcome) throw new Error(outcome.error);
     // Source declaration order, which is what the model-driven extractor produces:
     // method-make-tea declares `requires: [fact, rule]` (:30) before `enhances:
@@ -180,21 +180,21 @@ describe("preserved external semantics", () => {
     // that is the block method-make-tea declares first (:30).
     for (const result of outcome.results) expect(result.description).toMatch(/^\[[a-z][a-z-]*\] /);
     expect(outcome.results[0]!.description.startsWith("[requires] ")).toBe(true);
-    const limited = executePrimeQuery({ scope: "related", id: TEA, limit: 1 }, options);
+    const limited = executeAoeQuery({ scope: "related", id: TEA, limit: 1 }, options);
     if ("error" in limited) throw new Error(limited.error);
     expect(limited.results).toHaveLength(1);
   });
 
   it("keeps the kind filter on related", () => {
     const options = serve();
-    const outcome = executePrimeQuery({ scope: "related", id: TEA, kind: "term", limit: 10 }, options);
+    const outcome = executeAoeQuery({ scope: "related", id: TEA, kind: "term", limit: 10 }, options);
     if ("error" in outcome) throw new Error(outcome.error);
     expect(outcome.results.map((r) => r.kind)).toEqual(["term"]);
   });
 
   it("keeps enumeration order and limit when no query and no seeds are given", () => {
     const options = serve();
-    const outcome = executePrimeQuery({ scope: "atoms", limit: 3 }, options);
+    const outcome = executeAoeQuery({ scope: "atoms", limit: 3 }, options);
     if ("error" in outcome) throw new Error(outcome.error);
     expect(outcome.results.map((r) => r.id)).toEqual([
       TEA,
@@ -205,7 +205,7 @@ describe("preserved external semantics", () => {
 
   it("keeps the kind filter on enumeration, and reports what it excluded", () => {
     const options = serve();
-    const outcome = executePrimeQuery({ scope: "atoms", kind: "fact", limit: 10 }, options);
+    const outcome = executeAoeQuery({ scope: "atoms", kind: "fact", limit: 10 }, options);
     if ("error" in outcome) throw new Error(outcome.error);
     expect(outcome.results.map((r) => r.kind)).toEqual(["fact"]);
     expect(outcome.diagnostics.some((d) => d.code === "ENUMERATION_UNIT_FILTERED")).toBe(true);
@@ -215,7 +215,7 @@ describe("preserved external semantics", () => {
     const options = serve();
     const model = options.model;
     const cheapest = Object.values(model.projections).sort((a, b) => a.targetTokens - b.targetTokens)[0]!;
-    const outcome = executePrimeQuery({ scope: "show", id: TEA, level: cheapest.name }, options);
+    const outcome = executeAoeQuery({ scope: "show", id: TEA, level: cheapest.name }, options);
     if ("error" in outcome) throw new Error(outcome.error);
     expect(outcome.results[0]!.level).toBe(cheapest.name);
   });
@@ -226,8 +226,8 @@ describe("changed external semantics (each one deliberate)", () => {
     const options = serve();
     const model = options.model;
     const levels = Object.values(model.projections).sort((a, b) => a.targetTokens - b.targetTokens);
-    const cheap = executePrimeQuery({ scope: "show", id: TEA, level: levels[0]!.name }, options);
-    const dear = executePrimeQuery({ scope: "show", id: TEA, level: levels.at(-1)!.name }, options);
+    const cheap = executeAoeQuery({ scope: "show", id: TEA, level: levels[0]!.name }, options);
+    const dear = executeAoeQuery({ scope: "show", id: TEA, level: levels.at(-1)!.name }, options);
     if ("error" in cheap || "error" in dear) throw new Error("unexpected error");
     // The pre-cutover implementation reported the same number for both.
     expect(cheap.results[0]!.tokens).toBeLessThan(dear.results[0]!.tokens);
@@ -235,14 +235,14 @@ describe("changed external semantics (each one deliberate)", () => {
 
   it("returns only units a generator actually matched, instead of padding to limit", () => {
     const options = serve();
-    const outcome = executePrimeQuery({ scope: "atoms", query: "zzzznomatch", limit: 3 }, options);
+    const outcome = executeAoeQuery({ scope: "atoms", query: "zzzznomatch", limit: 3 }, options);
     if ("error" in outcome) throw new Error(outcome.error);
     expect(outcome.results).toHaveLength(0);
   });
 
   it("lets a declared closure exceed limit rather than truncating it", () => {
     const options = serve();
-    const outcome = executePrimeQuery({ scope: "atoms", query: "water tea altitude", limit: 1 }, options);
+    const outcome = executeAoeQuery({ scope: "atoms", query: "water tea altitude", limit: 1 }, options);
     if ("error" in outcome) throw new Error(outcome.error);
     // `limit` bounds ranked candidates; relation expansion then completes the
     // closure the model declared. Truncating here would hand back a context that
@@ -259,7 +259,7 @@ describe("changed external semantics (each one deliberate)", () => {
     // What this suite must pin is the *serve* path's outcome: a recognised reranker runs
     // and therefore raises no capability gap.
     const options = serve();
-    const outcome = executePrimeQuery({ scope: "atoms", query: "tea", limit: 3 }, options);
+    const outcome = executeAoeQuery({ scope: "atoms", query: "tea", limit: 3 }, options);
     if ("error" in outcome) throw new Error(outcome.error);
     expect(outcome.diagnostics.some((d) => d.code === "RERANKER_NOT_IMPLEMENTED")).toBe(false);
     expect(outcome.results.length).toBeGreaterThan(0);
@@ -267,17 +267,17 @@ describe("changed external semantics (each one deliberate)", () => {
 
   it("emits a §11.3 resource URI that the projection engine can parse back", () => {
     const options = serve();
-    const outcome = executePrimeQuery({ scope: "atoms", limit: 1 }, options);
+    const outcome = executeAoeQuery({ scope: "atoms", limit: 1 }, options);
     if ("error" in outcome) throw new Error(outcome.error);
-    const response = createPrimeQueryResponse(
+    const response = createAoeQueryResponse(
       loadCorpusSnapshot(CORPUS, {}).snapshot,
       { tenant: "local", corpus: options.scope.corpus, release: options.scope.release },
       outcome.results,
       0,
     );
     const uri = response.results[0]!.resource_uri;
-    expect(uri.startsWith("prime://local/")).toBe(true);
-    const back = resolvePrimeUri(uri, options);
+    expect(uri.startsWith("aoe://local/")).toBe(true);
+    const back = resolveAoeUri(uri, options);
     if ("error" in back) throw new Error(back.error);
     expect(back.unitId).toBe(TEA);
     expect(back.content.length).toBeGreaterThan(0);
@@ -286,9 +286,9 @@ describe("changed external semantics (each one deliberate)", () => {
 
 describe("transport (§9.5)", () => {
   it("delivers a path for a local consumer and content for one that cannot read paths", () => {
-    const asPath = executePrimeQuery({ scope: "show", id: TEA }, serve({ transport: "path" }));
-    const asInline = executePrimeQuery({ scope: "show", id: TEA }, serve({ transport: "inline" }));
-    const asUri = executePrimeQuery({ scope: "show", id: TEA }, serve({ transport: "uri" }));
+    const asPath = executeAoeQuery({ scope: "show", id: TEA }, serve({ transport: "path" }));
+    const asInline = executeAoeQuery({ scope: "show", id: TEA }, serve({ transport: "inline" }));
+    const asUri = executeAoeQuery({ scope: "show", id: TEA }, serve({ transport: "uri" }));
     if ("error" in asPath || "error" in asInline || "error" in asUri) throw new Error("unexpected error");
     expect(asPath.results[0]!.path).toBeDefined();
     expect(asPath.results[0]!.content).toBeUndefined();
@@ -304,23 +304,23 @@ describe("transport (§9.5)", () => {
 
   it("refuses a resource URI for another tenant or corpus without saying which", () => {
     const options = serve();
-    const outcome = executePrimeQuery({ scope: "atoms", limit: 1 }, options);
+    const outcome = executeAoeQuery({ scope: "atoms", limit: 1 }, options);
     if ("error" in outcome) throw new Error(outcome.error);
-    const response = createPrimeQueryResponse(
+    const response = createAoeQueryResponse(
       loadCorpusSnapshot(CORPUS, {}).snapshot,
       { tenant: "local", corpus: options.scope.corpus, release: options.scope.release },
       outcome.results,
       0,
     );
-    const foreign = response.results[0]!.resource_uri.replace("prime://local/", "prime://other/");
-    expect(resolvePrimeUri(foreign, options)).toEqual({ error: `Atom not found: ${TEA}` });
+    const foreign = response.results[0]!.resource_uri.replace("aoe://local/", "aoe://other/");
+    expect(resolveAoeUri(foreign, options)).toEqual({ error: `Atom not found: ${TEA}` });
   });
 
   it("rejects a malformed URI rather than resolving part of it", () => {
     const options = serve();
-    const rejected = resolvePrimeUri("prime://local/legacy/units/x/projections/a/b", options);
+    const rejected = resolveAoeUri("aoe://local/legacy/units/x/projections/a/b", options);
     expect("error" in rejected).toBe(true);
-    expect("error" in resolvePrimeUri("http://example.com", options)).toBe(true);
+    expect("error" in resolveAoeUri("http://example.com", options)).toBe(true);
   });
 });
 
@@ -341,7 +341,7 @@ describe("security invariants that must survive the cutover", () => {
       },
       principal: { id: "restricted", allowedVisibility: ["public"], grantedPolicyLabels: [] },
     };
-    const listed = executePrimeQuery({ scope: "atoms", limit: 10 }, options);
+    const listed = executeAoeQuery({ scope: "atoms", limit: 10 }, options);
     if ("error" in listed) throw new Error(listed.error);
     expect(listed.results.some((r) => r.id === TEA)).toBe(false);
     // Not merely absent from the results: absent from the whole response, so no
@@ -349,24 +349,24 @@ describe("security invariants that must survive the cutover", () => {
     expect(JSON.stringify(listed)).not.toContain(TEA);
 
     // A denied unit is indistinguishable from a missing one.
-    expect(executePrimeQuery({ scope: "show", id: TEA }, options)).toEqual({
+    expect(executeAoeQuery({ scope: "show", id: TEA }, options)).toEqual({
       error: `Atom not found: ${TEA}`,
     });
     // And it cannot be reached by walking an edge that pointed at it.
-    const viaEdge = executePrimeQuery(
+    const viaEdge = executeAoeQuery(
       { scope: "related", id: "@example/collection-tea-basics", limit: 10 },
       options,
     );
     if ("error" in viaEdge) throw new Error(viaEdge.error);
     expect(JSON.stringify(viaEdge)).not.toContain(TEA);
     // Nor by presenting its resource URI.
-    const response = createPrimeQueryResponse(
+    const response = createAoeQueryResponse(
       loadCorpusSnapshot(CORPUS, {}).snapshot,
       { tenant: "local", corpus: options.scope.corpus, release: options.scope.release },
       [{ ...listed.results[0]!, id: TEA }],
       0,
     );
-    expect(resolvePrimeUri(response.results[0]!.resource_uri, options)).toEqual({
+    expect(resolveAoeUri(response.results[0]!.resource_uri, options)).toEqual({
       error: `Atom not found: ${TEA}`,
     });
   });
@@ -380,7 +380,7 @@ describe("security invariants that must survive the cutover", () => {
         artifacts: new Map([[TEA, { core: "../../../../../../etc/passwd" }]]),
       },
     };
-    const outcome = executePrimeQuery({ scope: "show", id: TEA, level: "core" }, options);
+    const outcome = executeAoeQuery({ scope: "show", id: TEA, level: "core" }, options);
     if ("error" in outcome) throw new Error(outcome.error);
     expect(outcome.results).toHaveLength(0);
     const refused = outcome.diagnostics.find((d) => d.code === "PROJECTION_DELIVERY_REFUSED");
@@ -397,7 +397,7 @@ describe("security invariants that must survive the cutover", () => {
       ...base,
       corpus: { ...base.corpus, artifacts: new Map([[TEA, { core: "chunks/core.md\u0000.png" }]]) },
     };
-    const outcome = executePrimeQuery({ scope: "show", id: TEA, level: "core" }, options);
+    const outcome = executeAoeQuery({ scope: "show", id: TEA, level: "core" }, options);
     if ("error" in outcome) throw new Error(outcome.error);
     expect(outcome.results).toHaveLength(0);
     expect(outcome.diagnostics.some((d) => d.code === "PROJECTION_DELIVERY_REFUSED")).toBe(true);
@@ -407,7 +407,7 @@ describe("security invariants that must survive the cutover", () => {
 describe("failures are loud", () => {
   it("names an unknown projection level instead of returning an empty result", () => {
     const options = serve();
-    const outcome = executePrimeQuery({ scope: "show", id: TEA, level: "nope" }, options);
+    const outcome = executeAoeQuery({ scope: "show", id: TEA, level: "nope" }, options);
     if ("error" in outcome) throw new Error(outcome.error);
     expect(outcome.results).toHaveLength(0);
     expect(outcome.diagnostics.some((d) => d.code === "PROJECTION_LEVEL_UNKNOWN")).toBe(true);
@@ -427,7 +427,7 @@ describe("failures are loud", () => {
         ),
       },
     };
-    const outcome = executePrimeQuery({ scope: "atoms", query: "tea" }, withoutBinding);
+    const outcome = executeAoeQuery({ scope: "atoms", query: "tea" }, withoutBinding);
     expect("error" in outcome).toBe(true);
     if ("error" in outcome) expect(outcome.error).toContain("GENERATOR_NOT_IMPLEMENTED");
   });

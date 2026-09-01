@@ -3,7 +3,7 @@
  * `ActionRuntime` over the real `security-model` Model Package. It is here rather
  * than in `action-runtime`'s own suite because what is being checked is that the
  * client adds nothing: authorization, capability checks and idempotency all still
- * decide the outcome when the call arrives via `PrimeClient`.
+ * decide the outcome when the call arrives via `AoeClient`.
  */
 
 import { describe, expect, test } from "bun:test";
@@ -14,7 +14,7 @@ import {
   type RequestContext,
 } from "@skill-wiki/action-runtime";
 import { loadModelOrThrow } from "@skill-wiki/model-schema";
-import { createEmbeddedTransport, PrimeClient } from "../src/index.ts";
+import { createEmbeddedTransport, AoeClient } from "../src/index.ts";
 import { loadEngineContext, MODEL_ROOT, registry, SNAPSHOT } from "./support/host.ts";
 
 const model = loadModelOrThrow(MODEL_ROOT);
@@ -46,7 +46,7 @@ function client(options: { readonly allowedCapabilities: readonly string[] }) {
     snapshot: SNAPSHOT.corpusRelease,
     trace: "trace-1",
   };
-  return { prime: new PrimeClient({ transport }), context };
+  return { prime: new AoeClient({ transport }), context };
 }
 
 const CONTROL = { name: "multi factor", statement: "require a second factor", automated: true };
@@ -54,7 +54,7 @@ const CONTROL = { name: "multi factor", statement: "require a second factor", au
 describe("actions over the embedded transport", () => {
   test("a read-only action with its capability granted really executes end to end", async () => {
     const { prime, context } = client({ allowedCapabilities: ["corpus.read"] });
-    const run = await prime.execute({
+    const run = await aoe.execute({
       action: "AuditControl",
       input: { control: CONTROL },
       context,
@@ -66,12 +66,12 @@ describe("actions over the embedded transport", () => {
       verdict: "satisfied",
       assessedControl: CONTROL,
     });
-    expect((await prime.events(run.id)).length).toBeGreaterThan(0);
+    expect((await aoe.events(run.id)).length).toBeGreaterThan(0);
   });
 
   test("preflight reports the model's declared effect surface, not the client's guess", async () => {
     const { prime, context } = client({ allowedCapabilities: ["corpus.read"] });
-    const effect = await prime.preflight({
+    const effect = await aoe.preflight({
       action: "AuditControl",
       input: { control: CONTROL },
       context,
@@ -84,7 +84,7 @@ describe("actions over the embedded transport", () => {
 
   test("the capability check still decides when the call arrives through the client", async () => {
     const { prime, context } = client({ allowedCapabilities: [] });
-    const run = await prime.execute({
+    const run = await aoe.execute({
       action: "AuditControl",
       input: { control: CONTROL },
       context,
@@ -99,13 +99,13 @@ describe("actions over the embedded transport", () => {
 
   test("idempotency still collapses a replay through the client", async () => {
     const { prime, context } = client({ allowedCapabilities: ["corpus.read"] });
-    const first = await prime.execute({
+    const first = await aoe.execute({
       action: "AuditControl",
       input: { control: CONTROL },
       context,
       idempotencyKey: "audit-4",
     });
-    const replay = await prime.execute({
+    const replay = await aoe.execute({
       action: "AuditControl",
       input: { control: CONTROL },
       context,

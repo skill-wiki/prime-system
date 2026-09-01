@@ -11,7 +11,7 @@ You need two things built from the same release:
 - a Model Package that declares the types, relations, projections, and actions;
 - a compiled Corpus Snapshot with its manifest, lock, and (if required) signature.
 
-If the model and bundle do not match, Kernary refuses to start. This is easier
+If the model and bundle do not match, AOE refuses to start. This is easier
 to fix before an Agent connects than after it has cached a result.
 
 ## MCP: connect in one command
@@ -20,8 +20,8 @@ The generic MCP server reads compiled artifacts. It does not compile source on a
 request and it does not guess which domain package you intended.
 
 ```bash
-PRIME_DIR=/absolute/path/to/corpus/dist \
-PRIME_MODEL_DIR=/absolute/path/to/model \
+AOE_CORPUS_DIR=/absolute/path/to/corpus/dist \
+AOE_MODEL_DIR=/absolute/path/to/model \
 bun packages/mcp-server-core/src/index.ts
 ```
 
@@ -29,9 +29,9 @@ The server exposes three core tools:
 
 | Tool | Use it for |
 |---|---|
-| `prime_query` | Retrieve projections for a natural-language request |
-| `prime_plan` | Inspect ranking, constraints, relations, and budget without loading content |
-| `prime_resource` | Resolve one exact projection URI |
+| `aoe_query` | Retrieve projections for a natural-language request |
+| `aoe_plan` | Inspect ranking, constraints, relations, and budget without loading content |
+| `aoe_resource` | Resolve one exact projection URI |
 
 Every request is checked against the loaded Model and Snapshot. A missing
 retrieval signal, unknown projection, visibility violation, unavailable

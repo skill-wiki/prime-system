@@ -135,7 +135,7 @@ describe("transport: uri (§11.3)", () => {
     const result = deliver("uri", { bundleRoot, artifactPath: REL, uri });
     expect(result.ok).toBe(true);
     if (result.ok && result.payload.transport === "uri") {
-      expect(result.payload.uri).toBe("prime://tenant-a/cx@r-1/units/u-1/projections/pf-one/lv-wide");
+      expect(result.payload.uri).toBe("aoe://tenant-a/cx@r-1/units/u-1/projections/pf-one/lv-wide");
       expect(result.payload.uri).not.toContain(bundleRoot);
       expect(result.payload.tokens).toBe(estimateTokens(BODY));
     }

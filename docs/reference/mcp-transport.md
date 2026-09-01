@@ -1,22 +1,22 @@
 # MCP transport
 
-Kernary's MCP transport exposes a compiled Model + Corpus snapshot to any MCP
+AOE's MCP transport exposes a compiled Model + Corpus snapshot to any MCP
 client. It is a thin transport: the Model Package owns domain vocabulary and the
 Query/Action runtimes own semantics.
 
 ```bash
-PRIME_DIR=/absolute/path/to/corpus/dist \
-PRIME_MODEL_DIR=/absolute/path/to/model \
+AOE_CORPUS_DIR=/absolute/path/to/corpus/dist \
+AOE_MODEL_DIR=/absolute/path/to/model \
 bun packages/mcp-server-core/src/index.ts
 ```
 
 ## Core tools
 
-- `prime_query` runs the Model-declared retrieval profile and returns selected
+- `aoe_query` runs the Model-declared retrieval profile and returns selected
   projections plus the decisions that produced them.
-- `prime_plan` returns the same selection arithmetic without rendering
+- `aoe_plan` returns the same selection arithmetic without rendering
   projections.
-- `prime_resource` resolves one exact projection URI through the Runtime.
+- `aoe_resource` resolves one exact projection URI through the Runtime.
 
 All tools advertise explicit input schemas. Requests fail loudly when the
 retrieval signal is missing, a profile provider is unavailable, a projection is

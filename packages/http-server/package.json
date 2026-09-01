@@ -5,8 +5,7 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "bin": {
-    "kernary-http-server": "src/main.ts",
-    "prime-http-server": "src/main.ts"
+    "aoe-http-server": "src/main.ts"
   },
   "scripts": {
     "serve": "bun src/main.ts",

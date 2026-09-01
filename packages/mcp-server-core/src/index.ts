@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-/** Generic, bundle-backed MCP transport for compiled Prime corpora. */
+/** Generic, bundle-backed MCP transport for compiled AOE corpora. */
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
@@ -17,15 +17,15 @@ import {
 import type { SnapshotRef as IrSnapshotRef } from "@skill-wiki/ir";
 import type { Principal } from "@skill-wiki/query-engine";
 import type { ProjectionScope, TransportKind } from "@skill-wiki/projection-engine";
-import { createPrimeQueryResponse, createPrimePlanResponse, type ResourceIdentity } from "./query-response";
+import { createAoeQueryResponse, createAoePlanResponse, type ResourceIdentity } from "./query-response";
 export {
-  createPrimeQueryResponse,
-  createPrimePlanResponse,
-  createPrimeResourceUri,
+  createAoeQueryResponse,
+  createAoePlanResponse,
+  createAoeResourceUri,
   type QueryResult,
   type QueryResponseResult,
-  type PrimeQueryResponse,
-  type PrimePlanResponse,
+  type AoeQueryResponse,
+  type AoePlanResponse,
   type ResourceIdentity,
 } from "./query-response";
 export {
@@ -66,9 +66,9 @@ export {
 } from "./model-lock";
 export {
   DEFAULT_GENERATOR_BINDINGS,
-  executePrimePlan,
-  executePrimeQuery,
-  resolvePrimeUri,
+  executeAoePlan,
+  executeAoeQuery,
+  resolveAoeUri,
   type GeneratorBinding,
   type GeneratorMechanism,
   type PlanArguments,
@@ -81,18 +81,18 @@ export {
 import { buildCorpusGraph, type CorpusGraph } from "./corpus-graph";
 import { loadServeModel, resolveModelRoot, type ServeModel } from "./model-context";
 import { verifyModelLock } from "./model-lock";
-import { executePrimePlan, executePrimeQuery, resolvePrimeUri, type PlanArguments, type QueryArguments, type ServeOptions } from "./serve";
+import { executeAoePlan, executeAoeQuery, resolveAoeUri, type PlanArguments, type QueryArguments, type ServeOptions } from "./serve";
 
-export interface PrimeMcpOptions {
-  primeDir: string;
+export interface AoeMcpOptions {
+  corpusDir: string;
   requireManifest?: boolean;
   stderr?: Pick<Console, "error">;
   environment?: Record<string, string | undefined>;
-  /** Model Package root; overrides `PRIME_MODEL_DIR` and bundle discovery. */
+  /** Model Package root; overrides `AOE_MODEL_DIR` and bundle discovery. */
   modelRoot?: string;
 }
 
-export interface PrimeMcpInstance {
+export interface AoeMcpInstance {
   server: McpServer;
   index: GlobalIndex;
   snapshot: SnapshotRef;
@@ -102,7 +102,7 @@ export interface PrimeMcpInstance {
   serve: ServeOptions;
 }
 
-const PRIME_QUERY_SCHEMA = z.object({
+const AOE_QUERY_SCHEMA = z.object({
   scope: z.enum(["atoms", "related", "show"]),
   query: z.string().optional(),
   id: z.string().optional(),
@@ -116,11 +116,11 @@ const PRIME_QUERY_SCHEMA = z.object({
 });
 
 /**
- * `prime_plan` (§11.1). No `scope`: plan has one meaning. No `id`: a plan is over
- * a retrieval signal, and "the plan for one known unit" is `prime_query`
+ * `aoe_plan` (§11.1). No `scope`: plan has one meaning. No `id`: a plan is over
+ * a retrieval signal, and "the plan for one known unit" is `aoe_query`
  * `scope=show`.
  */
-const PRIME_PLAN_SCHEMA = z.object({
+const AOE_PLAN_SCHEMA = z.object({
   query: z.string().optional(),
   seeds: z.array(z.string().min(1)).optional(),
   kind: z.string().optional(),
@@ -128,12 +128,12 @@ const PRIME_PLAN_SCHEMA = z.object({
   limit: z.number().int().positive().max(100).optional(),
 });
 
-const PRIME_RESOURCE_SCHEMA = z.object({ uri: z.string().min(1) });
+const AOE_RESOURCE_SCHEMA = z.object({ uri: z.string().min(1) });
 
-const TRANSPORT_ENV = "PRIME_TRANSPORT";
-const TENANT_ENV = "PRIME_TENANT";
-const WORKSPACE_ENV = "PRIME_WORKSPACE";
-const MAX_TOKENS_ENV = "PRIME_MAX_TOKENS";
+const TRANSPORT_ENV = "AOE_TRANSPORT";
+const TENANT_ENV = "AOE_TENANT";
+const WORKSPACE_ENV = "AOE_WORKSPACE";
+const MAX_TOKENS_ENV = "AOE_MAX_TOKENS";
 /** Local stdio agent: the pointer transport is the correct default for it (§9.5). */
 const DEFAULT_TRANSPORT: TransportKind = "path";
 const DEFAULT_TENANT = "local";
@@ -175,34 +175,34 @@ function localPrincipal(): Principal {
  * including every `atom.yaml`, because relation expansion needs the whole edge
  * set before it can walk any of it.
  */
-export function createPrimeMcpServer(options: PrimeMcpOptions): PrimeMcpInstance {
+export function createAoeMcpServer(options: AoeMcpOptions): AoeMcpInstance {
   const stderr = options.stderr ?? console;
   const environment = options.environment ?? process.env;
-  const loaded = loadCorpusSnapshot(options.primeDir, { requireManifest: options.requireManifest });
-  verifyCorpusSignature(options.primeDir);
+  const loaded = loadCorpusSnapshot(options.corpusDir, { requireManifest: options.requireManifest });
+  verifyCorpusSignature(options.corpusDir);
   for (const diagnostic of loaded.diagnostics) {
-    stderr.error(`[kernary-mcp] ${diagnostic.severity} ${diagnostic.code}: ${diagnostic.message}`);
+    stderr.error(`[aoe-mcp] ${diagnostic.severity} ${diagnostic.code}: ${diagnostic.message}`);
   }
-  const index = loadIndex(options.primeDir);
+  const index = loadIndex(options.corpusDir);
 
-  const resolution = resolveModelRoot(options.primeDir, environment, options.modelRoot);
+  const resolution = resolveModelRoot(options.corpusDir, environment, options.modelRoot);
   const model = loadServeModel(resolution);
   // §8.4 lists model-lock integrity among the boot checks; nothing performed it,
   // so a manifest could name one model while a different one served the corpus.
-  // A mismatch throws out of `createPrimeMcpServer` — refusing to boot is the
+  // A mismatch throws out of `createAoeMcpServer` — refusing to boot is the
   // only honest response to "the snapshot identity does not describe the answer".
   for (const diagnostic of verifyModelLock({
-    bundleRoot: options.primeDir,
+    bundleRoot: options.corpusDir,
     model: model.model,
     ...(loaded.manifest === undefined ? {} : {
       manifestModels: loaded.manifest.models,
       manifestSchemaDigest: loaded.manifest.schemaDigest,
     }),
   })) {
-    stderr.error(`[kernary-mcp] ${diagnostic.severity} ${diagnostic.code}: ${diagnostic.message}`);
+    stderr.error(`[aoe-mcp] ${diagnostic.severity} ${diagnostic.code}: ${diagnostic.message}`);
   }
   stderr.error(
-    `[kernary-mcp] model ${model.model.manifest.name}@${model.model.manifest.version} (${resolution.origin}) · ` +
+    `[aoe-mcp] model ${model.model.manifest.name}@${model.model.manifest.version} (${resolution.origin}) · ` +
       `profiles ${Object.keys(model.profiles).sort().join(",")} · projections ${model.catalog.profiles().join(",")}`,
   );
 
@@ -214,12 +214,12 @@ export function createPrimeMcpServer(options: PrimeMcpOptions): PrimeMcpInstance
   };
   const corpus = buildCorpusGraph({
     atoms: index.atoms,
-    loadMeta: (id) => loadAtomMeta(options.primeDir, id),
+    loadMeta: (id) => loadAtomMeta(options.corpusDir, id),
     snapshot: irSnapshot,
     corpus: loaded.snapshot.corpus,
   });
   for (const diagnostic of corpus.diagnostics) {
-    stderr.error(`[kernary-mcp] ${diagnostic.severity} ${diagnostic.code}: ${diagnostic.message}`);
+    stderr.error(`[aoe-mcp] ${diagnostic.severity} ${diagnostic.code}: ${diagnostic.message}`);
   }
 
   const identity: ResourceIdentity = {
@@ -237,34 +237,34 @@ export function createPrimeMcpServer(options: PrimeMcpOptions): PrimeMcpInstance
   const serve: ServeOptions = {
     model,
     corpus,
-    bundleRoot: resolveFsPath(options.primeDir),
+    bundleRoot: resolveFsPath(options.corpusDir),
     scope: projectionScope,
     principal: localPrincipal(),
     transport: readTransport(environment),
     maxTokens: readPositiveInt(environment[MAX_TOKENS_ENV], DEFAULT_MAX_TOKENS),
   };
 
-  const server = new McpServer({ name: "kernary-mcp", version: "0.2.0" }, { capabilities: { tools: {} } });
+  const server = new McpServer({ name: "aoe-mcp", version: "0.2.0" }, { capabilities: { tools: {} } });
   // `registerTool` with an explicit `inputSchema` is the only form that both
   // advertises the parameters in `tools/list` and delivers parsed arguments to
   // the callback. The deprecated `tool(name, description, cb)` overload declares
   // a ZERO-ARGUMENT tool and hands the callback a `RequestHandlerExtra`, which
   // carries no `params` — so every call silently collapsed to the default scope.
   server.registerTool(
-    "prime_query",
+    "aoe_query",
     {
       description:
-        "Browse a compiled Prime corpus. Every result carries a prime:// resource URI; the payload is a projection path, inline content or the URI itself depending on the negotiated transport.",
-      inputSchema: PRIME_QUERY_SCHEMA,
+        "Browse a compiled AOE corpus. Every result carries an aoe:// resource URI; the payload is a projection path, inline content or the URI itself depending on the negotiated transport.",
+      inputSchema: AOE_QUERY_SCHEMA,
     },
     async (args: QueryArguments) => {
-      const outcome = executePrimeQuery(args, serve);
+      const outcome = executeAoeQuery(args, serve);
       if ("error" in outcome) return { content: [{ type: "text", text: outcome.error }] };
       return {
         content: [{
           type: "text",
           text: JSON.stringify(
-            createPrimeQueryResponse(
+            createAoeQueryResponse(
               loaded.snapshot,
               identity,
               outcome.results,
@@ -279,32 +279,32 @@ export function createPrimeMcpServer(options: PrimeMcpOptions): PrimeMcpInstance
     },
   );
   server.registerTool(
-    "prime_plan",
+    "aoe_plan",
     {
       description:
-        "Return the selection plan for a retrieval request without rendering it: candidates with per-axis scores, rejections with reasons, relation expansions, load order, and the budget arithmetic that chose each unit's projection level. Same request and same plan as prime_query scope=atoms, minus the projection cost.",
-      inputSchema: PRIME_PLAN_SCHEMA,
+        "Return the selection plan for a retrieval request without rendering it: candidates with per-axis scores, rejections with reasons, relation expansions, load order, and the budget arithmetic that chose each unit's projection level. Same request and same plan as aoe_query scope=atoms, minus the projection cost.",
+      inputSchema: AOE_PLAN_SCHEMA,
     },
     async (args: PlanArguments) => {
-      const outcome = executePrimePlan(args, serve);
+      const outcome = executeAoePlan(args, serve);
       if ("error" in outcome) return { content: [{ type: "text", text: outcome.error }] };
       return {
         content: [{
           type: "text",
-          text: JSON.stringify(createPrimePlanResponse(loaded.snapshot, outcome.plan), null, 2),
+          text: JSON.stringify(createAoePlanResponse(loaded.snapshot, outcome.plan), null, 2),
         }],
       };
     },
   );
   server.registerTool(
-    "prime_resource",
+    "aoe_resource",
     {
       description:
-        "Resolve a prime:// resource URI to its projection content. This is what makes the URI transport usable for a consumer that cannot read server-local paths (§11.3).",
-      inputSchema: PRIME_RESOURCE_SCHEMA,
+        "Resolve a aoe:// resource URI to its projection content. This is what makes the URI transport usable for a consumer that cannot read server-local paths (§11.3).",
+      inputSchema: AOE_RESOURCE_SCHEMA,
     },
     async (args: { uri: string }) => {
-      const outcome = resolvePrimeUri(args.uri, serve);
+      const outcome = resolveAoeUri(args.uri, serve);
       if ("error" in outcome) return { content: [{ type: "text", text: outcome.error }] };
       return { content: [{ type: "text", text: outcome.content }] };
     },
@@ -314,23 +314,23 @@ export function createPrimeMcpServer(options: PrimeMcpOptions): PrimeMcpInstance
 
 /** Production stdio entry point; kept separate so import remains side-effect free. */
 export async function runStdioServer(environment: Record<string, string | undefined> = process.env): Promise<void> {
-  const primeDir = environment.PRIME_DIR;
-  if (!primeDir) throw new Error("PRIME_DIR is required and must point to a compiled corpus.");
-  const instance = createPrimeMcpServer({
-    primeDir,
-    requireManifest: environment.PRIME_REQUIRE_MANIFEST === "1",
+  const corpusDir = environment.AOE_CORPUS_DIR;
+  if (!corpusDir) throw new Error("AOE_CORPUS_DIR is required and must point to a compiled corpus.");
+  const instance = createAoeMcpServer({
+    corpusDir,
+    requireManifest: environment.AOE_REQUIRE_MANIFEST === "1",
     environment,
   });
-  console.error(`[kernary-mcp] ${instance.index.total} units · ${instance.index.totalTokens} tokens · snapshot ${instance.snapshot.corpus}@${instance.snapshot.release}`);
+  console.error(`[aoe-mcp] ${instance.index.total} units · ${instance.index.totalTokens} tokens · snapshot ${instance.snapshot.corpus}@${instance.snapshot.release}`);
   await instance.server.connect(new StdioServerTransport());
-  console.error(`[kernary-mcp] ready · compatibility tools: prime_query, prime_plan, prime_resource · transport ${instance.serve.transport} · stdio active`);
+  console.error(`[aoe-mcp] ready · tools: aoe_query, aoe_plan, aoe_resource · transport ${instance.serve.transport} · stdio active`);
 }
 
 const isEntrypoint = Boolean(process.argv[1]) && import.meta.url === pathToFileURL(resolveFsPath(process.argv[1])).href;
 if (isEntrypoint) {
   runStdioServer().catch((error) => {
     const code = typeof error === "object" && error !== null && "code" in error ? String((error as { code: unknown }).code) : "BOOT_FAILED";
-    console.error(`[kernary-mcp] error ${code}: ${error instanceof Error ? error.message : String(error)}`);
+    console.error(`[aoe-mcp] error ${code}: ${error instanceof Error ? error.message : String(error)}`);
     process.exitCode = 1;
   });
 }

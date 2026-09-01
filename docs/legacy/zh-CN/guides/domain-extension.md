@@ -65,7 +65,7 @@ prime query "如何完成核心概念相关的任务"
 
 ## 发现机制
 
-启动时，`discoverDomains()` 从工作目录（或 `PRIME_DOMAINS_DIR`）开始递归遍历，查找所有 `domain.yaml` 文件，最多向下扫描 **4 层目录**（`MAX_DISCOVERY_DEPTH = 4`）。`node_modules/` 目录和以 `.` 开头的隐藏目录会被自动跳过。
+启动时，`discoverDomains()` 从工作目录（或 `AOE_DOMAINS_DIR`）开始递归遍历，查找所有 `domain.yaml` 文件，最多向下扫描 **4 层目录**（`MAX_DISCOVERY_DEPTH = 4`）。`node_modules/` 目录和以 `.` 开头的隐藏目录会被自动跳过。
 
 ```
 启动
@@ -101,12 +101,12 @@ rankAtoms(atoms, briefDomains)
 
 | 变量 | 默认值 | 描述 |
 |------|--------|------|
-| `PRIME_DOMAINS_DIR` | 当前工作目录 | 覆盖扫描根目录。设置后，只扫描该目录下直接的 `*/domain.yaml`（一层，不递归）。 |
+| `AOE_DOMAINS_DIR` | 当前工作目录 | 覆盖扫描根目录。设置后，只扫描该目录下直接的 `*/domain.yaml`（一层，不递归）。 |
 
 示例：
 
 ```bash
-PRIME_DOMAINS_DIR=/teams/legal/corpora prime query "司法意见的引用格式"
+AOE_DOMAINS_DIR=/teams/legal/corpora prime query "司法意见的引用格式"
 ```
 
 ---
@@ -294,7 +294,7 @@ description: 这个知识库覆盖内容的简短说明。
 
 ### 领域未加载
 
-**检查文件深度**：文件必须在工作目录（或 `PRIME_DOMAINS_DIR`）的 4 层目录以内。
+**检查文件深度**：文件必须在工作目录（或 `AOE_DOMAINS_DIR`）的 4 层目录以内。
 
 **检查 YAML 解析错误**：查找启动日志中的 `WARN: skipped domain.yaml` 行。
 

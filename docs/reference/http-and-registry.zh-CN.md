@@ -1,6 +1,6 @@
 # HTTP 与 Registry
 
-当 Agent、Web 应用或服务需要跨进程使用 Kernary 时，使用 HTTP Transport；当多个
+当 Agent、Web 应用或服务需要跨进程使用 AOE 时，使用 HTTP Transport；当多个
 团队需要发现和分发组成领域的 Package 时，使用 Registry。
 
 ## HTTP Service

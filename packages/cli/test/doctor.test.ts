@@ -8,12 +8,12 @@ import { tmpdir } from "os";
 const snapshot = { kind: "manifest" as const, protocolVersion: "2.0.0", irVersion: "2", compilerVersion: "2", emitterVersion: "2", corpus: "org/example", release: "r 1", sourceRevision: "git:x", models: {}, schemaDigest: "sha256:" + "a".repeat(64), contentDigest: "sha256:" + "b".repeat(64), indexDigest: "sha256:" + "c".repeat(64), createdAt: "2026-08-28T00:00:00Z" };
 describe("doctor", () => {
   it("parses flags with explicit directory precedence and help/errors", () => {
-    expect(parseDoctorArgs(["--dir", "explicit", "--json"], { PRIME_DIR: "env" })).toMatchObject({ kind: "options", options: { dir: "explicit", json: true } });
-    expect(parseDoctorArgs([], { PRIME_DIR: "env" })).toMatchObject({ kind: "options", options: { dir: "env" } });
+    expect(parseDoctorArgs(["--dir", "explicit", "--json"], { AOE_CORPUS_DIR: "env" })).toMatchObject({ kind: "options", options: { dir: "explicit", json: true } });
+    expect(parseDoctorArgs([], { AOE_CORPUS_DIR: "env" })).toMatchObject({ kind: "options", options: { dir: "env" } });
     expect(parseDoctorArgs(["--help"], {})).toEqual({ kind: "help" });
     expect(parseDoctorArgs(["--wat"], {})).toMatchObject({ kind: "error" });
     expect(parseDoctorArgs(["--dir", "--json"], {})).toMatchObject({ kind: "error" });
-    const output: string[] = []; expect(doctorCommand(["--json"], {}, (text) => output.push(text))).toBe(1); expect(JSON.parse(output[0]!).diagnostics[0].code).toBe("PRIME_DIR_REQUIRED");
+    const output: string[] = []; expect(doctorCommand(["--json"], {}, (text) => output.push(text))).toBe(1); expect(JSON.parse(output[0]!).diagnostics[0].code).toBe("AOE_CORPUS_DIR_REQUIRED");
     for (const argv of [["--dir", "--json"], ["--wat", "--json"]]) { const out: string[] = []; expect(doctorCommand(argv, {}, (text) => out.push(text))).toBe(1); expect(JSON.parse(out[0]!).diagnostics[0].code).toBe("DOCTOR_ARGUMENT_INVALID"); }
   });
   it("reports manifest success, legacy warning, and failures without exiting", () => {

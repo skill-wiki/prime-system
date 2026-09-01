@@ -1,7 +1,7 @@
 /**
  * @module client
  *
- * `PrimeClient` from plan §10.2. It is intentionally a thin façade: it holds the
+ * `AoeClient` from plan §10.2. It is intentionally a thin façade: it holds the
  * activated snapshot and the generated-artifact gate, and forwards everything else
  * to the transport. Any logic that lived here would be logic the embedded and
  * remote paths could execute differently.
@@ -17,7 +17,7 @@ import {
 } from "./generated-artifact.ts";
 import type { ActionRequest, EngineTransport, QueryResult, TransportKind } from "./types.ts";
 
-export class PrimeClient {
+export class AoeClient {
   private readonly transport: EngineTransport;
 
   constructor(options: { readonly transport: EngineTransport }) {

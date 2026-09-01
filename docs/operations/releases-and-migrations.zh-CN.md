@@ -1,6 +1,6 @@
 # Release 与 Migration
 
-Kernary Release 会改变不可变 Package 或 Snapshot identity。Publish、Activate、
+AOE Release 会改变不可变 Package 或 Snapshot identity。Publish、Activate、
 Migrate 与 Rollback 是不同操作。
 
 ## 构建与验证

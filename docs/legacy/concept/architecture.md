@@ -90,7 +90,7 @@ robust under noisy briefs:
 |---|---|
 | 1 | Token overlap on `id` + `description` |
 | 2 | Topic synonym (cross-language: "排版" / "typography" / "字体" all map to the same topic) |
-| 3 | Kind boost — configurable per corpus via `PRIME_KIND_BOOSTS` env var or `domain.yaml` |
+| 3 | Kind boost — configurable per corpus via `AOE_KIND_BOOSTS` env var or `domain.yaml` |
 | 4 | Topic-kind affinity — domain plugin maps topics to preferred kinds |
 | 5 | Direct hit on intent — L1 IntentObject fields boost matching atoms |
 

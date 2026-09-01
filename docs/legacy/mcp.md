@@ -2,7 +2,7 @@
 
 This page is about `packages/mcp-server-core/` — the **generic** MCP
 server that ships in this repo. It is deliberately small (~200 lines)
-and exposes a single tool, `prime_query`, over any compiled Prime
+and exposes a single tool, `aoe_query`, over any compiled Prime
 corpus.
 
 If you want a richer, domain-aware MCP — multiple tools, intent
@@ -39,10 +39,10 @@ content through the MCP boundary. The boundary is structural.
 
 ---
 
-## Tool surface — `prime_query`
+## Tool surface — `aoe_query`
 
 ```typescript
-prime_query({
+aoe_query({
   scope: "atoms" | "related" | "scout" | "template",
   query?: string,    // free text — used by atoms / scout
   id?: string,       // atom id — used by related / template
@@ -79,25 +79,25 @@ edge walks, kind filters, simple substring match against the index.
 ## What the server actually loads
 
 ```bash
-PRIME_DIR=/abs/path/to/compiled bunx @prime-lang/mcp-server-core
+AOE_CORPUS_DIR=/abs/path/to/compiled bunx @prime-lang/mcp-server-core
 # or, during local development directly from source:
-PRIME_DIR=/abs/path/to/compiled bun packages/mcp-server-core/src/index.ts
+AOE_CORPUS_DIR=/abs/path/to/compiled bun packages/mcp-server-core/src/index.ts
 ```
 
 On boot:
 
 1. Read `<corpus>/_index.xml` into memory (a few KB).
 2. Lazily resolve `<corpus>/<scope>/<name>/<level>.md` only when
-   `prime_query` returns a path.
+   `aoe_query` returns a path.
 3. Maintain an in-memory adjacency map for `related` traversal.
 
 That's it. There is no DB, no embedding store, no warming step. Boot
 time on a 900-atom corpus is ~80 ms.
 
 ```bash
-$ PRIME_DIR=./compiled-v3-final bunx @prime-lang/mcp-server-core
+$ AOE_CORPUS_DIR=./compiled-v3-final bunx @prime-lang/mcp-server-core
 [prime-mcp-core] 899 atoms · 51234 tokens · 12 clusters
-[prime-mcp-core] ready · tool: prime_query · stdio transport active
+[prime-mcp-core] ready · tool: aoe_query · stdio transport active
 ```
 
 ---
@@ -113,7 +113,7 @@ $ PRIME_DIR=./compiled-v3-final bunx @prime-lang/mcp-server-core
       "command": "bunx",
       "args": ["@prime-lang/mcp-server-core"],
       "env": {
-        "PRIME_DIR": "/abs/path/to/compiled-v3-final"
+        "AOE_CORPUS_DIR": "/abs/path/to/compiled-v3-final"
       }
     }
   }
@@ -121,19 +121,19 @@ $ PRIME_DIR=./compiled-v3-final bunx @prime-lang/mcp-server-core
 ```
 
 After Claude Code restarts the MCP host, the tool appears as
-`mcp__skill-wiki__prime_query`. The agent calls it with `scope: "atoms"`
+`mcp__skill-wiki__aoe_query`. The agent calls it with `scope: "atoms"`
 and receives a list of paths; it then uses its own `Read` tool to
 fetch the specific projection it wants.
 
 A typical first turn looks like:
 
 ```
-agent → prime_query({ scope: "atoms", query: "warm institutional" })
+agent → aoe_query({ scope: "atoms", query: "warm institutional" })
        ← { results: [{ id: "@community/persona-stripe", ...,
                         path: "/.../@community/persona-stripe/summary.md" }] }
 agent → Read("/.../@community/persona-stripe/summary.md")
        ← "Stripe register — restrained color, generous type..."
-agent → prime_query({ scope: "related",
+agent → aoe_query({ scope: "related",
                       id: "@community/persona-stripe",
                       depth: 1 })
        ← { results: [{ id: "@community/rule-contrast-aaa", ...,
@@ -160,11 +160,11 @@ mcpServers:
     command: bunx
     args: ["@prime-lang/mcp-server-core"]
     env:
-      PRIME_DIR: /abs/path/to/compiled
+      AOE_CORPUS_DIR: /abs/path/to/compiled
 ```
 
 **Cline / Cursor / any custom runtime**: spawn `bunx @prime-lang/mcp-server-core`
-as a subprocess with `PRIME_DIR` set, and send JSON-RPC framed by
+as a subprocess with `AOE_CORPUS_DIR` set, and send JSON-RPC framed by
 `Content-Length`. The `mcp-server-core` package depends on the upstream
 `@modelcontextprotocol/sdk` so any client conforming to MCP v1 protocol works.
 
@@ -178,13 +178,13 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio";
 const transport = new StdioClientTransport({
   command: "bunx",
   args: ["@prime-lang/mcp-server-core"],
-  env: { ...process.env, PRIME_DIR: "/abs/path/to/compiled" },
+  env: { ...process.env, AOE_CORPUS_DIR: "/abs/path/to/compiled" },
 });
 const client = new Client({ name: "my-agent", version: "0.1.0" }, {});
 await client.connect(transport);
 
 const out = await client.callTool({
-  name: "prime_query",
+  name: "aoe_query",
   arguments: { scope: "atoms", query: "warm institutional", limit: 5 },
 });
 console.log(JSON.parse(out.content[0].text));
@@ -201,7 +201,7 @@ tool, fetches what it actually needs.
 
 Why this matters:
 
-1. **Bounded MCP traffic.** A `prime_query` call is a few hundred
+1. **Bounded MCP traffic.** A `aoe_query` call is a few hundred
    bytes regardless of how many atoms match. The token cost lives in
    the agent's later `Read` calls, where it has full visibility and
    can stop reading when it has enough.
@@ -211,7 +211,7 @@ Why this matters:
    `full` per atom.
 3. **Caches naturally.** Filesystem reads cache; MCP responses don't
    need to.
-4. **Composes with other tools.** The agent can pipe a `prime_query`
+4. **Composes with other tools.** The agent can pipe a `aoe_query`
    result into `Grep`, `Edit`, anything else in its toolbelt. The
    atoms are just files.
 
@@ -226,7 +226,7 @@ The inversion is what makes a 200-line server enough.
   doesn't.
 - **No multi-axis retrieval.** Picking "register, pattern, motion,
   type, color, rules" axes for a frontend brief is domain-specific
-  composition logic. The generic `prime_query` returns whatever the
+  composition logic. The generic `aoe_query` returns whatever the
   query string and edge graph say; ranking against axes is for a
   wrapper.
 - **No L5 output validation.** A validator runtime (`packages/validator-core/`,
@@ -248,7 +248,7 @@ server that **wraps** `mcp-server-core` and adds five tools (per
 | Tool | What it adds over the generic core |
 |---|---|
 | `prime_compile` | Brief → IntentObject → 6-axis retrieval plan with `must_include` / `must_avoid` contract. |
-| `prime_query` | Same shape as the core; the wrapper extends `scope` with frontend-specific values like `mandate`, `checklist`, `gallery`. |
+| `aoe_query` | Same shape as the core; the wrapper extends `scope` with frontend-specific values like `mandate`, `checklist`, `gallery`. |
 | `prime_intent` | Layer 1 only — `brief → IntentObject` without retrieval. |
 | `prime_resolve` | atom id + projection level → full content. |
 | `prime_validate` | Layer 5 — validate generated HTML against a contract. |
@@ -257,7 +257,7 @@ These tools encode frontend-design domain rules. They are not part of
 the protocol. Build your own wrapper for your own domain — see
 [corpus-authoring.md](./corpus-authoring.md) §6.
 
-The system repo stops at `prime_query`. That single tool, plus `Read`, is
+The system repo stops at `aoe_query`. That single tool, plus `Read`, is
 enough to express any read-only retrieval pattern over a Prime corpus.
 
 ---
@@ -282,10 +282,10 @@ enough to express any read-only retrieval pattern over a Prime corpus.
 
 ```bash
 # Boot (from the prime-system repo root)
-$ PRIME_DIR=examples/hello-world/primes/compiled \
+$ AOE_CORPUS_DIR=examples/hello-world/primes/compiled \
     bun packages/mcp-server-core/src/index.ts &
 [prime-mcp-core] 5 atoms · 348 tokens · 1 clusters
-[prime-mcp-core] ready · tool: prime_query · stdio transport active
+[prime-mcp-core] ready · tool: aoe_query · stdio transport active
 
 # Send one tool call (use any MCP client; this snippet uses the SDK)
 $ node --experimental-transform-types <<'EOF'
@@ -295,13 +295,13 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio";
 const transport = new StdioClientTransport({
   command: "bun",
   args: ["packages/mcp-server-core/src/index.ts"],
-  env: { ...process.env, PRIME_DIR: "./examples/hello-world/primes/compiled" },
+  env: { ...process.env, AOE_CORPUS_DIR: "./examples/hello-world/primes/compiled" },
 });
 const client = new Client({ name: "smoke", version: "0.1.0" }, {});
 await client.connect(transport);
 
 const r = await client.callTool({
-  name: "prime_query",
+  name: "aoe_query",
   arguments: { scope: "atoms", query: "tea", limit: 3 },
 });
 console.log(r.content[0].text);

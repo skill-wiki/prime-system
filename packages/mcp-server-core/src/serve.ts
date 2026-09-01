@@ -1,5 +1,5 @@
 /**
- * The serve path: `prime_query` implemented on `@skill-wiki/query-engine` and
+ * The serve path: `aoe_query` implemented on `@skill-wiki/query-engine` and
  * `@skill-wiki/projection-engine`.
  *
  * The ordering below is a security property and must not be rearranged:
@@ -98,7 +98,7 @@ export type ServeOutcome =
   | { readonly error: string };
 
 /**
- * `prime_plan` arguments: the retrieval-shaped subset of `prime_query`.
+ * `aoe_plan` arguments: the retrieval-shaped subset of `aoe_query`.
  *
  * There is no `scope`, because plan has only one meaning. `level` is accepted
  * because it changes the plan — it sets the primary projection the budget tries
@@ -233,7 +233,7 @@ interface Delivery {
  * upstream — by the caller for `show`, by query-engine's budget for `atoms`. The
  * value projection-engine adds here is the part the previous implementation had
  * none of: bundle containment on a data-supplied artifact path (§12.3), transport
- * negotiation (§9.5), the `prime://` identity (§11.3), redaction ordering, and a
+ * negotiation (§9.5), the `aoe://` identity (§11.3), redaction ordering, and a
  * cache key carrying tenant and snapshot (§12.4).
  */
 function project(
@@ -312,7 +312,7 @@ function describe(options: ServeOptions, unit: UnitIR): string {
   return value !== undefined && value.kind === "string" ? value.value.trim() : "";
 }
 
-export function executePrimeQuery(args: QueryArguments, options: ServeOptions): ServeOutcome {
+export function executeAoeQuery(args: QueryArguments, options: ServeOptions): ServeOutcome {
   const diagnostics: DiagnosticIR[] = [];
   const profile = profileName(options.model);
   const cache = new ProjectionCache<ProjectionPayload>();
@@ -351,7 +351,7 @@ export function executePrimeQuery(args: QueryArguments, options: ServeOptions): 
 /**
  * The single selection-planning call in this package.
  *
- * `prime_query` and `prime_plan` both go through here, and that is the point:
+ * `aoe_query` and `aoe_plan` both go through here, and that is the point:
  * plan is defined as "what query would select, without rendering it" (§9.1
  * `plan(request) => SelectionPlanIR`). Two independent request builders would let
  * the two tools drift, and a plan that does not describe the query is worse than
@@ -378,10 +378,10 @@ function runSelectionPlan(
 }
 
 /**
- * `prime_plan` (§11.1) mapped onto the Engine's plan capability (§9.1
+ * `aoe_plan` (§11.1) mapped onto the Engine's plan capability (§9.1
  * `plan(request) => SelectionPlanIR`).
  *
- * This is not a rename of the old `prime_compile` and not an alias for anything:
+ * This is the AOE plan surface exposed by the MCP transport:
  * §16 Phase 0 asked for a request-time plan tool, the capability it would have
  * named was dropped rather than renamed at the cutover, and an alias to a missing
  * capability would be a compatibility shim. What exists here is the plan itself —
@@ -390,10 +390,10 @@ function runSelectionPlan(
  * order, the budget arithmetic and the level each unit could be afforded at,
  * *without* paying to render any of it.
  *
- * The difference from `prime_query` is exactly rendering: same profile, same
+ * The difference from `aoe_query` is exactly rendering: same profile, same
  * request, same plan. Nothing is re-decided here.
  */
-export function executePrimePlan(args: PlanArguments, options: ServeOptions): PlanOutcome {
+export function executeAoePlan(args: PlanArguments, options: ServeOptions): PlanOutcome {
   const profile = profileName(options.model);
   const hasSeeds = args.seeds !== undefined && args.seeds.length > 0;
   if (args.query === undefined && !hasSeeds) {
@@ -402,7 +402,7 @@ export function executePrimePlan(args: PlanArguments, options: ServeOptions): Pl
     // empty selection whose emptiness says nothing about the corpus — and
     // enumerating instead (what `scope=atoms` does) would return a listing
     // dressed up as a plan.
-    return { error: "prime_plan requires `query` or `seeds`: a selection plan with no retrieval signal is not a plan." };
+    return { error: "aoe_plan requires `query` or `seeds`: a selection plan with no retrieval signal is not a plan." };
   }
   try {
     return {
@@ -520,14 +520,14 @@ function relatedOf(
 }
 
 /**
- * Resolve a `prime://` URI to inline content (§11.3, §9.5).
+ * Resolve a `aoe://` URI to inline content (§11.3, §9.5).
  *
  * This is what makes the URI transport *usable* rather than nominal: a remote
  * consumer that received a URI has no way to read a server-local path, so the
  * server has to be able to turn the identity back into bytes. Containment is
  * re-checked here because the URI arrives from the client.
  */
-export function resolvePrimeUri(
+export function resolveAoeUri(
   raw: string,
   options: ServeOptions,
 ): { readonly content: string; readonly unitId: string; readonly level: string } | { readonly error: string } {

@@ -1,5 +1,5 @@
 /**
- * prime install <@scope/name> — Resolve atom + verify dependency graph,
+ * aoe install <@scope/name> — Resolve atom + verify dependency graph,
  * optionally fetch missing atoms from a remote registry.
  *
  * Local mode (default):
@@ -15,11 +15,11 @@
  *     7. Parse to verify it's a valid .prime
  *     8. Write into <dir>/<@scope>/<name>.prime
  *     9. Recurse: resolve newly-fetched atom's deps too
- *   The registry URL can also come from the PRIME_REGISTRY env var.
+ *   The registry URL can also come from the AOE_REGISTRY env var.
  *
  * Options:
  *   --dir <path>      Override default sources directory
- *   --remote <url>    Remote registry base URL (overrides PRIME_REGISTRY env)
+ *   --remote <url>    Remote registry base URL (overrides AOE_REGISTRY env)
  *   --no-related      Skip walking `related` edges (only check composition deps)
  *   --no-fetch        Even with --remote set, only check; don't write new files
  *   --json            Output JSON summary
@@ -59,7 +59,7 @@ export async function installCommand(args: string[]): Promise<void> {
   let sourcesDir = DEFAULT_SOURCES_DIR;
   let skipRelated = false;
   let jsonMode = false;
-  let remoteUrl: string | undefined = (globalThis as any)?.process?.env?.PRIME_REGISTRY;
+  let remoteUrl: string | undefined = (globalThis as any)?.process?.env?.AOE_REGISTRY;
   let noFetch = false;
 
   for (let i = 0; i < args.length; i++) {
@@ -72,11 +72,11 @@ export async function installCommand(args: string[]): Promise<void> {
   }
 
   if (!id) {
-    console.error('Usage: prime install <@scope/name> [--no-related] [--json]');
+    console.error('Usage: aoe install <@scope/name> [--no-related] [--json]');
     process.exit(1);
   }
 
-  header(`prime install ${bold(id)}`);
+  header(`aoe install ${bold(id)}`);
 
   const result = await resolveAndVerify(id, sourcesDir, skipRelated, {
     remoteUrl,
@@ -91,7 +91,7 @@ export async function installCommand(args: string[]): Promise<void> {
   // ── print result ───────────────────────────────────────
   if (!result.filePath) {
     error(`Atom '${id}' not found in local registry.`);
-    info(`Run  prime list  to browse available atoms.`);
+    info(`Run  aoe list  to browse available atoms.`);
     process.exit(1);
   }
 
@@ -111,8 +111,8 @@ export async function installCommand(args: string[]): Promise<void> {
     if (!remoteUrl) {
       console.log();
       info(`Local-only install. To fetch from a remote registry:`);
-      info(`  prime install ${id} --remote https://registry.example.com`);
-      info(`  (or set PRIME_REGISTRY env var)`);
+      info(`  aoe install ${id} --remote https://registry.example.com`);
+      info(`  (or set AOE_REGISTRY env var)`);
     }
   } else {
     console.log();
@@ -130,7 +130,7 @@ export async function installCommand(args: string[]): Promise<void> {
     console.log();
     if (!remoteUrl) {
       info(`These atoms are referenced but not present in ${sourcesDir}.`);
-      info(`Try:  prime install ${id} --remote https://registry.example.com`);
+      info(`Try:  aoe install ${id} --remote https://registry.example.com`);
     } else {
       info(`Even with the remote registry, ${result.missingDeps.length} atoms could not be fetched.`);
     }

@@ -1,32 +1,32 @@
 #!/usr/bin/env bun
 
 /**
- * Kernary CLI. The `prime` binary remains a compatibility alias in v0.2.
+ * AOE CLI for Agent Ontology Engine packages.
  *
  * Commands:
- *   prime init                    Create a new .prime file interactively
- *   prime compile <file>          Compile .prime → .md (with AI checks)
- *   prime check <file>            Check without emitting
- *   prime check --registry        Validate all atoms (semver + ref integrity)
- *   prime test <file>             Run evaluation criteria tests
- *   prime graph <file>            Visualize relationship graph
- *   prime decompose <SKILL.md>    AI-assisted decomposition of Skill → Primes
- *   prime compose --name <name>   Compose Primes into a new Skill
- *   prime list [--scope @s]       List all atoms in local registry
- *   prime show <@scope/name>      Print atom details + deps
- *   prime deps <@scope/name>      Recursively walk dependency graph
- *   prime install <@scope/name>   Resolve + verify atom deps locally
- *   prime install <name>          Install a Prime (legacy / remote)
- *   prime install                 Install all Primes declared in SKILL.md
- *   prime publish                 Publish to prime.dev
- *   prime publish-marketplace     Open a PR to add this corpus to skill-wiki marketplace
- *   prime search <query>          Search the registry
- *   prime info <name>             View Prime details
- *   prime ls                      List installed Primes (.primes/ dir)
- *   prime action preflight|run    Plan or execute a side-effect-free audit Action
- *   prime run inspect|replay      Read or fold back an Action run's append-only log
- *   prime lsp diagnostics <file>  Editor-time diagnostics via the Language Server
- *   prime lsp completion <file>   Completion items at a position
+ *   aoe init                      Create a new .prime file interactively
+ *   aoe compile <file>          Compile .prime → .md (with AI checks)
+ *   aoe check <file>            Check without emitting
+ *   aoe check --registry        Validate all atoms (semver + ref integrity)
+ *   aoe test <file>             Run evaluation criteria tests
+ *   aoe graph <file>            Visualize relationship graph
+ *   aoe decompose <SKILL.md>    AI-assisted decomposition of Skill → Primes
+ *   aoe compose --name <name>   Compose Primes into a new Skill
+ *   aoe list [--scope @s]       List all atoms in local registry
+ *   aoe show <@scope/name>      Print atom details + deps
+ *   aoe deps <@scope/name>      Recursively walk dependency graph
+ *   aoe install <@scope/name>   Resolve + verify atom deps locally
+ *   aoe install <name>          Install a package release
+ *   aoe install                 Install all Primes declared in SKILL.md
+ *   aoe publish                 Publish to prime.dev
+ *   aoe publish-marketplace     Open a PR to add this corpus to skill-wiki marketplace
+ *   aoe search <query>          Search the registry
+ *   aoe info <name>             View package details
+ *   aoe ls                      List installed Primes (.primes/ dir)
+ *   aoe action preflight|run    Plan or execute a side-effect-free audit Action
+ *   aoe run inspect|replay      Read or fold back an Action run's append-only log
+ *   aoe lsp diagnostics <file>  Editor-time diagnostics via the Language Server
+ *   aoe lsp completion <file>   Completion items at a position
  */
 
 import { compileCommand } from './commands/compile';
@@ -56,9 +56,9 @@ const VERSION = '0.2.0';
 
 function printUsage() {
   console.log(`
-Kernary v${VERSION} — model-driven ontology engine for agents and applications
+AOE v${VERSION} — Agent Ontology Engine for domain-aware applications
 
-Usage: kernary <command> [options]
+Usage: aoe <command> [options]
 
 Core:
   init                    Create a new .prime file
@@ -79,11 +79,11 @@ Registry (local):
   install <@scope/name>   Resolve atom + verify all deps locally
 
 Package Management:
-  install [name]          Install Prime(s) from prime.dev
-  publish                 Publish to prime.dev
+  install [name]          Install package releases from a registry
+  publish                 Publish a package release
   publish-marketplace     Submit corpus to skill-wiki marketplace via GitHub PR
   search <query>          Search the registry
-  info <name>             View Prime details
+  info <name>             View package details
   ls                      List installed Primes (.primes/)
   doctor [--dir <path>]   Inspect a compiled corpus bundle
 
@@ -112,7 +112,7 @@ async function main() {
   }
 
   if (args[0] === '--version' || args[0] === '-v') {
-    console.log(`Kernary v${VERSION}`);
+    console.log(`AOE v${VERSION}`);
     process.exit(0);
   }
 

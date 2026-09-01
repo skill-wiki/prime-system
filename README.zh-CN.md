@@ -1,15 +1,11 @@
-# Kernary
+# AOE — Agent Ontology Engine
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/kernary-logo-dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="docs/assets/kernary-logo.svg">
-    <img src="docs/assets/kernary-logo.svg" alt="Kernary" width="540">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/aoe-logo-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/aoe-logo.svg">
+    <img src="docs/assets/aoe-logo.svg" alt="AOE" width="540">
   </picture>
-</p>
-
-<p align="center">
-  <img src="docs/assets/kernary-logo.svg" alt="Kernary" width="540">
 </p>
 
 <p align="center">
@@ -23,12 +19,12 @@
   <a href="LICENSE">Apache-2.0</a>
 </p>
 
-Kernary 是一个**模型驱动的本体引擎**。它把外部领域 Model 与 Corpus 编译
+AOE（Agent Ontology Engine）是一个面向 Agent 的本体引擎。它把外部领域 Model 与 Corpus 编译
 成确定性、可版本化、可验证的 Runtime。应用或 Agent 可以通过 Embedded SDK、
 MCP 或 HTTP 使用同一套契约：先发现有什么，再请求带约束的 Selection Plan，
 按需解析 Projection，最后在明确授权的前提下执行 Action。
 
-一句话概括：**Kernary 是引擎；领域词汇与领域数据是围绕引擎组织的外部
+一句话概括：**AOE 是引擎；领域词汇与领域数据是围绕引擎组织的外部
 Package。** Core 不内置生产 Ticket schema、设计 ontology，也不维护一份
 固定的 atom kind 清单。
 
@@ -42,7 +38,7 @@ Package。** Core 不内置生产 Ticket schema、设计 ontology，也不维护
 3. Runtime 能否证明读到的 Snapshot 就是刚刚构建并发布的版本？
 4. Agent 可以读取什么，又真正有权修改什么？
 
-Kernary 把这些问题变成明确契约，同时不把 Core 绑在某个领域上：Model
+AOE 把这些问题变成明确契约，同时不把 Core 绑在某个领域上：Model
 声明词汇，Corpus 提供单元与证据，Compiler 产生经过验证的 Snapshot，Query
 返回可解释的 Plan，Action 走独立的授权和证据链。
 
@@ -56,7 +52,7 @@ Kernary 把这些问题变成明确契约，同时不把 Core 绑在某个领域
          └─────────────────────┼─────────────────────┘
                                ▼
                     ┌────────────────────┐
-                    │   Kernary Engine   │
+                    │       AOE         │
                     │ parse → IR → build │
                     │ verify → snapshot  │
                     └─────────┬──────────┘
@@ -74,7 +70,7 @@ Kernary 把这些问题变成明确契约，同时不把 Core 绑在某个领域
 
 | 边界 | 负责 | 不负责 |
 |---|---|---|
-| Kernary Core | meta-schema、IR、parser、compiler、Snapshot 验证、Query/Action 契约 | 领域类型名、业务规则、Corpus 内容 |
+| AOE Core | meta-schema、IR、parser、compiler、Snapshot 验证、Query/Action 契约 | 领域类型名、业务规则、Corpus 内容 |
 | Model Package | 类型、字段、关系、Projection、Retrieval、Function、Action、Policy、Migration | 编译后的 Corpus bytes |
 | Corpus Package | Unit、资产、来源、许可证、Release、签名 | 引擎实现 |
 | Adapter Package | Source importer、Provider、Validator、Evaluator | 修改 Core Schema |
@@ -167,12 +163,12 @@ bun scripts/build-atom-dirs.ts \
 MCP Transport 暴露它：
 
 ```bash
-PRIME_DIR=examples/hello-world/primes/compiled \
-PRIME_MODEL_DIR=compat/prime-v1-model \
+AOE_CORPUS_DIR=examples/hello-world/primes/compiled \
+AOE_MODEL_DIR=compat/prime-v1-model \
 bun packages/mcp-server-core/src/index.ts
 ```
 
-MCP 入口从环境配置读取挂载的 Corpus 与 Model 路径。新的集成应使用 `kernary`
+MCP 入口从环境配置读取挂载的 Corpus 与 Model 路径。新的集成应使用 `aoe`
 CLI 以及下方文档中的 Package contract。
 
 ## 不改引擎，编写自己的领域
@@ -218,12 +214,12 @@ Workspace 按契约组织，而不是按某个框架堆成一个大包：
 | Integration | `sdk`、`sdk-codegen`、`mcp-server-core`、`http-server`、`cli` | 向宿主暴露同一套契约 |
 | Extension / Quality | `plugin-host`、`registry`、`observability`、`evaluation-engine`、`testkit`、`language-server` | Adapter、分发、观测、评估与工具 |
 
-Workspace 中列出的 Package 是 Kernary 的实现模块；领域使用者通常依赖 SDK 或
+Workspace 中列出的 Package 是 AOE 的实现模块；领域使用者通常依赖 SDK 或
 Transport，不需要直接引入所有模块。
 
 ## 安全与可复现性不变量
 
-Kernary 在重要边界上采用 fail-closed：
+AOE 在重要边界上采用 fail-closed：
 
 - canonical digest 与 checkout 位置、对象顺序无关；
 - Manifest 或 Projection 被篡改时，在返回内容前失败；
@@ -263,5 +259,5 @@ bun run build
 
 ## 许可证
 
-Kernary Engine 使用 [Apache-2.0](LICENSE)。外部 Domain 与 Corpus Package
+AOE Engine 使用 [Apache-2.0](LICENSE)。外部 Domain 与 Corpus Package
 遵循各自的来源署名和许可证条款。

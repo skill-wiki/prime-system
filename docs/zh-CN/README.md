@@ -1,11 +1,11 @@
-# Kernary 文档
+# AOE 文档
 
-Kernary 是模型驱动的本体引擎。这里描述当前 v0.2 Package、
+AOE 是面向 Agent 的本体引擎。这里描述当前 Package、
 Snapshot、Query 与 Action contract。
 
 ## 开始
 
-- [构建知识 Runtime](../start/index.zh-CN.md)
+- [构建你的第一个领域 Runtime](../start/index.zh-CN.md)
 - [连接 Agent](../guides/connect-agent.zh-CN.md)
 
 ## 核心概念

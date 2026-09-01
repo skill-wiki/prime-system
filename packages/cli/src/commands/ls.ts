@@ -1,5 +1,5 @@
 /**
- * prime ls — List installed Primes.
+ * aoe ls — List installed Primes.
  */
 
 import { header, bold, green, gray } from '../utils/display';
@@ -11,7 +11,7 @@ import { join } from 'path';
 export async function lsCommand(_args: string[]) {
   const primesDir = findPrimesDir();
   if (!primesDir) {
-    console.log('  No .primes/ directory found. Install primes with: prime install <name>');
+    console.log('  No .primes/ directory found. Install primes with: aoe install <name>');
     return;
   }
 

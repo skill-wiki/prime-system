@@ -99,15 +99,15 @@ prime graph primes/sources/@example/method-make-tea.prime
 启动通用 MCP server：
 
 ```bash
-PRIME_DIR=primes/compiled bun ../../packages/mcp-server-core/src/index.ts
+AOE_CORPUS_DIR=primes/compiled bun ../../packages/mcp-server-core/src/index.ts
 # [prime-mcp-core] Loading corpus index...
 # [prime-mcp-core] 5 atoms · 712 tokens · 1 clusters
 # [prime-mcp-core] domains: 0 (no domain.yaml found — plain ranking active)
-# [prime-mcp-core] ready · tool: prime_query · stdio transport active
+# [prime-mcp-core] ready · tool: aoe_query · stdio transport active
 ```
 
 Server 在 stdio 上讲 Model Context Protocol。任何 MCP 客户端都能调
-`prime_query` 工具。没有独立的 CLI 查询命令，查询走 MCP 工具接口。
+`aoe_query` 工具。没有独立的 CLI 查询命令，查询走 MCP 工具接口。
 
 ---
 
@@ -121,18 +121,18 @@ Server 在 stdio 上讲 Model Context Protocol。任何 MCP 客户端都能调
     "skill-wiki": {
       "command": "bunx",
       "args": ["@prime-lang/mcp-server-core"],
-      "env": { "PRIME_DIR": "/abs/path/to/your/compiled" }
+      "env": { "AOE_CORPUS_DIR": "/abs/path/to/your/compiled" }
     }
   }
 }
 ```
 
-重启 agent。`prime_query` 这个工具会出现在 agent 的工具列表里。会话里
+重启 agent。`aoe_query` 这个工具会出现在 agent 的工具列表里。会话里
 就能用：
 
-> *用 prime_query 找泡茶相关的原子，然后写一份 recipe。*
+> *用 aoe_query 找泡茶相关的原子，然后写一份 recipe。*
 
-Agent 调 `prime_query("泡茶")`，拿到原子 ID 和层级，对 chunk 路径调
+Agent 调 `aoe_query("泡茶")`，拿到原子 ID 和层级，对 chunk 路径调
 `Read`，从这些类型化输入合成 recipe。
 
 接上之后 agent 的 prompt 会**肉眼变紧** —— 不再凭记忆猜具体字段值；
@@ -153,7 +153,7 @@ git clone https://github.com/skill-wiki/prime-corpus-frontend.git
 cd prime-corpus-frontend
 bun install
 bun run build           # 编译 899 原子
-PRIME_DIR=compiled bun ../prime-system/packages/mcp-server-core/src/index.ts
+AOE_CORPUS_DIR=compiled bun ../prime-system/packages/mcp-server-core/src/index.ts
 ```
 
 这个 corpus 有自己的 MCP wrapper（5 个工具，不是 1 个；带意图分类
@@ -194,9 +194,9 @@ my-corpus/
 | `[L3] cycle detected: A → B → A` | 两个原子互相 `requires` | 选一个方向；另一个改 `enhances` |
 | `[L3] contradicts edge between active atoms` | 两个原子语义对立但都是 active | 把其中一个标 `deprecated`；如果是有意的对立，把 contradicts 边删掉 |
 | Persona 的 `chunks/full.md` 是空的 | Chunker 不认识自定义字段 | 已知限制，详见 [roadmap](./community/roadmap.md)。把字段名加进 chunker include-list。 |
-| `prime_query` 啥也不返回 | 索引没装 / `--corpus` 路径不对 | 确认那个路径下有 `_index.xml` |
+| `aoe_query` 啥也不返回 | 索引没装 / `--corpus` 路径不对 | 确认那个路径下有 `_index.xml` |
 | MCP server 起来了但 agent 看不到工具 | MCP transport 不对 / agent config 没注册 | 看 agent 的 MCP server 日志找连接错误 |
-| L2 语义校验慢 | 每个原子一次 LLM call | 设 `PRIME_L2_BATCH=true` 走 batch（快得多）；不设 `DEEPSEEK_API_KEY` 直接跳过 |
+| L2 语义校验慢 | 每个原子一次 LLM call | 设 `AOE_L2_BATCH=true` 走 batch（快得多）；不设 `DEEPSEEK_API_KEY` 直接跳过 |
 
 ---
 
