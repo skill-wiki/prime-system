@@ -11,6 +11,9 @@ AOE 让应用真正拥有一个可以使用的领域。你提供 Model Package�
 
 | 你想做什么 | 从这里开始 |
 |---|---|
+| 先搞清楚 AOE 是什么 | [AOE 是什么](../concepts/what-is-aoe.zh-CN.md) |
+| 看看大家用它构建什么形状的领域 | [可以构建什么](../guides/use-cases.zh-CN.md) |
+| 查一个术语 | [术语表](../reference/glossary.zh-CN.md) |
 | 让 Agent 或应用使用已有 Package | [连接 Agent](../guides/connect-agent.zh-CN.md) |
 | 为新领域定义类型、关系、Query 或 Action | [Package 模型](../concepts/package-model.zh-CN.md) |
 | 把来源资料编译为版本化知识 Release | [编译与 Snapshot](../concepts/compilation-and-snapshots.zh-CN.md) |

@@ -12,6 +12,9 @@ Ticket is, or write a second retrieval system for every domain.
 
 | You want to… | Start here |
 |---|---|
+| Understand what AOE is before writing anything | [What AOE is](../concepts/what-is-aoe.md) |
+| See the domain shapes people build | [What you can build](../guides/use-cases.md) |
+| Look up a term used in these pages | [Glossary](../reference/glossary.md) |
 | Use an existing package from an Agent or app | [Connect an Agent](../guides/connect-agent.md) |
 | Define types, relations, queries, or actions for a new domain | [Package model](../concepts/package-model.md) |
 | Turn source material into a versioned knowledge release | [Compilation and snapshots](../concepts/compilation-and-snapshots.md) |

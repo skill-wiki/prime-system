@@ -5,8 +5,10 @@ the current package, snapshot, query, and action contracts.
 
 ## Start
 
+- [What AOE is](concepts/what-is-aoe.md)
 - [Build your first domain runtime](start/index.md)
 - [Connect an Agent](guides/connect-agent.md)
+- [What you can build](guides/use-cases.md)
 
 ## Core concepts
 
@@ -21,6 +23,7 @@ the current package, snapshot, query, and action contracts.
 
 ## Reference
 
+- [Glossary](reference/glossary.md)
 - [CLI](reference/cli.md)
 - [MCP transport](reference/mcp-transport.md)
 - [HTTP and Registry](reference/http-and-registry.md)
